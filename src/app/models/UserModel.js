@@ -6,6 +6,9 @@ const addUser = 'INSERT INTO users (email, phone, password, created_at, updated_
 const deleteUser = 'DELETE FROM users WHERE id = $1 RETURNING *';
 const updateUser = 'UPDATE users SET email = $1, phone = $2, password = $3, updated_at = NOW() WHERE id = $4 RETURNING *';
 const validPassword = 'SELECT password FROM users WHERE email = $1';
+const checkUserId = 'SELECT id FROM users WHERE email = $1';
+const checkRoleId = 'SELECT role_id FROM users WHERE email = $1';
+
 module.exports = {
     getUsers,
     getUsersById,
@@ -15,4 +18,6 @@ module.exports = {
     updateUser,
     checkPhoneExits,
     validPassword,
+    checkUserId,
+    checkRoleId,
 }

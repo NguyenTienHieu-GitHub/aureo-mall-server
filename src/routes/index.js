@@ -3,8 +3,8 @@ const authRouter = require("../routes/auth");
 
 function route(app) {
 
-  app.use("/", userRouter);
-  app.use("/", authRouter);
+  app.use("/users", userRouter);
+  app.use("/auth", authRouter);
 
   // Middleware xử lý lỗi 404 (nên đặt sau tất cả các route)
   app.use((req, res, next) => {

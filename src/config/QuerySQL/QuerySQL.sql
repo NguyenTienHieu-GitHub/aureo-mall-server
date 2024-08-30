@@ -11,9 +11,6 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     phone VARCHAR(10) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
-    CHECK (
-        password ~ '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z0-9!@#$%^&*(),.?":{}|<>]{12,23}$'
-    ),
     role_id INT DEFAULT 4 REFERENCES roles(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -50,10 +47,10 @@ CREATE TABLE role_permissions (
 INSERT INTO roles (role_name)
 VALUES 
     ('Admin'),
-    ('Manager'),
-    ('Editor'),
-    ('Viewer'),
-    ('Guest');
+    ('Seller'),
+    ('Standard Seller'),
+    ('Logistic'),
+    ('Customer');
 
 INSERT INTO permissions (permission_name)
 VALUES
@@ -93,5 +90,5 @@ VALUES
 
 INSERT INTO users (email, phone, password, role_id)
 VALUES
-('admin@gmail.com', '0123456255', 'Hieu@123', 1),
-('user1@gmail.com', '0123456789', 'User@123', 2);
+('admin@gmail.com', '0123456255', 'Hieu@12345678', 1),
+('user1@gmail.com', '0123456789', 'User@12345678', 2);
