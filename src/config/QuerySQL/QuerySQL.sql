@@ -4,16 +4,23 @@ CREATE TABLE roles (
     id SERIAL PRIMARY KEY,
     role_name VARCHAR(50) NOT NULL UNIQUE
 );
-
 -- Bảng users (Người dùng)
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
     phone VARCHAR(10) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
-    role_id INT DEFAULT 4 REFERENCES roles(id),
+    role_id INT DEFAULT 5 REFERENCES roles(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE address (
+    id SERIAL PRIMARY KEY,
+    fullname VARCHAR(150) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    phone VARCHAR(10) NOT NULL,
+    user_id INT REFERENCES users(id),
 );
 
 CREATE OR REPLACE FUNCTION update_timestamp()

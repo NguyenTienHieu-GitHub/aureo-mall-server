@@ -1,0 +1,667 @@
+openapi: 3.0.3
+info:
+  title: Swagger Petstore - OpenAPI 3.0
+  description: |-
+    This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about
+    Swagger at [https://swagger.io](https://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!
+    You can now help us improve the API whether it's by making changes to the definition itself or to the code.
+    That way, with time, we can improve the API in general, and expose some of the new features in OAS3.
+
+    _If you're looking for the Swagger 2.0/OAS 2.0 version of Petstore, then click [here](https://editor.swagger.io/?url=https://petstore.swagger.io/v2/swagger.yaml). Alternatively, you can load via the `Edit > Load Petstore OAS 2.0` menu option!_
+    
+    Some useful links:
+    - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)
+    - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://localhost:3080
+tags:
+  - name: users
+    description: Các API liên quan đến user
+paths:
+  /auth/login:
+    post:
+      tags:
+          - login
+      summary: Đăng nhập
+      description: Đăng nhập vào hệ thống
+      operationId: login
+      requestBody:
+        description: Thông tin đăng nhập
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      responses:
+        '200':
+          description: Login successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessAuthenticationLogin'
+        '400':
+          description: Invalid email or password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginErrorResponse'
+
+  /auth/register:
+    post:
+      tags:
+          - register
+      summary: Đăng ký
+      description: Đăng ký user
+      operationId: register
+      requestBody:
+        description: Thông tin đăng ký
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      responses:
+        '200':
+          description: Register successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessAuthenticationRegister'
+        '400':
+          description: 'Register failed'
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/EmailExistsErrorResponse'
+                  - $ref: '#/components/schemas/PhoneExistsErrorResponse'
+                  - $ref: '#/components/schemas/PasswordRegex'
+
+  /auth/logout:
+    post:
+      tags:
+          - logout
+      summary: Đăng xuất
+      description: Đăng xuất khỏi hệ thống
+      operationId: logout
+      responses:
+        '200':
+          description: Logout successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessAuthenticationLogout'
+        '400':
+          description: Logout failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutErrorResponse'
+      security:
+        - BearerAuth: []
+  
+  /auth/refresh:
+    post:
+      tags:
+          - refresh
+      summary: Làm mới accessToken
+      description: Làm mới accessToken bằng cookie
+      operationId: refresh
+      responses:
+        '200':
+          description: Successfully refreshed access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessAuthenticationRefresh'
+        '400':
+          description: Refresh failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInvalidErrorResponse'
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+
+  /users:
+    get:
+      tags:
+          - user
+      summary: Hiển thị tất cả người dùng
+      description: Hiển thị tất cả người dùng
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: getAllUsers successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersResponse'
+        '400':
+          description: 'Token is not valid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInvalidErrorResponse'
+      security:
+        - BearerAuth: []
+
+  /users/{id}:
+    get:
+      tags:
+          - getUserById
+      summary: Tìm kiếm
+      description: Tìm kiếm người dùng bằng ID
+      operationId: search
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Nhập ID user muốn tìm kiếm
+      responses:
+        '200':
+          description: Successful response with user data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserById'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "User not found"
+      security:
+        - BearerAuth: []
+
+  /users/delete/{id}:
+    delete:
+      tags:
+          - delete
+      summary: Xóa người dùng
+      description: Xóa người dùng thôn qua ID
+      operationId: delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Nhập ID user muốn xóa
+      responses:
+        '200':
+          description: Delete successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteUsersResponse'
+        '400':
+          description: Invalid email or password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteErrorResponse'
+      security:
+        - BearerAuth: []
+      
+  /users/create:
+    post:
+      tags:
+          - create
+      summary: Tạo người dùng mới
+      description: Tạo người dùng mới bằng user admin
+      operationId: create
+      requestBody:
+        description: Thông tin người dùng mới
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Create'
+        required: true
+      responses:
+        '200':
+          description: Update successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+        '400':
+          description: Invalid email or password.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/EmailExistsErrorResponse'
+                  - $ref: '#/components/schemas/PhoneExistsErrorResponse'
+      security:
+        - BearerAuth: []
+  
+  /users/update/{id}:
+    put:
+      tags:
+          - update
+      summary: Cập nhật người dùng
+      description: Cập nhật người dùng thôn qua ID từ người dùng admin
+      operationId: update
+      requestBody:
+        description: Thông tin update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Update'
+        required: true
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Nhập ID user muốn cập nhật
+      responses:
+        '200':
+          description: Update successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUsersResponse'
+        '400':
+          description: User does not exist in the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteErrorResponse'
+      security:
+        - BearerAuth: []
+     
+components:
+  schemas:
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          example: adminpro@gmail.com
+        password:
+          type: string
+          example: Hieu@12434568
+
+    Register:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "admin10@gmail.com"
+        phone:
+          type: string
+          example: "0123456777"
+        password:
+          type: string
+          format: password
+          example: "Hieu@12434568"
+
+    Update:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "update@gmail.com"
+        phone:
+          type: string
+          example: "0999999999"
+        password:
+          type: string
+          example: "Pass@update123"
+        role_id:
+          type: integer
+          example: 2
+    
+    Create:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "createSeller@gmail.com"
+        phone:
+          type: string
+          example: "0989898988"
+        password:
+          type: string
+          example: "Create@seller123"
+        role_id:
+          type: integer
+          example: 2
+
+    SuccessAuthenticationRefresh:
+      type: object
+      properties:
+        successToken:
+          type: string
+          description: New access token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbnByb0BnbWFpbC5jb20iLCJyb2xlX2lkIjoxLCJpYXQiOjE3MjUxNzc0NzksImV4cCI6MTcyNTE3NzU5OX0.aMx5SUlnyuDRo4tc3i9Ntx04nXLkPZQ5KDyWedVl88g
+
+    SuccessAuthenticationLogout:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Logout Successfully"
+
+    SuccessAuthenticationLogin:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: "adminpro@gmail.com"
+        phone:
+          type: string
+          example: "0123456789"
+        role_id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-08-30T16:49:24.105Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-08-30T16:57:59.453Z"
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Login successfully"
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbnByb0BnbWFpbC5jb20iLCJyb2xlX2lkIjoxLCJpYXQiOjE3MjUxMDk2MTMsImV4cCI6MTcyNTEwOTczM30.44r4oWZ3qgbkPwSztrOfFNsI4OEp0iQ6nW_ogXlF8-Y"
+
+    SuccessAuthenticationRegister:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 21
+        email:
+          type: string
+          format: email
+          example: "admin10@gmail.com"
+        phone:
+          type: string
+          example: "0123456777"
+        password:
+          type: string
+          example: "$2b$10$NdtDxlgYjDdN9LtVCzxWz.aw9dN2aZQpTk3pYPx0iOc3ly30y0UDa"
+        role_id:
+          type: integer
+          example: 4
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-09-01T06:24:57.948Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-09-01T06:24:57.948Z"
+
+    EmailExistsErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Email already exists."
+
+    PhoneExistsErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Phone number already exists."
+    
+    PasswordRegex:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Password does not meet the requirements."
+
+    LoginErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Invalid email or password."
+
+    LogoutErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "No refresh token found"
+
+    DeleteErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          example: "User does not exist in the database"
+    
+    UpdateErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          example: "User does not exist." 
+
+    GetAllUsers:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: "adminpro@gmail.com"
+        phone:
+          type: string
+          example: "0123456789"
+        password:
+          type: string
+          format: password
+          example: "$2b$10$WzI8V0rB0yqRLlUXM.JYuOBtS4KK2HyOvFzz7ma.eoF6w77qFO1eG"
+        role_id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-08-30T16:49:24.105Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-08-30T16:57:59.453Z"
+    
+    GetUserById: 
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: "adminpro@gmail.com"
+        phone:
+          type: string
+          example: "0123456789"
+        password:
+          type: string
+          format: password
+          example: "$2b$10$WzI8V0rB0yqRLlUXM.JYuOBtS4KK2HyOvFzz7ma.eoF6w77qFO1eG"
+        role_id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-08-30T16:49:24.105Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-08-30T16:57:59.453Z"
+
+    UsersResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/GetAllUsers'
+
+    DeleteUsersResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "User deleted successfully"
+
+    UpdateUsersResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "User updated successfully"
+        id:
+          type: integer
+          example: 3
+        email:
+          type: string
+          format: email
+          example: "update@gmail.com"
+        phone:
+          type: string
+          example: "0999999999"
+        password:
+          type: string
+          format: password
+          example: "Pass@update123"
+        role_id:
+          type: integer
+          example: 2
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-08-30T16:54:39.912Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-09-01T08:45:55.446Z"
+
+    CreateUserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Created user successfully"
+        newUser:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 23
+            email:
+              type: string
+              format: email
+              example: "createSeller@gmail.com"
+            phone:
+              type: string
+              example: "0989898988"
+            password:
+              type: string
+              format: password
+              example: "Create@seller123"
+            role_id:
+              type: integer
+              example: 2
+            created_at:
+              type: string
+              format: date-time
+              example: "2024-09-01T09:07:14.967Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2024-09-01T09:07:14.967Z"
+    TokenInvalidErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Token is not valid"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: refreshToken
+
