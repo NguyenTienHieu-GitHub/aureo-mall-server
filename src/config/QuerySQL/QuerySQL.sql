@@ -51,6 +51,104 @@ CREATE TABLE role_permissions (
 );
 
 
+CREATE TABLE products (
+    id BIGINT PRIMARY KEY,
+    title TEXT NOT NULL,
+    handle TEXT UNIQUE NOT NULL,
+    description TEXT,
+    published_at TIMESTAMP,
+    created_at TIMESTAMP,
+    vendor TEXT,
+    type TEXT,
+    tags TEXT[],  -- Array of text
+    price DECIMAL(10, 2),
+    price_min DECIMAL(10, 2),
+    price_max DECIMAL(10, 2),
+    available BOOLEAN,
+    price_varies BOOLEAN,
+    compare_at_price DECIMAL(10, 2),
+    compare_at_price_min DECIMAL(10, 2),
+    compare_at_price_max DECIMAL(10, 2),
+    compare_at_price_varies BOOLEAN,
+    featured_image TEXT,
+    url TEXT UNIQUE
+);
+
+
+CREATE TABLE product_variants (
+    id BIGINT PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    title TEXT NOT NULL,
+    option1 TEXT,
+    option2 TEXT,
+    option3 TEXT,
+    sku TEXT,
+    requires_shipping BOOLEAN,
+    taxable BOOLEAN,
+    featured_image TEXT,
+    available BOOLEAN,
+    name TEXT,
+    public_title TEXT,
+    options TEXT[],
+    price DECIMAL(10, 2),
+    weight DECIMAL(10, 2),
+    compare_at_price DECIMAL(10, 2),
+    inventory_management TEXT,
+    barcode TEXT,
+    requires_selling_plan BOOLEAN,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE variants_featured_image (
+    id BIGINT PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    variant_ids BIGINT NOT NULL,
+    position INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    alt TEXT,
+    width INT,
+    height INT,
+    src TEXT,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (variant_ids) REFERENCES product_variants(id) ON DELETE CASCADE
+);
+
+CREATE TABLE product_images (
+    id BIGINT PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    image_url TEXT NOT NULL,
+    position INT DEFAULT 1,
+    alt_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE product_options (
+    id SERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    option_name TEXT NOT NULL,
+    option_value TEXT NOT NULL,
+    position INT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE product_media (
+    id BIGINT PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    media_type TEXT,
+    media_url TEXT NOT NULL,
+    position INT DEFAULT 1,
+    aspect_ratio DECIMAL(10, 2),
+    height INT,
+    width INT,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+
 INSERT INTO roles (role_name)
 VALUES 
     ('Admin'),

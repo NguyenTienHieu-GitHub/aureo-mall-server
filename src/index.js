@@ -12,6 +12,7 @@ const swaggerDocument = YAML.parse(file);
 dotenv.config();
 const app = express();
 const port = 3080;
+const host = "127.0.0.1";
 
 app.use(cors());
 app.use(cookieParser());
@@ -21,6 +22,6 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // Router init
 route(app);
 
-app.listen(port, () => {
-  console.log(`App listening on port http://localhost:${port}`);
+app.listen(port, host, () => {
+  console.log(`Server đang chạy tại http://${host}:${port}`);
 });

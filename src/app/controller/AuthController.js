@@ -9,19 +9,19 @@ const registerUser = async (req, res) => {
   const { email, phone, password } = req.body;
   try {
     // Check if email already exists
-    const checkMailResults = await pool.query(userModel.checkEmailExits, [
+    const checkEmailResult = await pool.query(userModel.checkEmailExits, [
       email,
     ]);
-    if (checkMailResults.rows.length > 0) {
+    if (checkEmailResult.rows.length > 0) {
       return res
         .status(400)
         .json({ success: false, message: "Email already exists." });
     }
     // Check if phone already exists
-    const checkPhoneResults = await pool.query(userModel.checkPhoneExits, [
+    const checkPhoneResult = await pool.query(userModel.checkPhoneExits, [
       phone,
     ]);
-    if (checkPhoneResults.rows.length > 0) {
+    if (checkPhoneResult.rows.length > 0) {
       return res
         .status(409)
         .json({ success: false, message: "Phone already exists." });
@@ -38,13 +38,13 @@ const registerUser = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     // Add user to the database
-    const addResults = await pool.query(userModel.addUser, [
+    const addResult = await pool.query(userModel.addUser, [
       email,
       phone,
       hashedPassword,
     ]);
     // Return the newly created user
-    const newUser = addResults.rows[0];
+    const newUser = addResult.rows[0];
     return res.status(201).json(newUser);
   } catch (error) {
     console.error("Error during registration:", error);
@@ -60,7 +60,7 @@ const generateAccessToken = async (user) => {
     role_id: user.role_id,
   };
   return jwt.sign(payload, process.env.SECRET_KEY, {
-    expiresIn: "120s",
+    expiresIn: "300s",
   });
 };
 const generateRefreshToken = async (user) => {
