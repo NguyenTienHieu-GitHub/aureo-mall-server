@@ -52,14 +52,14 @@ CREATE TABLE role_permissions (
 
 
 CREATE TABLE products (
-    id BIGINT PRIMARY KEY,
-    title TEXT NOT NULL,
-    handle TEXT UNIQUE NOT NULL,
-    description TEXT,
-    published_at TIMESTAMP,
-    created_at TIMESTAMP,
-    vendor TEXT,
-    type TEXT,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    handle VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    vendor VARCHAR(255),
+    type VARCHAR(255),
     tags TEXT[],  -- Array of text
     price DECIMAL(10, 2),
     price_min DECIMAL(10, 2),
@@ -70,39 +70,38 @@ CREATE TABLE products (
     compare_at_price_min DECIMAL(10, 2),
     compare_at_price_max DECIMAL(10, 2),
     compare_at_price_varies BOOLEAN,
-    featured_image TEXT,
-    url TEXT UNIQUE
+    featured_image VARCHAR(255),
+    url VARCHAR(255)
 );
 
 
 CREATE TABLE product_variants (
-    id BIGINT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     product_id BIGINT NOT NULL,
-    title TEXT NOT NULL,
-    option1 TEXT,
-    option2 TEXT,
-    option3 TEXT,
-    sku TEXT,
+    title VARCHAR(255) NOT NULL,
+    option1 VARCHAR(255),
+    option2 VARCHAR(255),
+    option3 VARCHAR(255),
+    sku VARCHAR(255),
     requires_shipping BOOLEAN,
     taxable BOOLEAN,
-    featured_image TEXT,
     available BOOLEAN,
-    name TEXT,
-    public_title TEXT,
+    name VARCHAR(255),
+    public_title VARCHAR(255),
     options TEXT[],
     price DECIMAL(10, 2),
     weight DECIMAL(10, 2),
     compare_at_price DECIMAL(10, 2),
-    inventory_management TEXT,
-    barcode TEXT,
+    inventory_management VARCHAR(255),
+    barcode VARCHAR(255),
     requires_selling_plan BOOLEAN,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
 CREATE TABLE variants_featured_image (
-    id BIGINT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     product_id BIGINT NOT NULL,
-    variant_ids BIGINT NOT NULL,
+    variant_id BIGINT NOT NULL,
     position INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -111,42 +110,91 @@ CREATE TABLE variants_featured_image (
     height INT,
     src TEXT,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    FOREIGN KEY (variant_ids) REFERENCES product_variants(id) ON DELETE CASCADE
+    FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
 );
 
-CREATE TABLE product_images (
-    id BIGINT PRIMARY KEY,
-    product_id BIGINT NOT NULL,
-    image_url TEXT NOT NULL,
-    position INT DEFAULT 1,
-    alt_text TEXT,
+CREATE TABLE variant_featured_image_variants (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    variant_featured_image_id BIGINT NOT NULL,
+    variant_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    FOREIGN KEY (variant_featured_image_id) REFERENCES variants_featured_image(id) ON DELETE CASCADE,
+    FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
 );
 
-CREATE TABLE product_options (
-    id SERIAL PRIMARY KEY,
-    product_id BIGINT NOT NULL,
-    option_name TEXT NOT NULL,
-    option_value TEXT NOT NULL,
-    position INT DEFAULT 1,
+CREATE TABLE variants_featured_media (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    variant_id BIGINT NOT NULL,
+    alt VARCHAR(255),
+    position INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
 );
 
 CREATE TABLE product_media (
-    id BIGINT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     product_id BIGINT NOT NULL,
-    media_type TEXT,
-    media_url TEXT NOT NULL,
+    media_type VARCHAR(255),
+    src VARCHAR(255) NOT NULL,
     position INT DEFAULT 1,
     aspect_ratio DECIMAL(10, 2),
     height INT,
     width INT,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
+
+CREATE TABLE product_images (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    src VARCHAR(255) NOT NULL,
+    position INT DEFAULT 1,
+    alt_text VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE product_options (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    position INT DEFAULT 1,
+    values TEXT[] NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE preview_image (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    featured_media_id BIGINT NOT NULL,
+    media_id BIGINT NOT NULL,
+    aspect_ratio DECIMAL(10, 2),
+    height INT,
+    width INT,
+    src VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (featured_media_id) REFERENCES variants_featured_media(id) ON DELETE CASCADE,
+    FOREIGN KEY (media_id) REFERENCES product_media(id) ON DELETE CASCADE
+);
+
+CREATE TABLE product_selling_plan_allocations (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    variant_id BIGINT NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    price DECIMAL(10, 2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
+);
+
+
 
 
 INSERT INTO roles (role_name)
