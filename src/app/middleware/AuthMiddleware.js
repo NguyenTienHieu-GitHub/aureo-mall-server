@@ -1,3 +1,5 @@
+const userModel = require("../../app/models/UserModel");
+const pool = require("../../config/db/index");
 const middlewareWrapper = require("cors");
 const jwt = require("jsonwebtoken");
 
@@ -20,17 +22,31 @@ const authMiddleware = {
     }
   },
 
-  //verifyToken and Admin
-  verifyTokenAndAdminAuth: (req, res, next) => {
-    authMiddleware.verifyToken(req, res, () => {
-      if (req.user.role_id == 1 || req.user.id === parseInt(req.params.id, 10)) {
-        next();
-      } else {
-        res.status(403).json("You are not allowed to delete other");
-      }
-    });
-  },
+  checkPermission: (requiredPermission) => {
+    return async (req, res, next) => {
+      try {
+        const userId = req.user.id; // Lấy ID người dùng từ thông tin giải mã token
 
+        const result = await pool.query(userModel.checkPermission, [
+          userId,
+          requiredPermission,
+        ]);
+
+        if (result.rows.length > 0) {
+          // Người dùng có quyền
+          next();
+        } else {
+          // Người dùng không có quyền
+          return res.status(403).json({ message: "Permission denied" });
+        }
+      } catch (error) {
+        console.error("Error checking permissions:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+      }
+    };
+  },
 };
 
-module.exports = authMiddleware;
+module.exports = {
+  authMiddleware,
+};

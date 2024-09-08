@@ -1,5 +1,5 @@
-const userRouter = require("../routes/user");
-const authRouter = require("../routes/auth");
+const userRouter = require("../router/user");
+const authRouter = require("../router/auth");
 
 function route(app) {
   app.use("/users", userRouter);

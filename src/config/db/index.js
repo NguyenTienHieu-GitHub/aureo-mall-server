@@ -10,5 +10,6 @@ const pool = new Pool({
   password: process.env.POSTGRE_PASSWORD,
   port: 3000,
 });
+console.log("Connecting to Database");
 
 module.exports = pool;

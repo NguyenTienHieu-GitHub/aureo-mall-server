@@ -240,8 +240,3 @@ VALUES
 INSERT INTO role_permissions (role_id, permission_id)
 VALUES
     (5, 2); -- Guest có quyền Read
-
-INSERT INTO users (email, phone, password, role_id)
-VALUES
-('admin@gmail.com', '0123456255', 'Hieu@12345678', 1),
-('user1@gmail.com', '0123456789', 'User@12345678', 2);

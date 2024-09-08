@@ -38,7 +38,7 @@ const registerUser = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     // Add user to the database
-    const addResult = await pool.query(userModel.addUser, [
+    const addResult = await pool.query(userModel.registerUser, [
       email,
       phone,
       hashedPassword,
@@ -60,7 +60,7 @@ const generateAccessToken = async (user) => {
     role_id: user.role_id,
   };
   return jwt.sign(payload, process.env.SECRET_KEY, {
-    expiresIn: "300s",
+    expiresIn: "600s",
   });
 };
 const generateRefreshToken = async (user) => {
@@ -71,7 +71,7 @@ const generateRefreshToken = async (user) => {
     role_id: user.role_id,
   };
   return jwt.sign(payload, process.env.REFRESH_KEY, {
-    expiresIn: "30d",
+    expiresIn: "7d",
   });
 };
 
