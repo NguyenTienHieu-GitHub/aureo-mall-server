@@ -6,9 +6,10 @@ CREATE TABLE roles (
 );
 -- Bảng users (Người dùng)
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    user_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
-    phone VARCHAR(10) NOT NULL UNIQUE,
+    firstname VARCHAR(100) NOT NULL,
+    lastname VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
     role_id INT DEFAULT 5 REFERENCES roles(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -17,10 +18,10 @@ CREATE TABLE users (
 
 CREATE TABLE address (
     id SERIAL PRIMARY KEY,
-    fullname VARCHAR(150) NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    phone VARCHAR(10) NOT NULL,
-    user_id INT REFERENCES users(id),
+    user_id UUID NOT NULL,
+    address VARCHAR(255),
+    phone VARCHAR(10),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 CREATE OR REPLACE FUNCTION update_timestamp()

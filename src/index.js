@@ -18,15 +18,17 @@ app.use(cors());
 
 // Cấu hình tùy chỉnh
 const corsOptions = {
-  origin: "http://example.com", // Cho phép yêu cầu từ nguồn gốc này
+  origin: "*", // Cho phép yêu cầu từ nguồn gốc này
   methods: "GET,POST,PUT,DELETE", // Các phương thức HTTP được phép
   allowedHeaders: "Content-Type,Authorization", // Các tiêu đề HTTP được phép
 };
-
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.get("/api/data", (req, res) => {
+  res.json({ message: "CORS is working!" });
+});
 
 // Router init
 route(app);

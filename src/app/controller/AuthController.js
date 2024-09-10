@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 let refreshTokens = [];
 
 const registerUser = async (req, res) => {
-  const { email, phone, password } = req.body;
+  const { firstname, lastname, email, password } = req.body;
   try {
     // Check if email already exists
     const checkEmailResult = await pool.query(userModel.checkEmailExits, [
@@ -16,15 +16,6 @@ const registerUser = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "Email already exists." });
-    }
-    // Check if phone already exists
-    const checkPhoneResult = await pool.query(userModel.checkPhoneExits, [
-      phone,
-    ]);
-    if (checkPhoneResult.rows.length > 0) {
-      return res
-        .status(409)
-        .json({ success: false, message: "Phone already exists." });
     }
     // Validate password
     const passwordRegex =
@@ -39,8 +30,9 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     // Add user to the database
     const addResult = await pool.query(userModel.registerUser, [
+      firstname,
+      lastname,
       email,
-      phone,
       hashedPassword,
     ]);
     // Return the newly created user

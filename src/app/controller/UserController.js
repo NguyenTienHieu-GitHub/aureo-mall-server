@@ -29,25 +29,23 @@ const getUsersById = async (req, res) => {
   }
 };
 const addUser = async (req, res) => {
-  const { email, phone, password, role_id } = req.body;
+  const { firstname, lastname, email, password, role_id } = req.body;
   try {
     // Check if email exists
     const checkEmailResult = await pool.query(userModel.checkEmailExits, [
       email,
     ]);
-    const checkPhoneExits = await pool.query(userModel.checkPhoneExits, [
-      email,
-    ]);
-    if (checkEmailResult.rows.length > 0 || checkPhoneExits.rows.length > 0) {
-      return res.status(400).send("Email or phone already exists.");
+    if (checkEmailResult.rows.length > 0) {
+      return res.status(400).send("Email already exists.");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Add User to db
     const addUserResult = await pool.query(userModel.addUser, [
+      firstname,
+      lastname,
       email,
-      phone,
       hashedPassword,
       role_id,
     ]);
@@ -88,7 +86,7 @@ const deleteUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const id = parseInt(req.params.id);
-  const { email, phone, password, role_id } = req.body;
+  const { firstname, lastname, email, password, role_id } = req.body;
 
   try {
     // Check if the user exists
@@ -113,10 +111,10 @@ const updateUser = async (req, res) => {
     let updateParams, updateQuery;
     if (req.user.role_id === 1) {
       updateQuery = userModel.updateUserByAdmin;
-      updateParams = [email, phone, hashedPassword, role_id, id];
+      updateParams = [firstname, lastname, email, hashedPassword, role_id, id];
     } else {
       updateQuery = userModel.updateUser;
-      updateParams = [email, phone, hashedPassword, id];
+      updateParams = [firstname, lastname, email, hashedPassword, id];
     }
     // Update the user
     const updateResult = await pool.query(updateQuery, updateParams);
