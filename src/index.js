@@ -20,7 +20,7 @@ app.use(cors());
 const corsOptions = {
   origin: "*", // Cho phép yêu cầu từ nguồn gốc này
   methods: "GET,POST,PUT,DELETE", // Các phương thức HTTP được phép
-  allowedHeaders: "Content-Type,Authorization", // Các tiêu đề HTTP được phép
+  allowedHeaders: ["Authorization", "Content-Type"], // Các tiêu đề HTTP được phép
 };
 app.use(cors(corsOptions));
 app.use(cookieParser());

@@ -1,6 +1,6 @@
 const userModel = require("../../app/models/UserModel");
 const pool = require("../../config/db/index");
-const middlewareWrapper = require("cors");
+const authController = require("../../app/controller/AuthController");
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = {
@@ -8,6 +8,7 @@ const authMiddleware = {
   verifyToken: (req, res, next) => {
     const token = req.headers.token;
     if (token) {
+      // Tách token
       const accessToken = token.split(" ")[1];
       jwt.verify(accessToken, process.env.SECRET_KEY, (err, decoded) => {
         if (err) {
@@ -22,22 +23,24 @@ const authMiddleware = {
     }
   },
 
-  checkPermission: (requiredPermission) => {
+  checkPermission: (action, resource) => {
     return async (req, res, next) => {
       try {
-        const userId = req.user.id; // Lấy ID người dùng từ thông tin giải mã token
-
+        const userId = req.user.id;
         const result = await pool.query(userModel.checkPermission, [
           userId,
-          requiredPermission,
+          action,
+          resource,
         ]);
-
-        if (result.rows.length > 0) {
+        // console.log(result);
+        if (result.rows[0].count > 0) {
           // Người dùng có quyền
           next();
         } else {
           // Người dùng không có quyền
-          return res.status(403).json({ message: "Permission denied" });
+          return res.status(403).json({
+            message: "Permission denied",
+          });
         }
       } catch (error) {
         console.error("Error checking permissions:", error);

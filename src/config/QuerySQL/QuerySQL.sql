@@ -1,9 +1,4 @@
 
--- Bảng roles (Vai trò)
-CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
-    role_name VARCHAR(50) NOT NULL UNIQUE
-);
 -- Bảng users (Người dùng)
 CREATE TABLE users (
     user_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -11,9 +6,34 @@ CREATE TABLE users (
     firstname VARCHAR(100) NOT NULL,
     lastname VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
-    role_id INT DEFAULT 5 REFERENCES roles(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE OR REPLACE FUNCTION update_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.updated_at = NOW();
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_user_timestamp
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION update_timestamp();
+
+-- Bảng roles (Vai trò)
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    role_name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT
+);
+CREATE TABLE user_roles (
+  user_id UUID,
+  role_id INT,
+  PRIMARY KEY (user_id, role_id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 CREATE TABLE tokens (
     id SERIAL PRIMARY KEY,
@@ -31,32 +51,25 @@ CREATE TABLE address (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
-CREATE OR REPLACE FUNCTION update_timestamp()
-RETURNS TRIGGER AS $$
-BEGIN
-   NEW.updated_at = NOW();
-   RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_user_timestamp
-BEFORE UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION update_timestamp();
 
 
 -- Bảng permissions (Quyền)
 CREATE TABLE permissions (
-    id SERIAL PRIMARY KEY,
-    permission_name VARCHAR(50) NOT NULL UNIQUE
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  action VARCHAR(100) NOT NULL, -- Ví dụ: read, create, update, delete
+  resource VARCHAR(100) NOT NULL, -- Ví dụ: users, products, orders
+  description TEXT
 );
 
 -- Bảng role_permissions (Quyền của vai trò)
 CREATE TABLE role_permissions (
-    role_id INT REFERENCES roles(id),
-    permission_id INT REFERENCES permissions(id),
-    PRIMARY KEY (role_id, permission_id)
+  role_id BIGINT,
+  permission_id BIGINT,
+  PRIMARY KEY (role_id, permission_id),
+  FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+  FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
 );
+
 
 
 CREATE TABLE products (
@@ -205,20 +218,20 @@ CREATE TABLE product_selling_plan_allocations (
 
 
 
-INSERT INTO roles (role_name)
+INSERT INTO roles (role_name, description)
 VALUES 
-    ('Admin'),
-    ('Seller'),
-    ('Standard Seller'),
-    ('Logistic'),
-    ('Customer');
+    ('Admin', 'Administrator role'),
+    ('Seller', 'Seller role'),
+    ('Standard Seller', 'Standard Seller role'),
+    ('Logistic', 'Logistic role'),
+    ('Customer', 'Customer role');
 
-INSERT INTO permissions (permission_name)
+INSERT INTO permissions (action, resource, description)
 VALUES
-    ('Create'),
-    ('Read'),
-    ('Update'),
-    ('Delete');
+    ('create', 'users', 'Create user'),
+    ('delete', 'users', 'Delete user'),
+    ('update', 'users', 'Update user'),
+    ('read', 'users', 'Read user');
 
 -- Quyền của Admin (được phép tất cả)
 INSERT INTO role_permissions (role_id, permission_id)
@@ -228,23 +241,7 @@ VALUES
     (1, 3), -- Admin có quyền Update
     (1, 4); -- Admin có quyền Delete
 
--- Quyền của Manager (chỉ được phép đọc và cập nhật)
+-- Quyền của Customer (chỉ được phép đọc)
 INSERT INTO role_permissions (role_id, permission_id)
 VALUES
-    (2, 2), -- Manager có quyền Read
-    (2, 3); -- Manager có quyền Update
-
--- Quyền của Editor (chỉ được phép cập nhật)
-INSERT INTO role_permissions (role_id, permission_id)
-VALUES
-    (3, 3); -- Editor có quyền Update
-
--- Quyền của Viewer (chỉ được phép đọc)
-INSERT INTO role_permissions (role_id, permission_id)
-VALUES
-    (4, 2); -- Viewer có quyền Read
-
--- Quyền của Guest (chỉ được phép đọc)
-INSERT INTO role_permissions (role_id, permission_id)
-VALUES
-    (5, 2); -- Guest có quyền Read
+    (5, 2); -- Customer có quyền Read

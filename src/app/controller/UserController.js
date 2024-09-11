@@ -42,18 +42,25 @@ const addUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Add User to db
-    const addUserResult = await pool.query(userModel.addUser, [
+    const addUserResult = await pool.query(userModel.createUser, [
       firstname,
       lastname,
       email,
       hashedPassword,
+    ]);
+    const userId = addUserResult.rows[0].user.id;
+    const addRoleIdResult = await pool.query(userModel.createRole, [
+      userId,
       role_id,
     ]);
-    const newUser = addUserResult.rows[0];
+    const roleId = addRoleIdResult.rows[0].role.id;
     res.status(201).json({
       success: true,
       message: "Created user successfully",
-      newUser,
+      users: {
+        user: addUserResult.rows[0],
+        role_id: roleId.role_id,
+      },
     }); // Return the newly created user
   } catch (error) {
     console.error("Error add user:", error);
@@ -62,7 +69,7 @@ const addUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = req.params.id;
   try {
     // Check if the user exists
     const checkUserResult = await pool.query(userModel.deleteUser, [id]);
@@ -85,49 +92,68 @@ const deleteUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = req.params.id; // UUID
   const { firstname, lastname, email, password, role_id } = req.body;
 
   try {
     // Check if the user exists
     const userResult = await pool.query(userModel.getUsersById, [id]);
+
     if (userResult.rows.length === 0) {
       return res
         .status(404)
         .json({ success: false, message: "User does not exist." });
     }
-    // Validate password
-    const passwordRegex =
-      /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z0-9!@#$%^&*(),.?":{}|<>]{12,23}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        success: false,
-        message: "Password does not meet the requirements.",
+
+    // Validate and hash password if provided
+    let hashedPassword = null;
+    if (password) {
+      const passwordRegex =
+        /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z0-9!@#$%^&*(),.?":{}|<>]{12,23}$/;
+      if (!passwordRegex.test(password)) {
+        return res.status(400).json({
+          success: false,
+          message: "Password does not meet the requirements.",
+        });
+      }
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
+    // Update the user
+    await pool.query(userModel.updateUser, [
+      firstname,
+      lastname,
+      email,
+      hashedPassword || userResult.rows[0].password, // Use existing password if not updating
+      id, // UUID
+    ]);
+
+    // Update role if provided
+    if (role_id) {
+      const updateRoleResult = await pool.query(userModel.updateRole, [
+        role_id,
+        id, // UUID
+      ]);
+      const updatedRole = updateRoleResult.rows[0]; // Get the updated role info
+      res.status(200).json({
+        success: true,
+        message: "User updated successfully",
+        user: userResult.rows[0], // Updated user details
+        role: updatedRole, // Updated role details
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        message: "User updated successfully",
+        user: userResult.rows[0], // Updated user details
       });
     }
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    let updateParams, updateQuery;
-    if (req.user.role_id === 1) {
-      updateQuery = userModel.updateUserByAdmin;
-      updateParams = [firstname, lastname, email, hashedPassword, role_id, id];
-    } else {
-      updateQuery = userModel.updateUser;
-      updateParams = [firstname, lastname, email, hashedPassword, id];
-    }
-    // Update the user
-    const updateResult = await pool.query(updateQuery, updateParams);
-    res.status(200).json({
-      success: true,
-      message: "User updated successfully",
-      user: updateResult.rows[0], // Ensure proper structure here
-    });
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).send("Internal Server Error");
   }
 };
+
 module.exports = {
   getAllUsers,
   getUsersById,

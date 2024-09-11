@@ -28,15 +28,21 @@ const registerUser = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     // Add user to the database
-    const addResult = await pool.query(userModel.registerUser, [
+    const addResult = await pool.query(userModel.createUser, [
       firstname,
       lastname,
       email,
       hashedPassword,
     ]);
     // Return the newly created user
-    const newUser = addResult.rows[0];
-    return res.status(201).json(newUser);
+    const userId = addResult.rows[0].user_id;
+    const defaultRoleId = 5;
+    const addRoleResult = await pool.query(userModel.createRole, [
+      userId,
+      defaultRoleId,
+    ]);
+    const roleId = addRoleResult.rows[0].role_id;
+    return res.status(201).json({ user: addResult.rows[0], role_id: roleId });
   } catch (error) {
     console.error("Error during registration:", error);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -44,22 +50,26 @@ const registerUser = async (req, res) => {
 };
 
 const generateAccessToken = async (user) => {
+  if (!user.user_id || !user.email) {
+    throw new Error("Missing user_id or email");
+  }
   // Generate JWT payload
   const payload = {
-    id: user.id,
+    id: user.user_id,
     email: user.email,
-    role_id: user.role_id,
   };
   return jwt.sign(payload, process.env.SECRET_KEY, {
     expiresIn: "600s",
   });
 };
 const generateRefreshToken = async (user) => {
+  if (!user.user_id || !user.email) {
+    throw new Error("Missing user_id or email");
+  }
   // Generate JWT payload
   const payload = {
-    id: user.id,
+    id: user.user_id,
     email: user.email,
-    role_id: user.role_id,
   };
   return jwt.sign(payload, process.env.REFRESH_KEY, {
     expiresIn: "7d",
@@ -101,6 +111,10 @@ const loginUser = async (req, res) => {
         sameSite: "strict",
       });
       return res.status(200).json({
+        // users: {
+        //   user: user,
+        //   role_id: user.role_id,
+        // },
         message: "Login successfully",
         accessToken,
       });
