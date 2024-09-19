@@ -5,9 +5,15 @@ const jwt = require("jsonwebtoken");
 const cron = require("node-cron");
 
 const registerUser = async (req, res) => {
-  const { firstname, lastname, email, password } = req.body;
+  const { firstName, lastName, email, password } = req.body;
+  if (!firstName || !lastName || !email || !password) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "Missing required fields: firstName, lastName, email, and password are required.",
+    });
+  }
   try {
-    // Check if email already exists
     const checkEmailResult = await pool.query(userModel.checkEmailExits, [
       email,
     ]);
@@ -16,7 +22,6 @@ const registerUser = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Email already exists." });
     }
-    // Validate password
     const passwordRegex =
       /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z0-9!@#$%^&*(),.?":{}|<>]{12,23}$/;
     if (!passwordRegex.test(password)) {
@@ -25,24 +30,38 @@ const registerUser = async (req, res) => {
         message: "Password does not meet the requirements.",
       });
     }
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    // Add user to the database
     const addResult = await pool.query(userModel.createUser, [
-      firstname,
-      lastname,
+      firstName,
+      lastName,
       email,
       hashedPassword,
     ]);
-    // Return the newly created user
+
+    if (!addResult.rows[0]) {
+      return res.status(500).json({
+        message: false,
+        message: "Failed to create user",
+        error: "USER_CREATED_FAILED",
+      });
+    }
     const userId = addResult.rows[0].user_id;
     const defaultRoleId = 5;
     const addRoleResult = await pool.query(userModel.createRole, [
       userId,
       defaultRoleId,
     ]);
+    if (!addRoleResult.rows[0]) {
+      return res.status(500).json({
+        message: false,
+        message: "Failed to create role",
+        error: "ROLE_ASSIGNMENT_FAILED",
+      });
+    }
     const roleId = addRoleResult.rows[0].role_id;
-    return res.status(201).json({ user: addResult.rows[0], role_id: roleId });
+    let userData = { ...addResult.rows[0], role_id: roleId };
+    delete userData.password;
+    return res.status(201).json(userData);
   } catch (error) {
     console.error("Error during registration:", error);
     return res.status(500).json({ message: "Internal Server Error" });

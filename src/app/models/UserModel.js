@@ -25,7 +25,7 @@ const validPassword = "SELECT password FROM users WHERE email = $1";
 const createRole =
   "INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) RETURNING role_id";
 const createUser =
-  "INSERT INTO users (firstname, lastname, email , password, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING *";
+  'INSERT INTO users ("firstName", "lastName", email , password, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING *';
 const saveRefreshTokenToDB =
   "INSERT INTO tokens (user_id, refresh_token, expires_at) VALUES ($1, $2, $3) RETURNING *";
 
@@ -33,7 +33,7 @@ const deleteUser = "DELETE FROM users WHERE user_id = $1 RETURNING *";
 const deleteRefreshToken = "DELETE FROM tokens WHERE refresh_token = $1";
 
 const updateUser =
-  "UPDATE users SET firstname = $1, lastname = $2, email = $3, password = $4, updated_at = NOW() WHERE user_id = $5 RETURNING *";
+  'UPDATE users SET "firstName" = $1, "lastName" = $2, email = $3, password = $4, updated_at = NOW() WHERE user_id = $5 RETURNING *';
 const updateRole =
   "UPDATE user_roles SET role_id = $1 WHERE user_id = $2 RETURNING *";
 
