@@ -26,7 +26,7 @@ const authMiddleware = {
   checkPermission: (action, resource) => {
     return async (req, res, next) => {
       try {
-        const userId = req.user.id;
+        const userId = req.user.user_id;
         const result = await pool.query(userModel.checkPermission, [
           userId,
           action,

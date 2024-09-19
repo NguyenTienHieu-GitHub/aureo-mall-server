@@ -55,7 +55,7 @@ const generateAccessToken = async (user) => {
   }
   // Generate JWT payload
   const payload = {
-    id: user.user_id,
+    user_id: user.user_id,
     email: user.email,
   };
   return jwt.sign(payload, process.env.SECRET_KEY, {
@@ -68,7 +68,7 @@ const generateRefreshToken = async (user) => {
   }
   // Generate JWT payload
   const payload = {
-    id: user.user_id,
+    user_id: user.user_id,
     email: user.email,
   };
   return jwt.sign(payload, process.env.REFRESH_KEY, {
