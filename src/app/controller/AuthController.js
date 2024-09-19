@@ -97,8 +97,13 @@ const generateRefreshToken = async (user) => {
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(401).json({
+      success: false,
+      message: "Missing required fields: email, password are require",
+    });
+  }
   try {
-    // Check if email exists in the database
     const checkMailResults = await pool.query(userModel.checkEmailExits, [
       email,
     ]);
@@ -107,19 +112,15 @@ const loginUser = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Invalid email or password." });
     }
-    // Lấy thông tin người dùng từ kết quả truy vấn
     const user = checkMailResults.rows[0];
-
     const hashedPassword = user.password;
-    // Compare the provided password with the hashed password in the database
     const isMatch = await bcrypt.compare(password, hashedPassword);
     if (isMatch) {
-      // Passwords match, login successful
       const accessToken = await generateAccessToken(user);
       const refreshToken = await generateRefreshToken(user);
 
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7); // Token hết hạn sau 7 ngày
+      expiresAt.setDate(expiresAt.getDate() + 7);
 
       await saveRefreshTokenToDB(user.user_id, refreshToken, expiresAt);
 
@@ -130,15 +131,10 @@ const loginUser = async (req, res) => {
         sameSite: "strict",
       });
       return res.status(200).json({
-        // users: {
-        //   user: user,
-        //   role_id: user.role_id,
-        // },
         message: "Login successfully",
         accessToken,
       });
     } else {
-      // Passwords do not match
       return res
         .status(400)
         .json({ success: false, message: "Invalid email or password." });
@@ -158,25 +154,17 @@ const saveRefreshTokenToDB = async (userId, refreshToken, expiresAt) => {
 
 const checkRefreshTokenInDB = async (refreshToken) => {
   try {
-    // Truy vấn cơ sở dữ liệu để kiểm tra refresh token
     const result = await pool.query(userModel.checkRefreshTokenInDB, [
       refreshToken,
     ]);
-
-    // Kiểm tra nếu có kết quả
     if (result.rows.length > 0) {
       const tokenRecord = result.rows[0];
-
-      // Kiểm tra nếu token đã hết hạn
       if (new Date(tokenRecord.expires_at) < new Date()) {
-        // Xóa token hết hạn khỏi cơ sở dữ liệu
         await pool.query(userModel.deleteRefreshToken, [refreshToken]);
         return null;
       }
-
       return tokenRecord;
     }
-
     return null;
   } catch (error) {
     console.error("Error in checkRefreshTokenInDB:", error);
@@ -195,23 +183,18 @@ const deleteRefreshTokenFromDB = async (refreshToken) => {
 
 const requestRefreshToken = async (req, res) => {
   try {
-    // Lấy refresh token từ cookie
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
       return res
         .status(401)
         .json({ success: false, message: "You are not authenticated" });
     }
-
-    // Kiểm tra refresh token trong cơ sở dữ liệu
     const tokenRecord = await checkRefreshTokenInDB(refreshToken);
     if (!tokenRecord) {
       return res
         .status(401)
         .json({ success: false, message: "Refresh token is not valid" });
     }
-
-    // Xác thực refresh token
     jwt.verify(refreshToken, process.env.REFRESH_KEY, async (err, user) => {
       if (err) {
         console.error("JWT verification error:", err);
@@ -219,30 +202,26 @@ const requestRefreshToken = async (req, res) => {
           .status(403)
           .json({ success: false, message: "Token is not valid" });
       }
-      // Tạo access token và refresh token mới
       const newAccessToken = await generateAccessToken(user);
       const newRefreshToken = await generateRefreshToken(user);
 
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7); // Token hết hạn sau 7 ngày
+      expiresAt.setDate(expiresAt.getDate() + 7);
 
-      // Xóa refresh token cũ khỏi cơ sở dữ liệu
       await deleteRefreshTokenFromDB(refreshToken);
-
       await saveRefreshTokenToDB(
         tokenRecord.user_id,
         newRefreshToken,
         expiresAt
       );
 
-      // Lưu refresh token mới vào cookie
       res.cookie("refreshToken", newRefreshToken, {
         httpOnly: true,
         secure: false, // Đặt true nếu sử dụng HTTPS
         path: "/",
         sameSite: "strict",
       });
-      // Trả về access token mới
+
       return res.status(200).json({ accessToken: newAccessToken });
     });
   } catch (error) {
@@ -264,18 +243,14 @@ cron.schedule("0 * * * *", async () => {
 
 const logoutUser = async (req, res) => {
   try {
-    // Lấy refresh token từ cookie
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
       return res
         .status(400)
         .json({ success: false, message: "No refresh token found" });
     }
-
-    // Xóa refresh token khỏi cơ sở dữ liệu
     await pool.query(userModel.deleteRefreshToken, [refreshToken]);
 
-    // Xóa cookie chứa refresh token
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: false, // Đặt true nếu sử dụng HTTPS

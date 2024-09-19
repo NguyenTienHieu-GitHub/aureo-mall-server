@@ -4,11 +4,9 @@ const authController = require("../../app/controller/AuthController");
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = {
-  //verifyToken
   verifyToken: (req, res, next) => {
     const token = req.headers.token;
     if (token) {
-      // Tách token
       const accessToken = token.split(" ")[1];
       jwt.verify(accessToken, process.env.SECRET_KEY, (err, decoded) => {
         if (err) {
@@ -32,12 +30,9 @@ const authMiddleware = {
           action,
           resource,
         ]);
-        // console.log(result);
         if (result.rows[0].count > 0) {
-          // Người dùng có quyền
           next();
         } else {
-          // Người dùng không có quyền
           return res.status(403).json({
             message: "Permission denied",
           });
