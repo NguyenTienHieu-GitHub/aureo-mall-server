@@ -1,6 +1,13 @@
 const getUsers = "SELECT * FROM users";
 const getUsersById = "SELECT * FROM users WHERE user_id = $1";
 const getRoleId = "SELECT * FROM roles WHERE role_id = $1";
+const getRoleName = `
+SELECT r.role_name
+FROM users u
+JOIN user_roles ur ON u.user_id = ur.user_id
+JOIN roles r ON ur.role_id = r.id
+WHERE u.user_id = $1;
+`;
 const checkEmailExits = "SELECT * FROM users WHERE email = $1";
 const checkPermission = `
   WITH UserRoles AS (
@@ -41,6 +48,7 @@ module.exports = {
   getUsers,
   getUsersById,
   getRoleId,
+  getRoleName,
   checkEmailExits,
   createUser,
   createRole,

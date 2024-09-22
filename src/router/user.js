@@ -22,6 +22,12 @@ router.put(
   userController.updateUser
 );
 router.get(
+  "/myinfo",
+  authMiddleware.verifyToken,
+  authMiddleware.checkPermission("read", "users"),
+  userController.getMyInfo
+);
+router.get(
   "/:id",
   authMiddleware.verifyToken,
   authMiddleware.checkPermission("read", "users"),

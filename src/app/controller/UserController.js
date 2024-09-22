@@ -1,6 +1,26 @@
 const pool = require("../../config/db/index");
 const userModel = require("../../app/models/UserModel");
 const bcrypt = require("bcrypt");
+const { password } = require("pg/lib/defaults");
+
+const getMyInfo = async (req, res) => {
+  try {
+    const user_id = req.user.user_id;
+    const results = await pool.query(userModel.getUsersById, [user_id]);
+    const roleName = await pool.query(userModel.getRoleName, [user_id]);
+    if (results.rows.length > 0) {
+      const user = { ...results.rows[0], role_name: roleName.rows[0] };
+      delete user.password;
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
 
 const getAllUsers = (req, res) => {
   pool.query(userModel.getUsers, (error, results) => {
@@ -10,7 +30,7 @@ const getAllUsers = (req, res) => {
 };
 
 const getUsersById = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = req.params.id;
   try {
     const getUsersByIdResult = await pool.query(userModel.getUsersById, [id]);
     if (getUsersByIdResult.rows.length === 0) {
@@ -169,6 +189,7 @@ const updateUser = async (req, res) => {
 };
 
 module.exports = {
+  getMyInfo,
   getAllUsers,
   getUsersById,
   addUser,
