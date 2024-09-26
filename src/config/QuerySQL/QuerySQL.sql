@@ -46,8 +46,12 @@ CREATE TABLE tokens (
 CREATE TABLE address (
     id SERIAL PRIMARY KEY,
     user_id UUID NOT NULL,
-    address VARCHAR(255),
-    phone VARCHAR(10),
+    "firstName" VARCHAR(255),
+    "lastName" VARCHAR(255),
+    "numberPhone" VARCHAR(10),
+    province VARCHAR(255),
+    district VARCHAR(255),
+    ward VARCHAR(255),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 

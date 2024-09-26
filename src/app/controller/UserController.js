@@ -39,9 +39,11 @@ const getUsersById = async (req, res) => {
         message: "User ID does not exist.",
       });
     }
+    const user = { ...getUsersByIdResult.rows[0] };
+    delete user.password;
     res.status(200).json({
       success: true,
-      user: getUsersByIdResult.rows[0],
+      user: user,
     });
   } catch (error) {
     console.error("Error get user by id:", error);

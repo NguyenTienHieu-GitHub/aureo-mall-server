@@ -1,7 +1,9 @@
 const userRouter = require("../router/user");
 const authRouter = require("../router/auth");
+const addressRouter = require("../router/address");
 
 function route(app) {
+  app.use("/api/address", addressRouter);
   app.use("/api/users", userRouter);
   app.use("/api/auth", authRouter);
 
