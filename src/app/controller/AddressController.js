@@ -1,14 +1,12 @@
-const pool = require("../../config/db/index");
-const addressModel = require("../../app/models/AddressModel");
+const Address = require("../models/AddressModel");
 
 const getAllAddress = async (req, res) => {
   try {
-    const addressResult = await pool.query(addressModel.getAllAddress);
-    if (addressResult.rows.length === 0) {
+    const addressResult = await Address.findAll();
+    if (!addressResult) {
       return res.status(400).json({ message: "Address not found" });
-    } else {
-      return res.status(200).json(addressResult.rows);
     }
+    return res.status(200).json(addressResult);
   } catch (err) {
     console.error("Error retrieving addresses:", err);
     return res
@@ -20,15 +18,13 @@ const getAddressById = async (req, res) => {
   const addressId = req.params.id;
 
   try {
-    const getAddressByIdResult = await pool.query(addressModel.getAddressById, [
-      addressId,
-    ]);
-    if (!getAddressByIdResult.rows[0]) {
+    const getAddressByIdResult = await findByPk(addressId);
+    if (!getAddressByIdResult) {
       return res
         .status(400)
         .json({ success: false, message: "Address not found" });
     }
-    const addressById = getAddressByIdResult.rows[0];
+    const addressById = getAddressByIdResult.toJSON();
     return res.status(200).json({ success: true, addressById });
   } catch (error) {}
 };
@@ -50,8 +46,8 @@ const addAddress = async (req, res) => {
         .status(400)
         .json({ success: false, message: "User not authenticated" });
     }
-    const addAddressResult = await pool.query(addressModel.addAddress, [
-      userId,
+    const addAddressResult = await Address.create({
+      user_id: userId,
       firstName,
       lastName,
       numberPhone,
@@ -59,13 +55,13 @@ const addAddress = async (req, res) => {
       district,
       ward,
       address,
-    ]);
-    if (!addAddressResult || addAddressResult.rowCount === 0) {
+    });
+    if (!addAddressResult) {
       return res
         .status(400)
         .json({ success: false, message: "Address creation failed" });
     }
-    const insertedAddress = addAddressResult.rows[0];
+    const insertedAddress = addAddressResult.toJSON();
     return res.status(201).json({
       success: true,
       insertedAddress,
@@ -96,25 +92,38 @@ const updateAddress = async (req, res) => {
         .status(400)
         .json({ success: false, message: "User not authenticated" });
     }
-    const updateAddressResult = await pool.query(addressModel.updateAddress, [
-      firstName,
-      lastName,
-      numberPhone,
-      province,
-      district,
-      ward,
-      address,
-      addressId,
-      userId,
-    ]);
-    if (!updateAddressResult) {
-      return res.status(400).json({
+    const addressToUpdate = await Address.findOne({
+      where: {
+        id: addressId,
+        user_id: userId,
+      },
+    });
+    if (!addressToUpdate) {
+      return res.status(404).json({
         success: false,
-        message: "Address update failed or not found",
+        message: "Address not found or not authorized",
       });
     }
-    const updateAddress = updateAddressResult.rows[0];
-    return res.status(200).json({ success: true, updateAddress });
+    await Address.update(
+      {
+        firstName,
+        lastName,
+        numberPhone,
+        province,
+        district,
+        ward,
+        address,
+      },
+      {
+        where: {
+          id: addressId,
+        },
+      }
+    );
+    const updatedAddress = await Address.findOne({
+      where: { id: addressId },
+    });
+    return res.status(200).json({ success: true, updatedAddress });
   } catch (err) {
     console.error("Error updating address: ", err);
     return res
@@ -127,15 +136,22 @@ const deleteAddress = async (req, res) => {
   const addressId = req.params.id;
   const userId = req.user.user_id;
   try {
-    const deleteAddressResult = await pool.query(addressModel.deleteAddress, [
-      addressId,
-      userId,
-    ]);
-    if (!deleteAddressResult || deleteAddressResult.rowCount === 0) {
+    const addressToDelete = await Address.findOne({
+      where: {
+        id: addressId,
+        user_id: userId,
+      },
+    });
+    if (!addressToDelete) {
       return res
         .status(404)
         .json({ success: false, message: "Address not found" });
     }
+    await Address.destroy({
+      where: {
+        id: addressId,
+      },
+    });
     return res
       .status(200)
       .json({ success: true, message: "Delete Address Successfully" });

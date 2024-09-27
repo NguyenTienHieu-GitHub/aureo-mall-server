@@ -22,6 +22,7 @@ const corsOptions = {
   methods: "GET,POST,PUT,DELETE", // Các phương thức HTTP được phép
   allowedHeaders: ["Authorization", "Content-Type"], // Các tiêu đề HTTP được phép
 };
+
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());

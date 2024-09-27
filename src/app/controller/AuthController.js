@@ -1,8 +1,11 @@
-const pool = require("../../config/db/index");
-const userModel = require("../../app/models/UserModel");
+const User = require("../../app/models/UserModel");
+const UserRole = require("../../app/models/UserRoleModel");
+const Token = require("../../app/models/TokenModel");
+const userController = require("../../app/controller/UserController");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cron = require("node-cron");
+const { Op } = require("sequelize");
 
 const registerUser = async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
@@ -14,10 +17,8 @@ const registerUser = async (req, res) => {
     });
   }
   try {
-    const checkEmailResult = await pool.query(userModel.checkEmailExits, [
-      email,
-    ]);
-    if (checkEmailResult.rows.length > 0) {
+    const emailExists = await userController.checkMailExists(email);
+    if (emailExists) {
       return res
         .status(400)
         .json({ success: false, message: "Email already exists." });
@@ -31,37 +32,22 @@ const registerUser = async (req, res) => {
       });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const addResult = await pool.query(userModel.createUser, [
+    const addResult = await User.create({
       firstName,
       lastName,
       email,
-      hashedPassword,
-    ]);
-
-    if (!addResult.rows[0]) {
-      return res.status(500).json({
-        message: false,
-        message: "Failed to create user",
-        error: "USER_CREATED_FAILED",
-      });
-    }
-    const userId = addResult.rows[0].user_id;
+      password: hashedPassword,
+    });
+    const userId = addResult.user_id;
     const defaultRoleId = 5;
-    const addRoleResult = await pool.query(userModel.createRole, [
-      userId,
-      defaultRoleId,
-    ]);
-    if (!addRoleResult.rows[0]) {
-      return res.status(500).json({
-        message: false,
-        message: "Failed to create role",
-        error: "ROLE_ASSIGNMENT_FAILED",
-      });
-    }
-    const roleId = addRoleResult.rows[0].role_id;
-    let userData = { ...addResult.rows[0], role_id: roleId };
+    const addRoleResult = await UserRole.create({
+      user_id: userId,
+      role_id: defaultRoleId,
+    });
+    const userData = addResult.toJSON();
     delete userData.password;
-    return res.status(201).json(userData);
+    const responseData = { ...userData, role_id: addRoleResult.role_id };
+    return res.status(201).json(responseData);
   } catch (error) {
     console.error("Error during registration:", error);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -104,15 +90,12 @@ const loginUser = async (req, res) => {
     });
   }
   try {
-    const checkMailResults = await pool.query(userModel.checkEmailExits, [
-      email,
-    ]);
-    if (checkMailResults.rows.length === 0) {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid email or password." });
     }
-    const user = checkMailResults.rows[0];
     const hashedPassword = user.password;
     const isMatch = await bcrypt.compare(password, hashedPassword);
     if (isMatch) {
@@ -121,7 +104,6 @@ const loginUser = async (req, res) => {
 
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
-
       await saveRefreshTokenToDB(user.user_id, refreshToken, expiresAt);
 
       res.cookie("refreshToken", refreshToken, {
@@ -148,24 +130,39 @@ const loginUser = async (req, res) => {
 };
 
 const saveRefreshTokenToDB = async (userId, refreshToken, expiresAt) => {
-  const values = [userId, refreshToken, expiresAt];
-  await pool.query(userModel.saveRefreshTokenToDB, values);
+  try {
+    const existingToken = await Token.findOne({ where: { user_id: userId } });
+    if (existingToken) {
+      await Token.update(
+        { refresh_token: refreshToken, expires_at: expiresAt },
+        { where: { user_id: userId } }
+      );
+    } else {
+      await Token.create({
+        user_id: userId,
+        refresh_token: refreshToken,
+        expires_at: expiresAt,
+      });
+    }
+  } catch (error) {
+    console.error("Error saving refresh token to DB", error);
+    throw new Error("Unable to save refresh token");
+  }
 };
 
 const checkRefreshTokenInDB = async (refreshToken) => {
   try {
-    const result = await pool.query(userModel.checkRefreshTokenInDB, [
-      refreshToken,
-    ]);
-    if (result.rows.length > 0) {
-      const tokenRecord = result.rows[0];
-      if (new Date(tokenRecord.expires_at) < new Date()) {
-        await pool.query(userModel.deleteRefreshToken, [refreshToken]);
-        return null;
-      }
-      return tokenRecord;
+    const tokenRecord = await Token.findOne({
+      where: { refresh_token: refreshToken },
+    });
+    if (!tokenRecord) {
+      return null;
     }
-    return null;
+    if (new Date(tokenRecord.expiresAt) < new Date()) {
+      await Token.destroy({ where: { id: tokenRecord.id } });
+      return null;
+    }
+    return tokenRecord;
   } catch (error) {
     console.error("Error in checkRefreshTokenInDB:", error);
     throw error;
@@ -174,7 +171,7 @@ const checkRefreshTokenInDB = async (refreshToken) => {
 
 const deleteRefreshTokenFromDB = async (refreshToken) => {
   try {
-    await pool.query(userModel.deleteRefreshToken, [refreshToken]);
+    await Token.destroy({ where: { refresh_token: refreshToken } });
     console.log("Old refresh token deleted successfully");
   } catch (error) {
     console.error("Error deleting refresh token:", error);
@@ -234,8 +231,15 @@ const requestRefreshToken = async (req, res) => {
 cron.schedule("0 * * * *", async () => {
   try {
     const now = new Date();
-    await pool.query("DELETE FROM tokens WHERE expires_at < $1", [now]);
-    console.log("Expired refresh tokens deleted successfully");
+    const deletedCount = await Token.destroy({
+      where: {
+        expires_at: {
+          [Op.lt]: now, // Sử dụng Op.lt để so sánh
+        },
+      },
+    });
+
+    console.log(`${deletedCount} expired refresh tokens deleted successfully`);
   } catch (error) {
     console.error("Error deleting expired refresh tokens:", error);
   }
@@ -249,7 +253,7 @@ const logoutUser = async (req, res) => {
         .status(400)
         .json({ success: false, message: "No refresh token found" });
     }
-    await pool.query(userModel.deleteRefreshToken, [refreshToken]);
+    await Token.destroy({ where: { refresh_token: refreshToken } });
 
     res.clearCookie("refreshToken", {
       httpOnly: true,

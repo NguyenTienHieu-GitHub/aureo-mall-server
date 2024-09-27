@@ -1,17 +1,17 @@
-const userModel = require("../../app/models/UserModel");
-const pool = require("../../config/db/index");
-const authController = require("../../app/controller/AuthController");
+const UserRole = require("../../app/models/UserRoleModel");
+const RolePermission = require("../../app/models/RolePermissionModel");
+const Permission = require("../../app/models/PermissionModel");
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = {
   verifyToken: (req, res, next) => {
-    const token = req.headers.token;
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(" ")[1];
     if (token) {
-      const accessToken = token.split(" ")[1];
-      jwt.verify(accessToken, process.env.SECRET_KEY, (err, decoded) => {
+      jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
         if (err) {
           console.error("JWT verification error:", err);
-          return res.status(403).json({ message: "Token is not valid" });
+          return res.status(401).json({ message: "Token is not valid" });
         }
         req.user = decoded;
         next();
@@ -25,12 +25,30 @@ const authMiddleware = {
     return async (req, res, next) => {
       try {
         const userId = req.user.user_id;
-        const result = await pool.query(userModel.checkPermission, [
-          userId,
-          action,
-          resource,
-        ]);
-        if (result.rows[0].count > 0) {
+
+        const user = await UserRole.findByPk(userId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        const roleId = user.role_id;
+
+        const rolePermission = await RolePermission.findOne({
+          where: {
+            role_id: roleId,
+            permission_id: (
+              await Permission.findOne({
+                where: {
+                  action: action,
+                  resource: resource,
+                },
+                attributes: ["id"],
+              })
+            ).id,
+          },
+        });
+
+        if (rolePermission) {
           next();
         } else {
           return res.status(403).json({

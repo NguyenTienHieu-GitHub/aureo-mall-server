@@ -1,15 +1,16 @@
-const Pool = require("pg").Pool;
+const { Sequelize } = require("sequelize");
 
-const dotenv = require("dotenv");
-dotenv.config();
+const sequelize = new Sequelize(
+  "postgres://postgres:123456@localhost:3000/AureoMall",
+  {
+    dialect: "postgres",
+    logging: false,
+  }
+);
 
-const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "AureoMall",
-  password: process.env.POSTGRE_PASSWORD,
-  port: 3000,
-});
-console.log("Connecting to Database");
+sequelize
+  .authenticate()
+  .then(() => console.log("Connected to PostgreSQL"))
+  .catch((err) => console.error("Unable to connect to the database:", err));
 
-module.exports = pool;
+module.exports = sequelize;

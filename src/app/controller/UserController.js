@@ -1,20 +1,19 @@
-const pool = require("../../config/db/index");
-const userModel = require("../../app/models/UserModel");
+const User = require("../../app/models/UserModel");
+const UserRole = require("../../app/models/UserRoleModel");
 const bcrypt = require("bcrypt");
-const { password } = require("pg/lib/defaults");
 
 const getMyInfo = async (req, res) => {
   try {
     const user_id = req.user.user_id;
-    const results = await pool.query(userModel.getUsersById, [user_id]);
-    const roleName = await pool.query(userModel.getRoleName, [user_id]);
-    if (results.rows.length > 0) {
-      const user = { ...results.rows[0], role_name: roleName.rows[0] };
-      delete user.password;
-      res.status(200).json(user);
-    } else {
+    const myInfoResult = await User.findByPk(user_id);
+    if (!myInfoResult) {
       res.status(404).json({ message: "User not found" });
     }
+    const roleId = await UserRole.findByPk(user_id);
+    const userData = myInfoResult.toJSON();
+    delete userData.password;
+    const responseData = { ...userData, role_id: roleId.role_id };
+    res.status(200).json(responseData);
   } catch (error) {
     res
       .status(500)
@@ -22,32 +21,46 @@ const getMyInfo = async (req, res) => {
   }
 };
 
-const getAllUsers = (req, res) => {
-  pool.query(userModel.getUsers, (error, results) => {
-    if (error) throw error;
-    res.status(200).json(results.rows);
-  });
+const getAllUsers = async (req, res) => {
+  try {
+    const allUserResults = await User.findAll();
+    res.status(200).json(allUserResults);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
 };
 
 const getUsersById = async (req, res) => {
   const id = req.params.id;
   try {
-    const getUsersByIdResult = await pool.query(userModel.getUsersById, [id]);
-    if (getUsersByIdResult.rows.length === 0) {
+    const getUsersByIdResult = await User.findByPk(id);
+    if (!getUsersByIdResult) {
       return res.status(404).json({
         success: false,
         message: "User ID does not exist.",
       });
     }
-    const user = { ...getUsersByIdResult.rows[0] };
-    delete user.password;
+    const userData = getUsersByIdResult.toJSON();
+    delete userData.password;
     res.status(200).json({
       success: true,
-      user: user,
+      user: userData,
     });
   } catch (error) {
     console.error("Error get user by id:", error);
     res.status(500).send("Internal Server Error");
+  }
+};
+
+const checkMailExists = async (email) => {
+  try {
+    const existingUser = await User.findOne({ where: { email: email } });
+    return existingUser !== null;
+  } catch (error) {
+    console.error("Error checking email", error);
+    throw new Error("Internal Server Error");
   }
 };
 const addUser = async (req, res) => {
@@ -59,39 +72,32 @@ const addUser = async (req, res) => {
     });
   }
   try {
-    const checkEmailResult = await pool.query(userModel.checkEmailExits, [
-      email,
-    ]);
-    if (checkEmailResult.rows.length > 0) {
-      return res.status(400).send("Email already exists.");
+    const emailExists = await checkMailExists(email);
+    if (emailExists) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists.",
+        error: "EMAIL_ALREADY_EXISTS",
+      });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const addUserResult = await pool.query(userModel.createUser, [
+    const addUserResult = await User.create({
       firstName,
       lastName,
       email,
-      hashedPassword,
-    ]);
-    if (!addUserResult.rows[0]) {
-      return res.status(400).json({
-        success: false,
-        message: "Failed to add user",
-        error: "ADD_USER_FAILED",
-      });
-    }
-    const userId = addUserResult.rows[0].user_id;
-    const addRoleIdResult = await pool.query(userModel.createRole, [
-      userId,
+      password: hashedPassword,
+    });
+    const addRoleResult = await UserRole.create({
+      user_id: addUserResult.user_id,
       role_id,
-    ]);
-
-    const roleId = addRoleIdResult.rows[0].role_id;
-    const userData = { ...addUserResult.rows[0], role_id: roleId };
+    });
+    const userData = addUserResult.toJSON();
     delete userData.password;
+    const responseData = { ...userData, role_id: addRoleResult.role_id };
     res.status(201).json({
       success: true,
       message: "Created user successfully",
-      userData,
+      responseData,
     });
   } catch (error) {
     console.error("Error add user:", error);
@@ -100,20 +106,17 @@ const addUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-  const id = req.params.id;
-  if (!id) {
+  const user_id = req.params.id;
+  if (!user_id) {
     return res.status(400).json({
       success: false,
       message: "Missing required fields: id",
     });
   }
   try {
-    const checkUserResult = await pool.query(userModel.deleteUser, [id]);
-    if (checkUserResult.rows.length === 0) {
-      return res.status(404).send({
-        success: false,
-        message: "User does not exist in the database",
-      });
+    const deleteResult = await User.destroy({ where: { user_id: user_id } });
+    if (!deleteResult) {
+      res.status(404).send({ success: false, message: "User not found" });
     } else {
       res
         .status(200)
@@ -126,7 +129,7 @@ const deleteUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const id = req.params.id;
+  const user_id = req.params.id;
   const { firstName, lastName, email, password, role_id } = req.body;
   if (!firstName || !lastName || !email || !password || !role_id) {
     return res.status(400).json({
@@ -136,13 +139,13 @@ const updateUser = async (req, res) => {
     });
   }
   try {
-    const userResult = await pool.query(userModel.getUsersById, [id]);
-    if (userResult.rows.length === 0) {
+    const userResult = await User.findByPk(user_id);
+    if (!userResult) {
       return res
         .status(404)
         .json({ success: false, message: "User does not exist." });
     }
-    let hashedPassword = null;
+    // let hashedPassword = null;
     if (password) {
       const passwordRegex =
         /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z0-9!@#$%^&*(),.?":{}|<>]{12,23}$/;
@@ -152,38 +155,28 @@ const updateUser = async (req, res) => {
           message: "Password does not meet the requirements.",
         });
       }
-      hashedPassword = await bcrypt.hash(password, 10);
+      userResult.password = await bcrypt.hash(password, 10);
     }
-    await pool.query(userModel.updateUser, [
-      firstName,
-      lastName,
-      email,
-      hashedPassword || userResult.rows[0].password,
-      id,
-    ]);
 
-    const updatedUserResult = await pool.query(userModel.getUsersById, [id]);
-    const updatedUser = { ...updatedUserResult.rows[0] };
-    delete updatedUser.password;
-    if (role_id) {
-      const updateRoleResult = await pool.query(userModel.updateRole, [
-        role_id,
-        id,
-      ]);
-      const updatedRole = updateRoleResult.rows[0].role_id;
-      res.status(200).json({
-        success: true,
-        message: "User updated successfully",
-        user: updatedUser,
-        role: updatedRole,
-      });
-    } else {
-      res.status(200).json({
-        success: true,
-        message: "User updated successfully",
-        user: userResult.rows[0],
-      });
-    }
+    userResult.firstName = firstName;
+    userResult.lastName = lastName;
+    userResult.email = email;
+
+    await userResult.save();
+
+    await UserRole.update(
+      { role_id: role_id },
+      { where: { user_id: userResult.user_id } }
+    );
+
+    const updatedUserData = userResult.toJSON();
+    delete updatedUserData.password;
+    const responseData = { ...updatedUserData, role_id: role_id };
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      user: responseData,
+    });
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).send("Internal Server Error");
@@ -197,4 +190,5 @@ module.exports = {
   addUser,
   deleteUser,
   updateUser,
+  checkMailExists,
 };

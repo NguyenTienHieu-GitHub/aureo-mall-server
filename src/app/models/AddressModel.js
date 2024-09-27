@@ -1,15 +1,49 @@
-const getAllAddress = "SELECT * FROM address";
-const getAddressById = "SELECT * FROM address WHERE id = $1";
-const addAddress =
-  'INSERT INTO address (user_id, "firstName", "lastName", "numberPhone", province, district, ward, address) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *';
-const updateAddress =
-  'UPDATE address SET "firstName" = $1, "lastName" = $2, "numberPhone" = $3, province = $4, district = $5, ward = $6, address = $7 WHERE id = $8 AND user_id = $9 RETURNING *';
-const deleteAddress = "DELETE FROM address WHERE id = $1 AND user_id = $2";
+const { DataTypes } = require("sequelize");
+const sequelize = require("../../config/db/index");
 
-module.exports = {
-  getAllAddress,
-  addAddress,
-  updateAddress,
-  deleteAddress,
-  getAddressById,
-};
+const Address = sequelize.define(
+  "Address",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: "users",
+        key: "user_id",
+      },
+      onDelete: "CASCADE",
+    },
+    firstName: {
+      type: DataTypes.STRING(255),
+    },
+    lastName: {
+      type: DataTypes.STRING(255),
+    },
+    numberPhone: {
+      type: DataTypes.STRING(10),
+    },
+    province: {
+      type: DataTypes.STRING(255),
+    },
+    district: {
+      type: DataTypes.STRING(255),
+    },
+    ward: {
+      type: DataTypes.STRING(255),
+    },
+    address: {
+      type: DataTypes.STRING(255),
+    },
+  },
+  {
+    tableName: "address",
+    timestamps: false,
+  }
+);
+
+module.exports = Address;
