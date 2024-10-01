@@ -1,25 +1,24 @@
-// models/userRoles.js
 const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/db/index");
 
-const UserRoles = sequelize.define(
+const UserRole = sequelize.define(
   "UserRoles",
   {
-    user_id: {
+    userId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "users",
-        key: "user_id",
+        model: "Users",
+        key: "id",
       },
       onDelete: "CASCADE",
       primaryKey: true,
     },
-    role_id: {
+    roleId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "roles",
+        model: "Roles",
         key: "id",
       },
       onDelete: "CASCADE",
@@ -27,9 +26,10 @@ const UserRoles = sequelize.define(
     },
   },
   {
-    tableName: "user_roles",
+    tableName: "UserRoles",
+    modelName: "UserRole",
     timestamps: false,
   }
 );
 
-module.exports = UserRoles;
+module.exports = UserRole;

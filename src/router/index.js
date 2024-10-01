@@ -1,8 +1,12 @@
 const userRouter = require("../router/user");
 const authRouter = require("../router/auth");
 const addressRouter = require("../router/address");
+const permissionRouter = require("../router/permission");
+const roleRouter = require("../router/role");
 
 function route(app) {
+  app.use("/api/role", roleRouter);
+  app.use("/api/permissions", permissionRouter);
   app.use("/api/address", addressRouter);
   app.use("/api/users", userRouter);
   app.use("/api/auth", authRouter);

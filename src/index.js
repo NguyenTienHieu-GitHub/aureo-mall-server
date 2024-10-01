@@ -8,6 +8,7 @@ const fs = require("fs");
 const YAML = require("yaml");
 const file = fs.readFileSync("./src/aureomall-swagger.yaml", "utf8");
 const swaggerDocument = YAML.parse(file);
+const { syncModels } = require("./app/models/index");
 
 dotenv.config();
 const app = express();
@@ -31,6 +32,7 @@ app.get("/api/data", (req, res) => {
   res.json({ message: "CORS is working!" });
 });
 
+syncModels();
 // Router init
 route(app);
 

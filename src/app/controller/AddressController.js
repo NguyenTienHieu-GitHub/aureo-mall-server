@@ -33,24 +33,24 @@ const addAddress = async (req, res) => {
   const {
     firstName,
     lastName,
-    numberPhone,
+    phoneNumber,
     province,
     district,
     ward,
     address,
   } = req.body;
   try {
-    const userId = req.user.user_id;
+    const userId = req.user.id;
     if (!userId) {
       return res
         .status(400)
         .json({ success: false, message: "User not authenticated" });
     }
     const addAddressResult = await Address.create({
-      user_id: userId,
+      id: userId,
       firstName,
       lastName,
-      numberPhone,
+      phoneNumber,
       province,
       district,
       ward,
@@ -79,14 +79,14 @@ const updateAddress = async (req, res) => {
   const {
     firstName,
     lastName,
-    numberPhone,
+    phoneNumber,
     province,
     district,
     ward,
     address,
   } = req.body;
   try {
-    const userId = req.user.user_id;
+    const userId = req.user.id;
     if (!userId) {
       return res
         .status(400)
@@ -95,7 +95,7 @@ const updateAddress = async (req, res) => {
     const addressToUpdate = await Address.findOne({
       where: {
         id: addressId,
-        user_id: userId,
+        userId: userId,
       },
     });
     if (!addressToUpdate) {
@@ -108,7 +108,7 @@ const updateAddress = async (req, res) => {
       {
         firstName,
         lastName,
-        numberPhone,
+        phoneNumber,
         province,
         district,
         ward,
@@ -134,12 +134,12 @@ const updateAddress = async (req, res) => {
 
 const deleteAddress = async (req, res) => {
   const addressId = req.params.id;
-  const userId = req.user.user_id;
+  const userId = req.user.id;
   try {
     const addressToDelete = await Address.findOne({
       where: {
         id: addressId,
-        user_id: userId,
+        userId: userId,
       },
     });
     if (!addressToDelete) {

@@ -40,7 +40,7 @@ CREATE TABLE tokens (
     user_id UUID NOT NULL,
     refresh_token TEXT NOT NULL,
     expires_at TIMESTAMP NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 
 );
 CREATE TABLE address (
@@ -48,7 +48,7 @@ CREATE TABLE address (
     user_id UUID NOT NULL,
     "firstName" VARCHAR(255),
     "lastName" VARCHAR(255),
-    "numberPhone" VARCHAR(10),
+    "phone_number" VARCHAR(10),
     province VARCHAR(255),
     district VARCHAR(255),
     ward VARCHAR(255),
@@ -222,13 +222,14 @@ CREATE TABLE product_selling_plan_allocations (
 
 
 
-INSERT INTO roles (role_name, description)
+INSERT INTO "Roles" ("roleName", description)
 VALUES 
     ('Admin', 'Administrator role'),
     ('Seller', 'Seller role'),
     ('Standard Seller', 'Standard Seller role'),
     ('Logistic', 'Logistic role'),
     ('Customer', 'Customer role');
+
 
 INSERT INTO permissions (action, resource, description)
 VALUES

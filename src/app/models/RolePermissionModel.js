@@ -2,21 +2,21 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/db/index");
 
 const RolePermission = sequelize.define(
-  "RolePermission",
+  "RolePermissions",
   {
-    role_id: {
+    roleId: {
       type: DataTypes.BIGINT,
       references: {
-        model: "roles",
+        model: "Roles",
         key: "id",
       },
       onDelete: "CASCADE",
       primaryKey: true,
     },
-    permission_id: {
+    permissionId: {
       type: DataTypes.BIGINT,
       references: {
-        model: "permissions",
+        model: "Permissions",
         key: "id",
       },
       onDelete: "CASCADE",
@@ -24,7 +24,8 @@ const RolePermission = sequelize.define(
     },
   },
   {
-    tableName: "role_permissions",
+    tableName: "RolePermissions",
+    modelName: "RolePermission",
     timestamps: false,
   }
 );

@@ -2,10 +2,11 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/db/index");
 
 const Permission = sequelize.define(
-  "Permission",
+  "Permissions",
   {
     id: {
       type: DataTypes.BIGINT,
+      autoIncrement: true,
       primaryKey: true,
     },
     action: {
@@ -21,7 +22,8 @@ const Permission = sequelize.define(
     },
   },
   {
-    tableName: "permissions",
+    tableName: "Permissions",
+    modelName: "Permission",
     timestamps: false,
   }
 );

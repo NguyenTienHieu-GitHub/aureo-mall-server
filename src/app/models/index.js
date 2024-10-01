@@ -1,40 +1,86 @@
+const sequelize = require("../../config/db/index");
 const User = require("../models/UserModel.js");
+const Address = require("../models/AddressModel.js");
 const Role = require("../models/RoleModel.js");
 const Permission = require("../models/PermissionModel.js");
 const RolePermission = require("../models/RolePermissionModel.js");
-const UserRoles = require("../models/UserRoleModel.js");
-
-// Thiết lập mối quan hệ
+const UserRole = require("../models/UserRoleModel.js");
+const Token = require("../models/TokenModel.js");
+const Product = require("../models/ProductModel.js");
+const Category = require("../models/CategoryModel.js");
+const ProductCategory = require("../models/ProductCategoryModel.js");
+// Thiết lập mối quan hệ nhiều - nhiều
 User.belongsToMany(Role, {
-  through: UserRoles,
-  foreignKey: "user_id",
-  otherKey: "role_id",
+  through: UserRole,
+  foreignKey: "userId",
+  otherKey: "roleId",
 });
 
 Role.belongsToMany(User, {
-  through: UserRoles,
-  foreignKey: "role_id",
-  otherKey: "user_id",
+  through: UserRole,
+  foreignKey: "roleId",
+  otherKey: "userId",
 });
 
-// Mối quan hệ giữa RolePermission và Permission
-RolePermission.belongsTo(Permission, {
-  foreignKey: "permission_id",
-  as: "permission", // Alias
+Role.belongsToMany(Permission, {
+  through: RolePermission,
+  foreignKey: "roleId",
+  otherKey: "permissionId",
 });
 
-Permission.hasMany(RolePermission, {
-  foreignKey: "permission_id",
-  as: "role_permissions", // Alias
+Permission.belongsToMany(Role, {
+  through: RolePermission,
+  foreignKey: "permissionId",
+  otherKey: "roleId",
 });
 
-// Mối quan hệ giữa RolePermission và Role
-RolePermission.belongsTo(Role, {
-  foreignKey: "role_id",
-  as: "role", // Alias
+Product.belongsToMany(Category, {
+  through: ProductCategory,
+  foreignKey: "productId",
+  otherKey: "categoryId",
+});
+Category.belongsToMany(Product, {
+  through: ProductCategory,
+  foreignKey: "categoryId",
+  otherKey: "productId",
 });
 
-Role.hasMany(RolePermission, {
-  foreignKey: "role_id",
-  as: "role_permissions", // Alias
+// Thiết lập mối quan hệ một chiều
+User.hasMany(Token, {
+  foreignKey: "userId",
 });
+Token.belongsTo(User, {
+  foreignKey: "userId",
+  as: "User",
+});
+
+User.hasMany(Address, {
+  foreignKey: "userId",
+});
+Address.belongsTo(User, {
+  foreignKey: "userId",
+  as: "User",
+});
+
+const syncModels = async () => {
+  try {
+    await sequelize.sync({ force: false });
+    console.log("All tables synced successfully");
+  } catch (error) {
+    console.error("Error syncing tables:", error);
+  }
+};
+
+module.exports = {
+  User,
+  Address,
+  Role,
+  UserRole,
+  Permission,
+  RolePermission,
+  Token,
+  Product,
+  Category,
+  ProductCategory,
+  syncModels,
+};

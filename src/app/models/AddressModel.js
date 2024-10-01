@@ -2,19 +2,19 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/db/index");
 
 const Address = sequelize.define(
-  "Address",
+  "Addresses",
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    user_id: {
+    userId: {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
-        model: "users",
-        key: "user_id",
+        model: "Users",
+        key: "id",
       },
       onDelete: "CASCADE",
     },
@@ -24,7 +24,7 @@ const Address = sequelize.define(
     lastName: {
       type: DataTypes.STRING(255),
     },
-    numberPhone: {
+    phoneNumber: {
       type: DataTypes.STRING(10),
     },
     province: {
@@ -41,7 +41,8 @@ const Address = sequelize.define(
     },
   },
   {
-    tableName: "address",
+    tableName: "Addresses",
+    modelName: "Address",
     timestamps: false,
   }
 );

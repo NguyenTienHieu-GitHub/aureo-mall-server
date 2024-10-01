@@ -2,34 +2,36 @@ const sequelize = require("../../config/db/index");
 const { DataTypes } = require("sequelize");
 
 const Token = sequelize.define(
-  "Token",
+  "Tokens",
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    user_id: {
+    userId: {
       type: DataTypes.UUID,
-      allowNull: true,
+      allowNull: false,
       references: {
-        model: "users",
-        key: "user_id",
+        model: "Users",
+        key: "id",
       },
       onDelete: "CASCADE",
     },
-    refresh_token: {
+    refreshToken: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    expires_at: {
+    expiresAt: {
       type: DataTypes.DATE,
       allowNull: true,
     },
   },
   {
-    tableName: "tokens",
+    tableName: "Tokens",
+    modelName: "Token",
     timestamps: false,
   }
 );
+
 module.exports = Token;

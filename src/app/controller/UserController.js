@@ -1,21 +1,26 @@
 const User = require("../../app/models/UserModel");
 const UserRole = require("../../app/models/UserRoleModel");
 const bcrypt = require("bcrypt");
-
+const sequelize = require("../../config/db");
 const getMyInfo = async (req, res) => {
   try {
-    const user_id = req.user.user_id;
-    const myInfoResult = await User.findByPk(user_id);
+    const userId = req.user.id;
+    const myInfoResult = await User.findByPk(userId);
     if (!myInfoResult) {
-      res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
-    const roleId = await UserRole.findByPk(user_id);
+    const roleId = await UserRole.findByPk(userId);
     const userData = myInfoResult.toJSON();
     delete userData.password;
-    const responseData = { ...userData, role_id: roleId.role_id };
-    res.status(200).json(responseData);
+    delete userData.id;
+    const responseData = {
+      userId: userId,
+      ...userData,
+      role_id: roleId.roleId,
+    };
+    return res.status(200).json(responseData);
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
   }
@@ -24,18 +29,18 @@ const getMyInfo = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     const allUserResults = await User.findAll();
-    res.status(200).json(allUserResults);
+    return res.status(200).json(allUserResults);
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
   }
 };
 
 const getUsersById = async (req, res) => {
-  const id = req.params.id;
+  const userId = req.params.id;
   try {
-    const getUsersByIdResult = await User.findByPk(id);
+    const getUsersByIdResult = await User.findByPk(userId);
     if (!getUsersByIdResult) {
       return res.status(404).json({
         success: false,
@@ -44,13 +49,13 @@ const getUsersById = async (req, res) => {
     }
     const userData = getUsersByIdResult.toJSON();
     delete userData.password;
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       user: userData,
     });
   } catch (error) {
     console.error("Error get user by id:", error);
-    res.status(500).send("Internal Server Error");
+    return res.status(500).send("Internal Server Error");
   }
 };
 
@@ -64,13 +69,14 @@ const checkMailExists = async (email) => {
   }
 };
 const addUser = async (req, res) => {
-  const { firstName, lastName, email, password, role_id } = req.body;
-  if (!firstName || !lastName || !email || !password || !role_id) {
+  const { firstName, lastName, email, password, roleId } = req.body;
+  if (!firstName || !lastName || !email || !password || !roleId) {
     return res.status(400).json({
       success: false,
       message: "Missing required fields: firstName, lastName, email, password",
     });
   }
+  const transaction = await sequelize.transaction();
   try {
     const emailExists = await checkMailExists(email);
     if (emailExists) {
@@ -81,40 +87,51 @@ const addUser = async (req, res) => {
       });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const addUserResult = await User.create({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-    });
-    const addRoleResult = await UserRole.create({
-      user_id: addUserResult.user_id,
-      role_id,
-    });
+    const addUserResult = await User.create(
+      {
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+      },
+      { transaction }
+    );
+    const addRoleResult = await UserRole.create(
+      {
+        userId: addUserResult.id,
+        roleId,
+      },
+      { transaction }
+    );
+    await transaction.commit();
+
     const userData = addUserResult.toJSON();
     delete userData.password;
-    const responseData = { ...userData, role_id: addRoleResult.role_id };
-    res.status(201).json({
+    const responseData = { ...userData, roleId: addRoleResult.roleId };
+
+    return res.status(201).json({
       success: true,
       message: "Created user successfully",
       responseData,
     });
   } catch (error) {
+    await transaction.rollback();
+
     console.error("Error add user:", error);
-    res.status(500).send("Internal Server Error");
+    return res.status(500).send("Internal Server Error");
   }
 };
 
 const deleteUser = async (req, res) => {
-  const user_id = req.params.id;
-  if (!user_id) {
+  const userId = req.params.id;
+  if (!userId) {
     return res.status(400).json({
       success: false,
       message: "Missing required fields: id",
     });
   }
   try {
-    const deleteResult = await User.destroy({ where: { user_id: user_id } });
+    const deleteResult = await User.destroy({ where: { id: userId } });
     if (!deleteResult) {
       res.status(404).send({ success: false, message: "User not found" });
     } else {
@@ -129,9 +146,9 @@ const deleteUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const user_id = req.params.id;
-  const { firstName, lastName, email, password, role_id } = req.body;
-  if (!firstName || !lastName || !email || !password || !role_id) {
+  const userId = req.params.id;
+  const { firstName, lastName, email, password, roleId } = req.body;
+  if (!firstName || !lastName || !email || !password || !roleId) {
     return res.status(400).json({
       success: false,
       message:
@@ -139,13 +156,12 @@ const updateUser = async (req, res) => {
     });
   }
   try {
-    const userResult = await User.findByPk(user_id);
+    const userResult = await User.findByPk(userId);
     if (!userResult) {
       return res
         .status(404)
         .json({ success: false, message: "User does not exist." });
     }
-    // let hashedPassword = null;
     if (password) {
       const passwordRegex =
         /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z0-9!@#$%^&*(),.?":{}|<>]{12,23}$/;
@@ -165,13 +181,13 @@ const updateUser = async (req, res) => {
     await userResult.save();
 
     await UserRole.update(
-      { role_id: role_id },
-      { where: { user_id: userResult.user_id } }
+      { roleId: roleId },
+      { where: { userId: userResult.id } }
     );
 
     const updatedUserData = userResult.toJSON();
     delete updatedUserData.password;
-    const responseData = { ...updatedUserData, role_id: role_id };
+    const responseData = { ...updatedUserData, roleId: roleId };
     return res.status(200).json({
       success: true,
       message: "User updated successfully",

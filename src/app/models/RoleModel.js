@@ -2,14 +2,14 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/db/index");
 
 const Role = sequelize.define(
-  "Role",
+  "Roles",
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    role_name: {
+    roleName: {
       type: DataTypes.STRING(50),
       allowNull: false,
       unique: true,
@@ -20,8 +20,9 @@ const Role = sequelize.define(
     },
   },
   {
-    tableName: "roles",
-    timestamp: false,
+    tableName: "Roles",
+    modelName: "Role",
+    timestamps: false,
   }
 );
 

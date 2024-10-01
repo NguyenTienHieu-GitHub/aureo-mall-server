@@ -24,27 +24,34 @@ const authMiddleware = {
   checkPermission: (action, resource) => {
     return async (req, res, next) => {
       try {
-        const userId = req.user.user_id;
+        const userId = req.user.id;
 
         const user = await UserRole.findByPk(userId);
         if (!user) {
           return res.status(404).json({ message: "User not found" });
         }
 
-        const roleId = user.role_id;
+        const roleId = user.roleId;
+
+        const permission = await Permission.findOne({
+          where: {
+            action: action,
+            resource: resource,
+          },
+          attributes: ["id"],
+        });
+
+        if (!permission) {
+          return res.status(403).json({
+            message:
+              "Permission not found for the provided action and resource",
+          });
+        }
 
         const rolePermission = await RolePermission.findOne({
           where: {
-            role_id: roleId,
-            permission_id: (
-              await Permission.findOne({
-                where: {
-                  action: action,
-                  resource: resource,
-                },
-                attributes: ["id"],
-              })
-            ).id,
+            roleId: roleId,
+            permissionId: permission.id,
           },
         });
 
