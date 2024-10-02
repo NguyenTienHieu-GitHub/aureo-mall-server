@@ -6,25 +6,25 @@ const { authMiddleware } = require("../app/middleware/AuthMiddleware");
 router.post(
   "/add",
   authMiddleware.verifyToken,
-  authMiddleware.checkPermission("create", "role"),
+  authMiddleware.checkPermission("create", "Role"),
   roleController.addRole
 );
 router.delete(
   "/delete/:id",
   authMiddleware.verifyToken,
-  authMiddleware.checkPermission("delete", "role"),
+  authMiddleware.checkPermission("delete", "Role"),
   roleController.deleteRole
 );
 router.put(
   "/update/:id",
   authMiddleware.verifyToken,
-  authMiddleware.checkPermission("update", "role"),
+  authMiddleware.checkPermission("edit", "Role"),
   roleController.updateRole
 );
 router.get(
   "/",
   authMiddleware.verifyToken,
-  authMiddleware.checkPermission("read", "role"),
+  authMiddleware.checkPermission("view", "Role"),
   roleController.getAllRole
 );
 

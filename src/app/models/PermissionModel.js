@@ -25,6 +25,11 @@ const Permission = sequelize.define(
     tableName: "Permissions",
     modelName: "Permission",
     timestamps: false,
+    uniqueKeys: {
+      unique_permission: {
+        fields: ["action", "resource"],
+      },
+    },
   }
 );
 

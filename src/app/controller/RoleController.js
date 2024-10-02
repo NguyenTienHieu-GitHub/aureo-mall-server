@@ -13,6 +13,20 @@ const getAllRole = async (req, res) => {
       .json({ message: "Internal Server Error", error: error.message });
   }
 };
+const getRoleById = async (req, res) => {
+  const roleId = req.params.id;
+  try {
+    const getRoleByIdResult = await Role.findByPk(roleId);
+    if (getRoleByIdResult.length === 0) {
+      return res.status(404).json({ message: "No roles found" });
+    }
+    return res.status(200).json(getRoleByIdResult);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+};
 
 const addRole = async (req, res) => {
   const { roleName, description } = req.body;
@@ -61,6 +75,7 @@ const deleteRole = async (req, res) => {
 };
 module.exports = {
   getAllRole,
+  getRoleById,
   addRole,
   updateRole,
   deleteRole,

@@ -1,14 +1,20 @@
 const sequelize = require("../../config/db/index");
-const User = require("../models/UserModel.js");
-const Address = require("../models/AddressModel.js");
-const Role = require("../models/RoleModel.js");
-const Permission = require("../models/PermissionModel.js");
-const RolePermission = require("../models/RolePermissionModel.js");
-const UserRole = require("../models/UserRoleModel.js");
-const Token = require("../models/TokenModel.js");
-const Product = require("../models/ProductModel.js");
-const Category = require("../models/CategoryModel.js");
-const ProductCategory = require("../models/ProductCategoryModel.js");
+const User = require("../models/UserModel");
+const Address = require("../models/AddressModel");
+const Role = require("../models/RoleModel");
+const Permission = require("../models/PermissionModel");
+const RolePermission = require("../models/RolePermissionModel");
+const UserRole = require("../models/UserRoleModel");
+const Token = require("../models/TokenModel");
+const Product = require("../models/ProductModel");
+const Category = require("../models/CategoryModel");
+const ProductCategory = require("../models/ProductCategoryModel");
+
+const createDefaultRoles = require("../utils/role");
+const createDefaultPermission = require("../utils/permission");
+const createDefaultRolePermission = require("../utils/rolePermission");
+const createAdminIfNotExists = require("../utils/createAdmin");
+
 // Thiết lập mối quan hệ nhiều - nhiều
 User.belongsToMany(Role, {
   through: UserRole,
@@ -65,6 +71,10 @@ Address.belongsTo(User, {
 const syncModels = async () => {
   try {
     await sequelize.sync({ force: false });
+    await createDefaultRoles();
+    await createDefaultPermission();
+    await createDefaultRolePermission();
+    await createAdminIfNotExists();
     console.log("All tables synced successfully");
   } catch (error) {
     console.error("Error syncing tables:", error);

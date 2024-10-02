@@ -1,4 +1,5 @@
 const User = require("../../app/models/UserModel");
+const Role = require("../../app/models/RoleModel");
 const UserRole = require("../../app/models/UserRoleModel");
 const bcrypt = require("bcrypt");
 const sequelize = require("../../config/db");
@@ -10,13 +11,14 @@ const getMyInfo = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     const roleId = await UserRole.findByPk(userId);
+    const roleName = await Role.findByPk(roleId.roleId);
     const userData = myInfoResult.toJSON();
     delete userData.password;
     delete userData.id;
     const responseData = {
       userId: userId,
       ...userData,
-      role_id: roleId.roleId,
+      roleName: roleName.roleName,
     };
     return res.status(200).json(responseData);
   } catch (error) {
@@ -145,7 +147,29 @@ const deleteUser = async (req, res) => {
   }
 };
 
-const updateUser = async (req, res) => {
+const deleteMyUser = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    await User.destroy();
+    return res.status(200).json({
+      success: true,
+      message: "Your account has been deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting user: ", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+const updateUserByAdmin = async (req, res) => {
   const userId = req.params.id;
   const { firstName, lastName, email, password, roleId } = req.body;
   if (!firstName || !lastName || !email || !password || !roleId) {
@@ -199,12 +223,33 @@ const updateUser = async (req, res) => {
   }
 };
 
+const updateMyInfo = async (req, res) => {
+  const userId = req.user.id;
+  const { firstName, lastName, email, password } = req.body;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    await user.update({ firstName, lastName, email, password });
+    return res
+      .status(200)
+      .json({ message: "Your information has been updated successfully" });
+  } catch (error) {
+    console.error("Error updating user info:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   getMyInfo,
   getAllUsers,
   getUsersById,
   addUser,
   deleteUser,
-  updateUser,
+  deleteMyUser,
+  updateUserByAdmin,
+  updateMyInfo,
   checkMailExists,
 };

@@ -6,31 +6,31 @@ const { authMiddleware } = require("../app/middleware/AuthMiddleware");
 router.delete(
   "/delete/:id",
   authMiddleware.verifyToken,
-  authMiddleware.checkPermission("delete", "users"),
+  authMiddleware.checkPermission("delete_my_address", "Address"),
   addressController.deleteAddress
 );
 router.put(
   "/update/:id",
   authMiddleware.verifyToken,
-  authMiddleware.checkPermission("update", "users"),
+  authMiddleware.checkPermission("edit", "Address"),
   addressController.updateAddress
 );
 router.post(
   "/add",
   authMiddleware.verifyToken,
-  authMiddleware.checkPermission("create", "users"),
+  authMiddleware.checkPermission("create", "Address"),
   addressController.addAddress
 );
 router.get(
   "/:id",
   authMiddleware.verifyToken,
-  authMiddleware.checkPermission("read", "users"),
+  authMiddleware.checkPermission("view_address", "Address"),
   addressController.getAddressById
 );
 router.get(
   "/",
   authMiddleware.verifyToken,
-  authMiddleware.checkPermission("read", "users"),
+  authMiddleware.checkPermission("view_all_addresses", "Address"),
   addressController.getAllAddress
 );
 
