@@ -10,28 +10,28 @@ router.post(
   userController.addUser
 );
 router.delete(
-  "/delete/:id",
-  authMiddleware.verifyToken,
-  authMiddleware.checkPermission("delete_user", "User"),
-  userController.deleteUser
-);
-router.delete(
   "/delete/myuser",
   authMiddleware.verifyToken,
   authMiddleware.checkPermission("delete_my_user", "User"),
   userController.deleteMyUser
 );
-router.put(
-  "/update/:id",
+router.delete(
+  "/delete/:id",
   authMiddleware.verifyToken,
-  authMiddleware.checkPermission("edit_user", "User"),
-  userController.updateUserByAdmin
+  authMiddleware.checkPermission("delete_user", "User"),
+  userController.deleteUser
 );
 router.put(
   "/update/myinfo",
   authMiddleware.verifyToken,
   authMiddleware.checkPermission("edit_my_info", "User"),
   userController.updateMyInfo
+);
+router.put(
+  "/update/:id",
+  authMiddleware.verifyToken,
+  authMiddleware.checkPermission("edit_user", "User"),
+  userController.updateUserByAdmin
 );
 router.get(
   "/myinfo",

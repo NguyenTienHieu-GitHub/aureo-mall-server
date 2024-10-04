@@ -41,7 +41,7 @@ const createDefaultPermission = async () => {
     {
       action: "delete_my_user",
       resource: "User",
-      description: "Delete a user",
+      description: "Delete my user",
     },
     {
       action: "create",

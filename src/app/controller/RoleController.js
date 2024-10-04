@@ -18,7 +18,7 @@ const getRoleById = async (req, res) => {
   try {
     const getRoleByIdResult = await Role.findByPk(roleId);
     if (getRoleByIdResult.length === 0) {
-      return res.status(404).json({ message: "No roles found" });
+      return res.status(404).json({ message: "No role found" });
     }
     return res.status(200).json(getRoleByIdResult);
   } catch (error) {

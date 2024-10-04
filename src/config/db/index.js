@@ -1,7 +1,9 @@
 const { Sequelize } = require("sequelize");
+const dotenv = require("dotenv");
 
+dotenv.config();
 const sequelize = new Sequelize(
-  "postgres://postgres:123456@localhost:3000/AureoMall",
+  `postgres://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
   {
     dialect: "postgres",
     logging: false,

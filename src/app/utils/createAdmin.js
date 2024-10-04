@@ -10,9 +10,9 @@ const createAdminIfNotExists = async () => {
     const hashedPassword = await bcrypt.hash(process.env.PASSWORD_ADMIN, 10);
     const admin = await User.create(
       {
-        firstName: "admin",
-        lastName: "admin",
-        email: "admin@gmail.com",
+        firstName: process.env.FIRST_NAME_ADMIN,
+        lastName: process.env.LAST_NAME_ADMIN,
+        email: process.env.EMAIL_ADMIN,
         password: hashedPassword,
       },
       { transaction }

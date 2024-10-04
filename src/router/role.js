@@ -22,6 +22,12 @@ router.put(
   roleController.updateRole
 );
 router.get(
+  "/:id",
+  authMiddleware.verifyToken,
+  authMiddleware.checkPermission("view", "Role"),
+  roleController.getRoleById
+);
+router.get(
   "/",
   authMiddleware.verifyToken,
   authMiddleware.checkPermission("view", "Role"),

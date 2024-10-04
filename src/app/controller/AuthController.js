@@ -22,7 +22,7 @@ const registerUser = async (req, res) => {
     const emailExists = await userController.checkMailExists(email);
     if (emailExists) {
       return res
-        .status(400)
+        .status(409)
         .json({ success: false, message: "Email already exists." });
     }
     const passwordRegex =
@@ -45,7 +45,7 @@ const registerUser = async (req, res) => {
     );
     const userId = addResult.id;
     const defaultRoleId = 5;
-    const addRoleResult = await UserRole.create(
+    await UserRole.create(
       {
         userId: userId,
         roleId: defaultRoleId,
@@ -55,14 +55,9 @@ const registerUser = async (req, res) => {
 
     await transaction.commit();
 
-    const userData = addResult.toJSON();
-    delete userData.password;
-    const responseData = { ...userData, roleId: addRoleResult.roleId };
-
     return res.status(201).json({
       success: true,
-      message: "Created user successfully",
-      responseData,
+      message: "Registered account successfully",
     });
   } catch (error) {
     await transaction.rollback();
@@ -135,7 +130,7 @@ const loginUser = async (req, res) => {
         sameSite: "strict",
       });
       return res.status(200).json({
-        message: "Login successfully",
+        message: "Login Successfully",
         accessToken,
       });
     } else {
@@ -242,7 +237,7 @@ const requestRefreshToken = async (req, res) => {
         sameSite: "strict",
       });
 
-      return res.status(200).json({ accessToken: newAccessToken });
+      return res.status(200).json({ newAccessToken: newAccessToken });
     });
   } catch (error) {
     console.error("Error in requestRefreshToken:", error);
@@ -273,7 +268,7 @@ const logoutUser = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
       return res
-        .status(400)
+        .status(401)
         .json({ success: false, message: "No refresh token found" });
     }
     await Token.destroy({ where: { refreshToken: refreshToken } });

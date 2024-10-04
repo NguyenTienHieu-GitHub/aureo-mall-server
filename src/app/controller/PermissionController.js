@@ -1,5 +1,32 @@
 const Permission = require("../models/PermissionModel");
 const RolePermission = require("../models/RolePermissionModel");
+
+const getAllPermissions = async (req, res) => {
+  try {
+    const allPermissions = await Permission.findAll();
+    if (allPermissions.length === 0) {
+      return res.status(404).json({ message: "No permissions found" });
+    }
+    return res.status(200).json(allPermissions);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
+const getPermissionById = async (req, res) => {
+  const permissionId = req.params.id;
+  try {
+    const permission = await Permission.findById(permissionId);
+    if (permission.length === 0) {
+      return res.status(404).json({ message: "No permission found" });
+    }
+    return res.status(200).json(permission);
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
 const addPermission = async (req, res) => {
   const { action, resource, description, roleId } = req.body;
   try {
@@ -73,4 +100,6 @@ module.exports = {
   addPermission,
   updatePermission,
   deletePermission,
+  getAllPermissions,
+  getPermissionById,
 };
