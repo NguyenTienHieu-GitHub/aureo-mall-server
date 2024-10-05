@@ -6,7 +6,21 @@ const getAllAddress = async (req, res) => {
     if (!addressResult) {
       return res.status(400).json({ message: "Address not found" });
     }
-    return res.status(200).json(addressResult);
+    const addresses = addressResult.map((addressResult) => {
+      const addr = addressResult.toJSON();
+      return {
+        addressId: addr.id,
+        userId: addr.userId,
+        firstName: addr.firstName,
+        lastName: addr.lastName,
+        phoneNumber: addr.phoneNumber,
+        province: addr.province,
+        district: addr.district,
+        ward: addr.ward,
+        address: addr.address,
+      };
+    });
+    return res.status(200).json(addresses);
   } catch (err) {
     console.error("Error retrieving addresses:", err);
     return res
@@ -47,7 +61,7 @@ const addAddress = async (req, res) => {
         .json({ success: false, message: "User not authenticated" });
     }
     const addAddressResult = await Address.create({
-      id: userId,
+      userId: userId,
       firstName,
       lastName,
       phoneNumber,

@@ -217,6 +217,11 @@ module.exports = {
       description:
         "Refresh khi access token hết hạn để lấy access token và refresh token mới",
       tags: ["Auth"],
+      security: [
+        {
+          CookieAuth: [],
+        },
+      ],
       responses: {
         200: {
           description: "Refresh token thành công",
@@ -285,7 +290,6 @@ module.exports = {
           },
         },
       },
-      security: [{ BearerAuth: [] }, { CookieAuth: [] }],
     },
   },
   "/api/auth/logout": {
@@ -1334,6 +1338,36 @@ module.exports = {
             "application/json": {
               schema: {
                 $ref: "#/components/schemas/InternalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+
+  "/api/address": {
+    get: {
+      summary: "Hiển thị tất cả địa chỉ",
+      description: "Hiển thị tất cả địa chỉ của tài khoản",
+      tags: ["Address"],
+      operationId: "address",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      response: {
+        200: {
+          description: "Hiển thị tất cả thông tin tài khoản thành công",
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {},
+                },
               },
             },
           },

@@ -1,5 +1,5 @@
 {
-  "name": "backend-aureomall",
+  "name": "aureo-mall-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,16 +9,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NguyenTienHieu-GitHub/Aureo-Mall.git"
+    "url": "git+https://github.com/NguyenTienHieu-GitHub/aureo-mall-server.git"
   },
   "author": "NguyenTienHieu",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/NguyenTienHieu-GitHub/Aureo-Mall/issues"
+    "url": "https://github.com/NguyenTienHieu-GitHub/aureo-mall-server/issues"
   },
-  "homepage": "https://github.com/NguyenTienHieu-GitHub/Aureo-Mall#readme",
+  "homepage": "https://github.com/NguyenTienHieu-GitHub/aureo-mall-server#readme",
   "dependencies": {
-    "backend-aureomall": "file:",
+    "aureo-mall-server": "file:",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",

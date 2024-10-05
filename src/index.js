@@ -11,7 +11,6 @@ const { syncModels } = require("./app/models/index");
 dotenv.config();
 const app = express();
 const port = 3080;
-const host = "127.0.0.1";
 
 const corsOptions = {
   origin: "*",
@@ -45,6 +44,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong!" });
 });
 
-app.listen(port, host, () => {
-  console.log(`Server đang chạy tại http://${host}:${port}`);
+app.listen(port, () => {
+  console.log(`Server đang chạy tại http://localhost:${port}`);
 });
