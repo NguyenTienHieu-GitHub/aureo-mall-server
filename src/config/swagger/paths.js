@@ -353,92 +353,6 @@ module.exports = {
     },
   },
 
-  "/api/users/myinfo": {
-    get: {
-      summary: "Hiển thị thông tin tài khoản",
-      description: "Hiển thị thông tin tài khoản",
-      tags: ["User"],
-      operationId: "getMyInfo",
-      security: [
-        {
-          BearerAuth: [],
-        },
-      ],
-      responses: {
-        200: {
-          description: "Hiển thị thông tin tài khoản thành công",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  userId: {
-                    type: "UUID",
-                    example: "702dfc32-c51f-4458-b26d-0bd7d34f6cb7",
-                  },
-                  firstName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  lastName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  email: {
-                    type: "string",
-                    example: "admin@gmail.com",
-                  },
-                  roleName: {
-                    type: "string",
-                    example: "Admin",
-                  },
-                  createdAt: {
-                    type: "string",
-                    format: "data-time",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                  updatedAt: {
-                    type: "string",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                },
-              },
-            },
-          },
-        },
-        404: {
-          description: "Người dùng không tồn tại",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "User not found",
-                  },
-                },
-              },
-            },
-          },
-        },
-        500: {
-          description: "Lỗi server",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
-              },
-            },
-          },
-        },
-      },
-    },
-  },
   "/api/users": {
     get: {
       summary: "Hiển thị tất cả thông tin tài khoản",
@@ -648,7 +562,93 @@ module.exports = {
       },
     },
   },
-  "/api/users/add": {
+  "/api/users/myinfo": {
+    get: {
+      summary: "Hiển thị thông tin tài khoản",
+      description: "Hiển thị thông tin tài khoản",
+      tags: ["User"],
+      operationId: "getMyInfo",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Hiển thị thông tin tài khoản thành công",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  userId: {
+                    type: "UUID",
+                    example: "702dfc32-c51f-4458-b26d-0bd7d34f6cb7",
+                  },
+                  firstName: {
+                    type: "string",
+                    example: "admin",
+                  },
+                  lastName: {
+                    type: "string",
+                    example: "admin",
+                  },
+                  email: {
+                    type: "string",
+                    example: "admin@gmail.com",
+                  },
+                  roleName: {
+                    type: "string",
+                    example: "Admin",
+                  },
+                  createdAt: {
+                    type: "string",
+                    format: "data-time",
+                    example: "2024-10-02T12:39:02.001Z",
+                  },
+                  updatedAt: {
+                    type: "string",
+                    example: "2024-10-02T12:39:02.001Z",
+                  },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: "Người dùng không tồn tại",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  success: {
+                    type: "boolean",
+                    example: "false",
+                  },
+                  message: {
+                    type: "string",
+                    example: "User not found",
+                  },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/InternalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/users/create": {
     post: {
       summary: "Tạo tài khoản người dùng",
       description: "Tạo tài khoản của người dùng bằng quyền admin",
@@ -1147,7 +1147,7 @@ module.exports = {
       summary: "Cập nhật tài khoản của tôi",
       description: "Cập nhật tài khoản của tôi",
       tags: ["User"],
-      operationId: "updataUserByAdmin",
+      operationId: "updataMyInfo",
       security: [
         {
           BearerAuth: [],
