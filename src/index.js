@@ -46,4 +46,5 @@ app.use((err, req, res, next) => {
 
 app.listen(port, () => {
   console.log(`Server đang chạy tại http://localhost:${port}`);
+  console.log(`Swagger đang chạy tại http://localhost:${port}/api-docs`);
 });

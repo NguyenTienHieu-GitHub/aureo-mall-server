@@ -396,8 +396,12 @@ module.exports = {
                       example: "admin@gmail.com",
                     },
                     roleName: {
-                      type: "string",
-                      example: "Admin",
+                      type: "array",
+                      items: {
+                        type: "string",
+                        example: "customer",
+                      },
+                      example: ["admin"],
                     },
                     createdAt: {
                       type: "string",
@@ -496,8 +500,12 @@ module.exports = {
                     example: "admin@gmail.com",
                   },
                   roleName: {
-                    type: "string",
-                    example: "Admin",
+                    type: "array",
+                    items: {
+                      type: "string",
+                      example: "customer",
+                    },
+                    example: ["admin"],
                   },
                   createdAt: {
                     type: "string",
@@ -602,8 +610,12 @@ module.exports = {
                     example: "admin@gmail.com",
                   },
                   roleName: {
-                    type: "string",
-                    example: "Admin",
+                    type: "array",
+                    items: {
+                      type: "string",
+                      example: "customer",
+                    },
+                    example: ["admin"],
                   },
                   createdAt: {
                     type: "string",
@@ -707,8 +719,12 @@ module.exports = {
                     example: "admin@gmail.com",
                   },
                   roleName: {
-                    type: "string",
-                    example: "Admin",
+                    type: "array",
+                    items: {
+                      type: "string",
+                      example: "customer",
+                    },
+                    example: ["admin"],
                   },
                   createdAt: {
                     type: "string",
@@ -1016,8 +1032,12 @@ module.exports = {
                     example: "admin@gmail.com",
                   },
                   roleName: {
-                    type: "string",
-                    example: "Admin",
+                    type: "array",
+                    items: {
+                      type: "string",
+                      example: "customer",
+                    },
+                    example: ["admin"],
                   },
                   createdAt: {
                     type: "string",
@@ -1346,33 +1366,33 @@ module.exports = {
     },
   },
 
-  "/api/address": {
-    get: {
-      summary: "Hiển thị tất cả địa chỉ",
-      description: "Hiển thị tất cả địa chỉ của tài khoản",
-      tags: ["Address"],
-      operationId: "address",
-      security: [
-        {
-          BearerAuth: [],
-        },
-      ],
-      response: {
-        200: {
-          description: "Hiển thị tất cả thông tin tài khoản thành công",
-          content: {
-            "application/json": {
-              schema: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {},
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
+  // "/api/address": {
+  //   get: {
+  //     summary: "Hiển thị tất cả địa chỉ",
+  //     description: "Hiển thị tất cả địa chỉ của tài khoản",
+  //     tags: ["Address"],
+  //     operationId: "address",
+  //     security: [
+  //       {
+  //         BearerAuth: [],
+  //       },
+  //     ],
+  //     response: {
+  //       200: {
+  //         description: "Hiển thị tất cả thông tin tài khoản thành công",
+  //         content: {
+  //           "application/json": {
+  //             schema: {
+  //               type: "array",
+  //               items: {
+  //                 type: "object",
+  //                 properties: {},
+  //               },
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //   },
+  // },
 };

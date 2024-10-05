@@ -14,15 +14,26 @@ const getMyInfo = async (req, res) => {
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-    const roleId = await UserRole.findByPk(userId);
-    const roleName = await Role.findByPk(roleId.roleId);
-    const userData = myInfoResult.toJSON();
+
+    const userWithRole = await User.findOne({
+      where: { id: myInfoResult.id },
+      include: {
+        model: Role,
+        attributes: ["roleName"],
+        through: { attributes: [] },
+      },
+    });
+    const userData = userWithRole.toJSON();
+
     return res.status(200).json({
       userId: userData.id,
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      roleName: roleName.roleName,
+      roleName:
+        userData.Roles.length > 0
+          ? userData.Roles.map((role) => role.roleName)
+          : [],
       createdAt: userData.createdAt,
       updatedAt: userData.updatedAt,
     });
@@ -53,7 +64,10 @@ const getAllUsers = async (req, res) => {
         firstName: userJson.firstName,
         lastName: userJson.lastName,
         email: userJson.email,
-        roleName: userJson.Roles.length > 0 ? userJson.Roles[0].roleName : null,
+        roleName:
+          userJson.Roles.length > 0
+            ? userJson.Roles.map((role) => role.roleName)
+            : [],
         createdAt: userJson.createdAt,
         updatedAt: userJson.updatedAt,
       };
@@ -100,7 +114,9 @@ const getUsersById = async (req, res) => {
       lastName: userDataById.lastName,
       email: userDataById.email,
       roleName:
-        userDataById.Roles.length > 0 ? userDataById.Roles[0].roleName : null,
+        userDataById.Roles.length > 0
+          ? userDataById.Roles.map((role) => role.roleName)
+          : [],
       createdAt: userDataById.createdAt,
       updatedAt: userDataById.updatedAt,
     });
@@ -155,17 +171,15 @@ const addUser = async (req, res) => {
       { transaction }
     );
 
-    const userWithRole = await User.findOne(
-      {
-        where: { id: addUserResult.id },
-        include: {
-          model: Role,
-          attributes: ["roleName"],
-        },
+    await transaction.commit();
+    const userWithRole = await User.findOne({
+      where: { id: addUserResult.id },
+      include: {
+        model: Role,
+        attributes: ["roleName"],
+        through: { attributes: [] },
       },
-      { transaction }
-    );
-
+    });
     const userData = userWithRole.toJSON();
 
     return res.status(201).json({
@@ -175,7 +189,10 @@ const addUser = async (req, res) => {
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      roleName: userData.Roles.length > 0 ? userData.Roles[0].roleName : null,
+      roleName:
+        userData.Roles.length > 0
+          ? userData.Roles.map((role) => role.roleName)
+          : [],
       createdAt: userData.createdAt,
       updatedAt: userData.updatedAt,
     });
@@ -270,6 +287,15 @@ const updateUserByAdmin = async (req, res) => {
 
     userResult.firstName = firstName;
     userResult.lastName = lastName;
+    if (email && email !== userResult.email) {
+      const emailExists = await checkMailExists(userResult.email);
+      if (emailExists) {
+        return res.status(409).json({
+          success: false,
+          message: "Email already exists.",
+        });
+      }
+    }
     userResult.email = email;
     if (password) {
       const passwordRegex =
@@ -282,15 +308,7 @@ const updateUserByAdmin = async (req, res) => {
       }
       userResult.password = await bcrypt.hash(password, 10);
     }
-    if (email && email !== userResult.email) {
-      const emailExists = await checkMailExists(userResult.email);
-      if (emailExists) {
-        return res.status(409).json({
-          success: false,
-          message: "Email already exists.",
-        });
-      }
-    }
+
     await userResult.save();
 
     await UserRole.update(
@@ -315,9 +333,8 @@ const updateUserByAdmin = async (req, res) => {
       email: updatedUserData.email,
       roleName:
         updatedUserData.Roles.length > 0
-          ? updatedUserData.Roles[0].roleName
-          : null,
-
+          ? updatedUserData.Roles.map((role) => role.roleName)
+          : [],
       createdAt: updatedUserData.createdAt,
       updatedAt: updatedUserData.updatedAt,
     });
@@ -373,7 +390,10 @@ const updateMyInfo = async (req, res) => {
       firstName: userDate.firstName,
       lastName: userDate.lastName,
       email: userDate.email,
-      roleName: userDate.Roles.length > 0 ? userDate.Roles[0].roleName : null,
+      roleName:
+        userDate.Roles.length > 0
+          ? userDate.Roles.map((role) => role.roleName)
+          : [],
       createdAt: userDate.createdAt,
       updatedAt: userDate.updatedAt,
     });
