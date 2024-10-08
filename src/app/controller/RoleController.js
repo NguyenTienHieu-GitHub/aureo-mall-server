@@ -4,13 +4,16 @@ const getAllRole = async (req, res) => {
   try {
     const getAllRoleResult = await Role.findAll();
     if (getAllRoleResult.length === 0) {
-      return res.status(404).json({ message: "No roles found" });
+      res.locals.message = "Roles not found";
+      res.locals.error = "Roles not found in the database.";
+      return res.status(404).json();
     }
-    return res.status(200).json(getAllRoleResult);
+    res.locals.data = getAllRoleResult;
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", error: error.message });
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 const getRoleById = async (req, res) => {
@@ -18,13 +21,16 @@ const getRoleById = async (req, res) => {
   try {
     const getRoleByIdResult = await Role.findByPk(roleId);
     if (getRoleByIdResult.length === 0) {
-      return res.status(404).json({ message: "No role found" });
+      res.locals.message = "Role not found";
+      res.locals.error = "Role not found in the database.";
+      return res.status(404).json();
     }
-    return res.status(200).json(getRoleByIdResult);
+    res.locals.data = getRoleByIdResult;
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", error: error.message });
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 
@@ -33,11 +39,16 @@ const addRole = async (req, res) => {
   try {
     const addRoleResult = await Role.create({ roleName, description });
     if (!addRoleResult) {
-      res.status(404).json({ message: "Role created failed" });
+      res.locals.message = "Role created failed";
+      res.locals.error = "Unable to create role in the database.";
+      return res.status(404).json();
     }
-    return res.status(200).json(addRoleResult);
+    res.locals.data = addRoleResult;
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error", error });
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 
@@ -49,15 +60,18 @@ const updateRole = async (req, res) => {
     if (findRole) {
       await Role.update({ roleName, description }, { where: { id: roleId } });
       const updateResult = await Role.findByPk(roleId);
-
-      return res
-        .status(200)
-        .json({ message: "Role updated successfully", Role: updateResult });
+      res.locals.message = "Role updated successfully";
+      res.locals.data = updateResult;
+      return res.status(200).json({ data: res.locals.data });
     } else {
-      res.status(404).json({ message: "Role not found" });
+      res.locals.message = "Role not found";
+      res.locals.error = "Role not found in the database";
+      res.status(404).json();
     }
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error", error });
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 
@@ -66,11 +80,16 @@ const deleteRole = async (req, res) => {
   try {
     const deletedRoleResult = await Role.destroy({ where: { id: roleId } });
     if (!deletedRoleResult) {
-      res.status(400).json("Role not found");
+      res.locals.message = "Role not found";
+      res.locals.error = "Role not found in the database";
+      return res.status(400).json();
     }
-    return res.status(200).json("Role Deteled Succesfully");
+    res.locals.message = "Role Deteled Succesfully";
+    return res.status(200).json();
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error", error });
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    res.status(500).json();
   }
 };
 module.exports = {

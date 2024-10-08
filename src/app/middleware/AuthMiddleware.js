@@ -7,17 +7,32 @@ const authMiddleware = {
   verifyToken: (req, res, next) => {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(" ")[1];
+    const refreshToken = req.cookies?.refreshKey;
+
+    if (!refreshToken) {
+      res.locals.message = "Please log in again.";
+      res.locals.error =
+        "RefreshKey is missing. AccessKey will be invalidated.";
+      return res.status(403).json();
+    }
     if (token) {
       jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
         if (err) {
           console.error("JWT verification error:", err);
-          return res.status(401).json({ message: "Token is not valid" });
+          res.locals.message = "Token has expired.";
+          res.locals.error = {
+            message: "Token is not valid.",
+            originalError: err.message,
+          };
+          return res.status(401).json();
         }
         req.user = decoded;
         next();
       });
     } else {
-      return res.status(403).json({ message: "You are not authenticated" });
+      res.locals.message = "You are not authenticated.";
+      res.locals.error = "Authorization header is missing.";
+      return res.status(403).json();
     }
   },
 
@@ -25,14 +40,13 @@ const authMiddleware = {
     return async (req, res, next) => {
       try {
         const userId = req.user.id;
-
         const user = await UserRole.findByPk(userId);
         if (!user) {
-          return res.status(404).json({ message: "User not found" });
+          res.locals.message = "User not found";
+          res.locals.error = "User not found in the database";
+          return res.status(404).json();
         }
-
         const roleId = user.roleId;
-
         const permission = await Permission.findOne({
           where: {
             action: action,
@@ -40,14 +54,12 @@ const authMiddleware = {
           },
           attributes: ["id"],
         });
-
         if (!permission) {
-          return res.status(403).json({
-            message:
-              "Permission not found for the provided action and resource",
-          });
+          res.locals.message = "Permission not found for the provided";
+          res.locals.error =
+            "Permission not found for the provided action and resource";
+          return res.status(403).json();
         }
-
         const rolePermission = await RolePermission.findOne({
           where: {
             roleId: roleId,
@@ -58,13 +70,15 @@ const authMiddleware = {
         if (rolePermission) {
           next();
         } else {
-          return res.status(403).json({
-            message: "Permission denied",
-          });
+          res.locals.message = "Permission denied";
+          res.locals.error = "User does not have permission";
+          return res.status(403).json();
         }
       } catch (error) {
         console.error("Error checking permissions:", error);
-        return res.status(500).json({ message: "Internal Server Error" });
+        res.locals.message = "Internal Server Error";
+        res.locals.error = error.message;
+        return res.status(500).json();
       }
     };
   },

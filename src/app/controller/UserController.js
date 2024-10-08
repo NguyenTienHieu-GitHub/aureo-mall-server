@@ -8,39 +8,36 @@ const { isUUID } = require("validator");
 const getMyInfo = async (req, res) => {
   try {
     const userId = req.user.id;
-    const myInfoResult = await User.findByPk(userId);
-    if (!myInfoResult) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
-
     const userWithRole = await User.findOne({
-      where: { id: myInfoResult.id },
+      where: { id: userId },
       include: {
         model: Role,
         attributes: ["roleName"],
         through: { attributes: [] },
       },
     });
-    const userData = userWithRole.toJSON();
+    if (!userWithRole) {
+      res.locals.message = "User is not found";
+      res.locals.error = "User is  not found in database";
+      return res.status(404).json();
+    }
 
-    return res.status(200).json({
+    const userData = userWithRole.toJSON();
+    res.locals.message = "User information retrieved successfully";
+    res.locals.data = {
       userId: userData.id,
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      roleName:
-        userData.Roles.length > 0
-          ? userData.Roles.map((role) => role.roleName)
-          : [],
+      roleName: userData.Roles?.map((role) => role.roleName) || [],
       createdAt: userData.createdAt,
       updatedAt: userData.updatedAt,
-    });
+    };
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    res.locals.message = "Internal server error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 
@@ -53,9 +50,9 @@ const getAllUsers = async (req, res) => {
       },
     });
     if (!allUserResults) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      res.locals.message = "User not found";
+      res.locals.error = "User not found in the database";
+      return res.status(404).json();
     }
     const allUserData = allUserResults.map((user) => {
       const userJson = user.toJSON();
@@ -64,35 +61,31 @@ const getAllUsers = async (req, res) => {
         firstName: userJson.firstName,
         lastName: userJson.lastName,
         email: userJson.email,
-        roleName:
-          userJson.Roles.length > 0
-            ? userJson.Roles.map((role) => role.roleName)
-            : [],
+        roleName: userJson.Roles?.map((role) => role.roleName) || [],
         createdAt: userJson.createdAt,
         updatedAt: userJson.updatedAt,
       };
     });
-
-    return res.status(200).json(allUserData);
+    res.locals.message = "Show all users successfully";
+    res.locals.data = allUserData;
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    res.locals.error = error.message;
+    res.locals.message = "Internal server error";
+    return res.status(500).json();
   }
 };
 
 const getUsersById = async (req, res) => {
   const userId = req.params.id;
   if (!userId) {
-    return res.status(400).json({
-      success: false,
-      message: "Missing required fields: id",
-    });
+    res.locals.message = "Missing required fields";
+    res.locals.error = "Missing required fields: id";
+    return res.status(400).json();
   } else if (!isUUID(userId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid user ID format.",
-    });
+    res.locals.message = "Invalid user ID format";
+    res.locals.error = "Invalid user ID format: uuid";
+    return res.status(400).json();
   }
   try {
     const getUsersByIdResult = await User.findByPk(userId, {
@@ -102,27 +95,26 @@ const getUsersById = async (req, res) => {
       },
     });
     if (!getUsersByIdResult) {
-      return res.status(404).json({
-        success: false,
-        message: "User ID does not exist.",
-      });
+      res.locals.message = "User not found";
+      res.locals.error = "User not found in the database";
+      return res.status(404).json();
     }
     const userDataById = getUsersByIdResult.toJSON();
-    return res.status(200).json({
+    res.locals.data = {
       userId: userDataById.id,
       firstName: userDataById.firstName,
       lastName: userDataById.lastName,
       email: userDataById.email,
-      roleName:
-        userDataById.Roles.length > 0
-          ? userDataById.Roles.map((role) => role.roleName)
-          : [],
+      roleName: userDataById.Roles?.map((role) => role.roleName) || [],
       createdAt: userDataById.createdAt,
       updatedAt: userDataById.updatedAt,
-    });
+    };
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
     console.error("Error get user by id:", error);
-    return res.status(500).send("Internal Server Error");
+    res.locals.error = error.message;
+    res.locals.message = "Internal Server Error";
+    return res.status(500).json();
   }
 };
 
@@ -138,20 +130,18 @@ const checkMailExists = async (email) => {
 const addUser = async (req, res) => {
   const { firstName, lastName, email, password, roleId } = req.body;
   if (!firstName || !lastName || !email || !password || !roleId) {
-    return res.status(401).json({
-      success: false,
-      message:
-        "Missing required fields: firstName, lastName, email, password, roleId",
-    });
+    res.locals.message = "Missing required fields";
+    res.locals.error =
+      "Missing required fields: firstName, lastName, email, password, roleId";
+    return res.status(401).json();
   }
   const transaction = await sequelize.transaction();
   try {
     const emailExists = await checkMailExists(email);
     if (emailExists) {
-      return res.status(409).json({
-        success: false,
-        message: "Email already exists.",
-      });
+      res.locals.message = "Email already exists.";
+      res.locals.error = "Email already exists in the database";
+      return res.status(409).json();
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const addUserResult = await User.create(
@@ -181,54 +171,52 @@ const addUser = async (req, res) => {
       },
     });
     const userData = userWithRole.toJSON();
-
-    return res.status(201).json({
-      success: true,
-      message: "Created user successfully",
+    res.locals.message = "Created user successfully";
+    res.locals.data = {
       userId: userData.id,
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      roleName:
-        userData.Roles.length > 0
-          ? userData.Roles.map((role) => role.roleName)
-          : [],
+      roleName: userData.Roles?.map((role) => role.roleName) || [],
       createdAt: userData.createdAt,
       updatedAt: userData.updatedAt,
-    });
+    };
+    return res.status(201).json({ data: res.locals.data });
   } catch (error) {
     await transaction.rollback();
-
     console.error("Error add user:", error);
-    return res.status(500).send("Internal Server Error");
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 
 const deleteUser = async (req, res) => {
   const userId = req.params.id;
   if (!userId) {
-    return res.status(400).json({
-      success: false,
-      message: "Missing required fields: id",
-    });
+    res.locals.message = "Missing required fields";
+    res.locals.error = "Missing required fields: id";
+    return res.status(400).json();
   } else if (!isUUID(userId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid user ID format.",
-    });
+    res.locals.message = "Invalid user ID format";
+    res.locals.error = "Invalid user ID format: uuid";
+    return res.status(400).json();
   }
   try {
     const deleteResult = await User.destroy({ where: { id: userId } });
     if (!deleteResult) {
-      res.status(404).send({ success: false, message: "User not found" });
+      res.locals.message = "User not found";
+      res.locals.error = "User not found in the database";
+      return res.status(404).json();
     } else {
-      res
-        .status(200)
-        .send({ success: true, message: "User deleted successfully" });
+      res.locals.message = "User deleted successfully";
+      return res.status(200).json();
     }
   } catch (error) {
     console.error("Error deleting user:", error);
-    return res.status(500).send("Internal Server Error");
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 
@@ -237,52 +225,47 @@ const deleteMyUser = async (req, res) => {
   try {
     const user = await User.findByPk(userId);
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      res.locals.message = "User not found";
+      res.locals.error = "User not found in the database";
+      return res.status(404).json();
     }
     await User.destroy({
       where: { id: userId },
     });
-    return res.status(200).json({
-      success: true,
-      message: "Your account has been deleted successfully",
-    });
+    res.locals.message = "Your account has been deleted successfully";
+    return res.status(200).json();
   } catch (error) {
     console.error("Error deleting user: ", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal Server Error" });
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 
 const updateUserByAdmin = async (req, res) => {
   const userId = req.params.id;
   if (!userId) {
-    return res.status(400).json({
-      success: false,
-      message: "Missing required fields: id",
-    });
+    res.locals.message = "Missing required fields";
+    res.locals.error = "Missing required fields: id";
+    return res.status(400).json();
   } else if (!isUUID(userId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid user ID format.",
-    });
+    res.locals.message = "Invalid user ID format";
+    res.locals.error = "Invalid user ID format: uuid";
+    return res.status(400).json();
   }
   const { firstName, lastName, email, password, roleId } = req.body;
   if (!firstName || !lastName || !email || !password || !roleId) {
-    return res.status(401).json({
-      success: false,
-      message:
-        "Missing required fields: firstName, lastName, email, password, roleId",
-    });
+    res.locals.message = "Missing required fields";
+    res.locals.error =
+      "Missing required fields: firstName, lastName, email, password, roleId";
+    return res.status(401).json();
   }
   try {
     const userResult = await User.findByPk(userId);
     if (!userResult) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User does not exist." });
+      res.locals.message = "User does not exist.";
+      res.locals.error = "User does not exist in the database";
+      return res.status(404).json();
     }
 
     userResult.firstName = firstName;
@@ -290,10 +273,9 @@ const updateUserByAdmin = async (req, res) => {
     if (email && email !== userResult.email) {
       const emailExists = await checkMailExists(userResult.email);
       if (emailExists) {
-        return res.status(409).json({
-          success: false,
-          message: "Email already exists.",
-        });
+        res.locals.message = "Email already exists";
+        res.locals.error = "Email already exists in the database.";
+        return res.status(409).json();
       }
     }
     userResult.email = email;
@@ -301,10 +283,10 @@ const updateUserByAdmin = async (req, res) => {
       const passwordRegex =
         /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z0-9!@#$%^&*(),.?":{}|<>]{12,23}$/;
       if (!passwordRegex.test(password)) {
-        return res.status(400).json({
-          success: false,
-          message: "Password does not meet the requirements.",
-        });
+        res.locals.message = "Password does not meet the requirements.";
+        res.locals.error =
+          "Password must be between 12 to 23 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.";
+        return res.status(400).json();
       }
       userResult.password = await bcrypt.hash(password, 10);
     }
@@ -324,23 +306,24 @@ const updateUserByAdmin = async (req, res) => {
       },
     });
     const updatedUserData = userWithRole.toJSON();
-    return res.status(200).json({
-      success: true,
-      message: "User updated successfully",
+    res.locals.message = "User updated successfully";
+    res.locals.data = {
       userId: updatedUserData.id,
       firstName: updatedUserData.firstName,
       lastName: updatedUserData.lastName,
       email: updatedUserData.email,
-      roleName:
-        updatedUserData.Roles.length > 0
-          ? updatedUserData.Roles.map((role) => role.roleName)
-          : [],
+      roleName: updatedUserData.Roles?.map((role) => role.roleName) || [],
       createdAt: updatedUserData.createdAt,
       updatedAt: updatedUserData.updatedAt,
+    };
+    return res.status(200).json({
+      data: res.locals.data,
     });
   } catch (error) {
     console.error("Error updating user:", error);
-    res.status(500).send("Internal Server Error");
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    res.status(500).json();
   }
 };
 
@@ -351,26 +334,27 @@ const updateMyInfo = async (req, res) => {
   try {
     const user = await User.findByPk(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      res.locals.message = "User not found";
+      res.locals.error = "User not found in the database";
+      return res.status(404).json();
     }
     if (password) {
       const passwordRegex =
         /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z0-9!@#$%^&*(),.?":{}|<>]{12,23}$/;
       if (!passwordRegex.test(password)) {
-        return res.status(400).json({
-          success: false,
-          message: "Password does not meet the requirements.",
-        });
+        res.locals.message = "Password does not meet the requirements.";
+        res.locals.error =
+          "Password must be between 12 to 23 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.";
+        return res.status(400).json();
       }
       user.password = await bcrypt.hash(password, 10);
     }
     if (email && email !== user.email) {
       const emailExists = await checkMailExists(email);
       if (emailExists) {
-        return res.status(409).json({
-          success: false,
-          message: "Email already exists.",
-        });
+        res.locals.message = "Email already exists";
+        res.locals.error = "Email already exists in the database";
+        return res.status(409).json();
       }
     }
     await user.update({ firstName, lastName, email, password: user.password });
@@ -383,23 +367,22 @@ const updateMyInfo = async (req, res) => {
       },
     });
     const userDate = userWithRole.toJSON();
-    return res.status(200).json({
-      success: true,
-      message: "Your information has been updated successfully",
+    res.locals.message = "Your information has been updated successfully";
+    res.locals.data = {
       userId: userDate.id,
       firstName: userDate.firstName,
       lastName: userDate.lastName,
       email: userDate.email,
-      roleName:
-        userDate.Roles.length > 0
-          ? userDate.Roles.map((role) => role.roleName)
-          : [],
+      roleName: userDate.Roles?.map((role) => role.roleName) || [],
       createdAt: userDate.createdAt,
       updatedAt: userDate.updatedAt,
-    });
+    };
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
     console.error("Error updating user info:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    res.locals.message = "Internal server error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 

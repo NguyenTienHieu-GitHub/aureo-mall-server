@@ -16,7 +16,7 @@ router.put(
   addressController.updateAddress
 );
 router.post(
-  "/add",
+  "/create",
   authMiddleware.verifyToken,
   authMiddleware.checkPermission("create", "Address"),
   addressController.addAddress

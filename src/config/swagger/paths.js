@@ -41,17 +41,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "true",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Registered account successfully",
-                  },
-                },
+                $ref: "#/components/schemas/responseRegisterSuccess",
               },
             },
           },
@@ -61,7 +51,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/MissingRequireFields",
+                $ref: "#/components/schemas/missingRequireFields",
               },
             },
           },
@@ -71,17 +61,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false,",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Password does not meet the requirements.",
-                  },
-                },
+                $ref: "#/components/schemas/passwordRegexError",
               },
             },
           },
@@ -91,17 +71,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Email already exists.",
-                  },
-                },
+                $ref: "#/components/schemas/passwordRegexError",
               },
             },
           },
@@ -111,7 +81,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -130,19 +100,7 @@ module.exports = {
         content: {
           "application/json": {
             schema: {
-              type: "object",
-              properties: {
-                email: {
-                  type: "string",
-                  format: "email",
-                  example: "admin@gmail.com",
-                },
-                password: {
-                  type: "string",
-                  example: "Admin@12345678",
-                },
-              },
-              required: ["email", "password"],
+              $ref: "#/components/schemas/requestLogin",
             },
           },
         },
@@ -153,17 +111,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  message: {
-                    type: "string",
-                    example: "Login Successfully",
-                  },
-                  accessToken: {
-                    type: "string",
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-                  },
-                },
+                $ref: "#/components/schemas/responseLoginSuccess",
               },
             },
           },
@@ -173,17 +121,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Invalid email or password",
-                  },
-                },
+                $ref: "#/components/schemas/emailOrPasswordFalse",
               },
             },
           },
@@ -193,7 +131,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/MissingRequireFields",
+                $ref: "#/components/schemas/missingRequireFields",
               },
             },
           },
@@ -203,7 +141,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -228,53 +166,27 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  newAccessToken: {
-                    type: "string",
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-                  },
-                },
+                $ref: "#/components/schemas/responseRefreshSuccess",
               },
             },
           },
         },
         401: {
-          description: "Không có refresh token",
+          description: "Không có refreshKey",
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "You are not authenticated",
-                  },
-                },
+                $ref: "#/components/schemas/refreshKeyNotInCookie",
               },
             },
           },
         },
-        401: {
-          description: "Refresh token không tồn tại trong database",
+        404: {
+          description: "RefreshKey không tồn tại trong database",
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Refresh token is not valid",
-                  },
-                },
+                $ref: "#/components/schemas/refreshKeyNotInDB",
               },
             },
           },
@@ -284,7 +196,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -303,17 +215,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "true",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Logout Successfully",
-                  },
-                },
+                $ref: "#/components/schemas/responseLogoutSuccess",
               },
             },
           },
@@ -323,17 +225,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "No refresh token found",
-                  },
-                },
+                $ref: "#/components/schemas/refreshKeyNotInCookie",
               },
             },
           },
@@ -343,7 +235,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -374,46 +266,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    userId: {
-                      type: "string",
-                      format: "uuid",
-                      example: "702dfc32-c51f-4458-b26d-0bd7d34f6cb7",
-                    },
-                    firstName: {
-                      type: "string",
-                      example: "admin",
-                    },
-                    lastName: {
-                      type: "string",
-                      example: "admin",
-                    },
-                    email: {
-                      type: "string",
-                      example: "admin@gmail.com",
-                    },
-                    roleName: {
-                      type: "array",
-                      items: {
-                        type: "string",
-                        example: "customer",
-                      },
-                      example: ["admin"],
-                    },
-                    createdAt: {
-                      type: "string",
-                      example: "2024-10-02T12:39:02.001Z",
-                    },
-                    updatedAt: {
-                      type: "string",
-                      format: "data-time",
-                      example: "2024-10-02T12:39:02.001Z",
-                    },
-                  },
-                },
+                $ref: "#/components/schemas/responseGetAllUserSuccess",
               },
             },
           },
@@ -423,17 +276,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "User not found",
-                  },
-                },
+                $ref: "#/components/schemas/userNotFound",
               },
             },
           },
@@ -443,7 +286,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -468,9 +311,7 @@ module.exports = {
           in: "path",
           require: "true",
           schema: {
-            type: "string",
-            format: "uuid",
-            decription: "Nhập ID tài khoản muốn tìm kiếm",
+            $ref: "#/components/schemas/paramsIdFind",
           },
         },
       ],
@@ -480,43 +321,17 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  userId: {
-                    type: "string",
-                    format: "uuid",
-                    example: "702dfc32-c51f-4458-b26d-0bd7d34f6cb7",
-                  },
-                  firstName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  lastName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  email: {
-                    type: "string",
-                    example: "admin@gmail.com",
-                  },
-                  roleName: {
-                    type: "array",
-                    items: {
-                      type: "string",
-                      example: "customer",
-                    },
-                    example: ["admin"],
-                  },
-                  createdAt: {
-                    type: "string",
-                    format: "data-time",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                  updatedAt: {
-                    type: "string",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                },
+                $ref: "#/components/schemas/responseGetUserByIdSuccess",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Thiếu trường ID bắt buộc",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/missingRequireFields",
               },
             },
           },
@@ -526,37 +341,17 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Invalid user ID format.",
-                  },
-                },
+                $ref: "#/components/schemas/formatIdUser",
               },
             },
           },
         },
         404: {
-          description: "ID người dùng không tồn tại",
+          description: "Không tìm thấy người dùng",
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "User ID does not exist.",
-                  },
-                },
+                $ref: "#/components/schemas/userNotFound",
               },
             },
           },
@@ -566,7 +361,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -591,42 +386,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  userId: {
-                    type: "UUID",
-                    example: "702dfc32-c51f-4458-b26d-0bd7d34f6cb7",
-                  },
-                  firstName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  lastName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  email: {
-                    type: "string",
-                    example: "admin@gmail.com",
-                  },
-                  roleName: {
-                    type: "array",
-                    items: {
-                      type: "string",
-                      example: "customer",
-                    },
-                    example: ["admin"],
-                  },
-                  createdAt: {
-                    type: "string",
-                    format: "data-time",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                  updatedAt: {
-                    type: "string",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                },
+                $ref: "#/components/schemas/responseGetMyInfo",
               },
             },
           },
@@ -636,17 +396,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "User not found",
-                  },
-                },
+                $ref: "#/components/schemas/userNotFound",
               },
             },
           },
@@ -656,7 +406,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -669,7 +419,7 @@ module.exports = {
       summary: "Tạo tài khoản người dùng",
       description: "Tạo tài khoản của người dùng bằng quyền admin",
       tags: ["User"],
-      operationId: "add",
+      operationId: "addUser",
       security: [
         {
           BearerAuth: [],
@@ -680,7 +430,7 @@ module.exports = {
         content: {
           "application/json": {
             schema: {
-              $ref: "#/components/schemas/FieldUpdateUserAdmin",
+              $ref: "#/components/schemas/fieldUpdateAndCreateUserAdmin",
             },
           },
         },
@@ -691,51 +441,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "true",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Created user successfully",
-                  },
-                  userId: {
-                    type: "string",
-                    format: "uuid",
-                    example: "702dfc32-c51f-4458-b26d-0bd7d34f6cb7",
-                  },
-                  firstName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  lastName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  email: {
-                    type: "string",
-                    example: "admin@gmail.com",
-                  },
-                  roleName: {
-                    type: "array",
-                    items: {
-                      type: "string",
-                      example: "customer",
-                    },
-                    example: ["admin"],
-                  },
-                  createdAt: {
-                    type: "string",
-                    format: "data-time",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                  updatedAt: {
-                    type: "string",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                },
+                $ref: "#/components/schemas/responseCreateSuccess",
               },
             },
           },
@@ -745,7 +451,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/MissingRequireFields",
+                $ref: "#/components/schemas/missingRequireFields",
               },
             },
           },
@@ -755,17 +461,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Email already exists.",
-                  },
-                },
+                $ref: "#/components/schemas/mailExists",
               },
             },
           },
@@ -775,7 +471,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -784,7 +480,7 @@ module.exports = {
     },
   },
   "/api/users/delete/{id}": {
-    get: {
+    delete: {
       summary: "Xóa tài khoản",
       description: "Xóa tài khoản bằng id",
       tags: ["User"],
@@ -800,9 +496,7 @@ module.exports = {
           in: "path",
           require: "true",
           schema: {
-            type: "string",
-            format: "uuid",
-            decription: "Nhập ID tài khoản muốn xóa",
+            $ref: "#/components/schemas/paramsIdDelete",
           },
         },
       ],
@@ -812,37 +506,17 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "true",
-                  },
-                  message: {
-                    type: "string",
-                    example: "User deleted successfully",
-                  },
-                },
+                $ref: "#/components/schemas/responseDeleteUserSuccess",
               },
             },
           },
         },
         400: {
-          description: "Thiếu trường id",
+          description: "Thiếu trường ID bắt buộc",
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Missing required fields: id",
-                  },
-                },
+                $ref: "#components/schemas/missingRequireFields",
               },
             },
           },
@@ -852,37 +526,17 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Invalid user ID format.",
-                  },
-                },
+                $ref: "#/components/schema/formatIdUser",
               },
             },
           },
         },
         404: {
-          description: "ID người dùng không tồn tại",
+          description: "Người dùng không tồn tại",
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "User ID does not exist.",
-                  },
-                },
+                $ref: "#/components/schema/userNotFound",
               },
             },
           },
@@ -892,7 +546,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -901,7 +555,7 @@ module.exports = {
     },
   },
   "/api/users/delete/myuser": {
-    get: {
+    delete: {
       summary: "Xóa tài khoản của tôi",
       description: "Xóa tài khoản của tôi",
       tags: ["User"],
@@ -917,17 +571,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "true",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Your account has been deleted successfully",
-                  },
-                },
+                $ref: "#/components/schemas/responseDeleteMyUserSuccess",
               },
             },
           },
@@ -937,17 +581,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "User not found",
-                  },
-                },
+                $ref: "#/components/schemas/userNotFound",
               },
             },
           },
@@ -957,7 +591,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -993,7 +627,7 @@ module.exports = {
         content: {
           "application/json": {
             schema: {
-              $ref: "#/components/schemas/FieldUpdateUserAdmin",
+              $ref: "#/components/schemas/fieldUpdateAndCreateUserAdmin",
             },
           },
         },
@@ -1004,71 +638,17 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "true",
-                  },
-                  message: {
-                    type: "string",
-                    example: "User updated successfully",
-                  },
-                  userId: {
-                    type: "string",
-                    format: "uuid",
-                    example: "702dfc32-c51f-4458-b26d-0bd7d34f6cb7",
-                  },
-                  firstName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  lastName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  email: {
-                    type: "string",
-                    example: "admin@gmail.com",
-                  },
-                  roleName: {
-                    type: "array",
-                    items: {
-                      type: "string",
-                      example: "customer",
-                    },
-                    example: ["admin"],
-                  },
-                  createdAt: {
-                    type: "string",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                  updatedAt: {
-                    type: "string",
-                    format: "data-time",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                },
+                $ref: "#/components/schemas/responseUpdateUserByIdSuccess",
               },
             },
           },
         },
         400: {
-          description: "Thiếu trường ID",
+          description: "Thiếu trường ID bắt buộc",
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Missing required fields: id",
-                  },
-                },
+                $ref: "#components/schemas/missingRequireFields",
               },
             },
           },
@@ -1078,47 +658,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Invalid user ID format.",
-                  },
-                },
-              },
-            },
-          },
-        },
-        401: {
-          description: "Thiếu các trường bắt buộc",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/MissingRequireFields",
-              },
-            },
-          },
-        },
-        404: {
-          description: "ID người dùng không tồn tại",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "User does not exist.",
-                  },
-                },
+                $ref: "#/components/schemas/formatIdUser",
               },
             },
           },
@@ -1128,17 +668,27 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Password does not meet the requirements.",
-                  },
-                },
+                $ref: "#/components/schemas/passwordRegexError",
+              },
+            },
+          },
+        },
+        401: {
+          description: "Thiếu các trường bắt buộc",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/missingRequireFields",
+              },
+            },
+          },
+        },
+        404: {
+          description: "Người dùng không tồn tại",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/userNotFound",
               },
             },
           },
@@ -1148,7 +698,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/MailExists",
+                $ref: "#/components/schemas/mailExists",
               },
             },
           },
@@ -1158,7 +708,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -1182,25 +732,7 @@ module.exports = {
         content: {
           "application/json": {
             schema: {
-              type: "object",
-              properties: {
-                firstName: {
-                  type: "string",
-                  example: "User",
-                },
-                lastName: {
-                  type: "string",
-                  example: "One",
-                },
-                email: {
-                  type: "string",
-                  example: "user1@gamil.com",
-                },
-                password: {
-                  type: "string",
-                  example: "User1@12345678",
-                },
-              },
+              $ref: "#/components/schemas/fieldUpdateMyInfo",
             },
           },
         },
@@ -1211,113 +743,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "true",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Your information has been updated successfully",
-                  },
-                  userId: {
-                    type: "string",
-                    format: "uuid",
-                    example: "702dfc32-c51f-4458-b26d-0bd7d34f6cb7",
-                  },
-                  email: {
-                    type: "string",
-                    example: "admin@gmail.com",
-                  },
-                  firstName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  lastName: {
-                    type: "string",
-                    example: "admin",
-                  },
-                  createdAt: {
-                    type: "string",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                  updatedAt: {
-                    type: "string",
-                    format: "data-time",
-                    example: "2024-10-02T12:39:02.001Z",
-                  },
-                },
-              },
-            },
-          },
-        },
-        400: {
-          description: "Thiếu trường ID",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Missing required fields: id",
-                  },
-                },
-              },
-            },
-          },
-        },
-        400: {
-          description: "ID người dùng không đúng định dạng",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Invalid user ID format.",
-                  },
-                },
-              },
-            },
-          },
-        },
-        401: {
-          description: "Thiếu các trường bắt buộc",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/MissingRequireFields",
-              },
-            },
-          },
-        },
-        404: {
-          description: "ID người dùng không tồn tại",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "User does not exist.",
-                  },
-                },
+                $ref: "#/components/schemas/responseUpdateMyInfoSuccess",
               },
             },
           },
@@ -1327,17 +753,17 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                type: "object",
-                properties: {
-                  success: {
-                    type: "boolean",
-                    example: "false",
-                  },
-                  message: {
-                    type: "string",
-                    example: "Password does not meet the requirements.",
-                  },
-                },
+                $ref: "#/components/schemas/passwordRegexError",
+              },
+            },
+          },
+        },
+        404: {
+          description: "Người dùng không tồn tại",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/userNotFound",
               },
             },
           },
@@ -1347,7 +773,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/MailExists",
+                $ref: "#/components/schemas/mailExists",
               },
             },
           },
@@ -1357,7 +783,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/InternalServerErrorResponse",
+                $ref: "#/components/schemas/internalServerErrorResponse",
               },
             },
           },
@@ -1366,33 +792,349 @@ module.exports = {
     },
   },
 
-  // "/api/address": {
-  //   get: {
-  //     summary: "Hiển thị tất cả địa chỉ",
-  //     description: "Hiển thị tất cả địa chỉ của tài khoản",
-  //     tags: ["Address"],
-  //     operationId: "address",
-  //     security: [
-  //       {
-  //         BearerAuth: [],
-  //       },
-  //     ],
-  //     response: {
-  //       200: {
-  //         description: "Hiển thị tất cả thông tin tài khoản thành công",
-  //         content: {
-  //           "application/json": {
-  //             schema: {
-  //               type: "array",
-  //               items: {
-  //                 type: "object",
-  //                 properties: {},
-  //               },
-  //             },
-  //           },
-  //         },
-  //       },
-  //     },
-  //   },
-  // },
+  "/api/address": {
+    get: {
+      summary: "Hiển thị tất cả địa chỉ",
+      description: "Hiển thị tât cả địa chỉ",
+      tags: ["Address"],
+      operationId: "getAllAddress",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Hiển thị tất cả địa chỉ có trong database",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/responseGetAllAddress",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Không có địa chỉ",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/addressNotFound",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/address/{id}": {
+    get: {
+      summary: "Tìm kiếm địa chỉ",
+      description: "Tìm kiếm địa chỉ bằng id",
+      tags: ["Address"],
+      operationId: "getAddressById",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          require: "true",
+          schema: {
+            $ref: "#/components/schemas/paramsIdFind",
+          },
+        },
+      ],
+      responses: {
+        200: {
+          description: "Hiển thị thông tin địa chỉ thành công",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/responseGetAddressById",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Thiếu trường ID bắt buộc",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/missingRequireFields",
+              },
+            },
+          },
+        },
+        404: {
+          description: "Địa chỉ không tồn tại",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/addressNotFound",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/address/create": {
+    post: {
+      summary: "Tạo địa chỉ người dùng",
+      description: "Tạo địa của người dùng",
+      tags: ["Address"],
+      operationId: "addAddress",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/fieldUpdateAndCreateAddress",
+            },
+          },
+        },
+      },
+      responses: {
+        201: {
+          description: "Tạo đại chỉ thành công",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/responseCreateAddressSuccess",
+              },
+            },
+          },
+        },
+        401: {
+          description: "Thiếu các trường bắt buộc",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/missingRequireFields",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Người dùng chưa được xác thực",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/userIdIsRequired",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Tạo địa chỉ thất bại",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/errorCreateAddress",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/address/update/{id}": {
+    put: {
+      summary: "Cập nhật tài khoản",
+      description: "Cập nhật tài khoản bằng id",
+      tags: ["User"],
+      operationId: "updataAddress",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          require: "true",
+          schema: {
+            $ref: "#/components/schemas/paramsIdFind",
+          },
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/fieldUpdateAndCreateAddress",
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Hiển thị thông tin tài khoản đã cập nhật thành công",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/responseUpdateAddressSuccess",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Thiếu trường bắt buộc",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#components/schemas/missingRequireFields",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Người dùng chưa được xác thực",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/userIdIsRequired",
+              },
+            },
+          },
+        },
+        404: {
+          description: "Địa chỉ không tồn tại",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/addressNotFound",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/address/delete/{id}": {
+    delete: {
+      summary: "Xóa địa chỉ",
+      description: "Xóa tài địa chỉ bằng id",
+      tags: ["Address"],
+      operationId: "deleteAddress",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          require: "true",
+          schema: {
+            $ref: "#/components/schemas/paramsIdDelete",
+          },
+        },
+      ],
+      responses: {
+        200: {
+          description: "Xóa địa chỉ thành công",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/responseDeleteAddressSuccess",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Thiếu trường bắt buộc",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#components/schemas/missingRequireFields",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Người dùng chưa được xác thực",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/userIdIsRequired",
+              },
+            },
+          },
+        },
+        404: {
+          description: "Địa chỉ không tồn tại",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schema/addressNotFound",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 };

@@ -7,6 +7,7 @@ const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./config/swagger/swagger");
 const { syncModels } = require("./app/models/index");
+const responsesFormatter = require("./app/middleware/responseFormatter");
 
 dotenv.config();
 const app = express();
@@ -29,13 +30,13 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(responsesFormatter);
 
 app.get("/api/data", (req, res) => {
   res.json({ message: "CORS is working!" });
 });
 
 syncModels();
-
 // Router init
 route(app);
 

@@ -5,13 +5,17 @@ const getAllPermissions = async (req, res) => {
   try {
     const allPermissions = await Permission.findAll();
     if (allPermissions.length === 0) {
-      return res.status(404).json({ message: "No permissions found" });
+      res.locals.message = "Permissions not found";
+      res.locals.error = "Permissions not found in the database";
+      return res.status(404).json();
     }
-    return res.status(200).json(allPermissions);
+    res.locals.message = "Show all successful permissions";
+    res.locals.data = allPermissions;
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", error: error.message });
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 
@@ -20,11 +24,17 @@ const getPermissionById = async (req, res) => {
   try {
     const permission = await Permission.findById(permissionId);
     if (permission.length === 0) {
-      return res.status(404).json({ message: "No permission found" });
+      res.locals.message = "Permission not found";
+      res.locals.error = "Permissions not found in the database";
+      return res.status(404).json();
     }
-    return res.status(200).json(permission);
+    res.locals.message = "Show successful permission";
+    res.locals.data = permission;
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    return res.status(500).json({ message: "Internal Server Error", error });
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 const addPermission = async (req, res) => {
@@ -53,13 +63,13 @@ const addPermission = async (req, res) => {
       ...newPermission,
       roleName: roleName,
     };
-    return res.status(200).json({
-      success: true,
-      message: "Created permission",
-      responseData,
-    });
+    res.locals.message = "Created permission";
+    res.locals.data = responseData;
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error", error: error });
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 const updatePermission = async (req, res) => {
@@ -69,14 +79,19 @@ const updatePermission = async (req, res) => {
   try {
     const permission = await Permission.findByPk(id);
     if (!permission) {
-      return res.status(404).json({ message: "Permission not found." });
+      res.locals.message = "Permission not found.";
+      res.locals.error = "Permission not found in the database.";
+      return res.status(404).json();
     }
-
     await permission.update({ action, resource, description });
-    return res.status(200).json(permission);
+    res.locals.message = "Permission updated successfully.";
+    res.locals.data = permission;
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
     console.error("Error updating permission:", error);
-    return res.status(500).json({ message: "Internal server error." });
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 const deletePermission = async (req, res) => {
@@ -85,14 +100,19 @@ const deletePermission = async (req, res) => {
   try {
     const permission = await Permission.findByPk(id);
     if (!permission) {
-      return res.status(404).json({ message: "Permission not found." });
+      res.locals.message = "Permission not found";
+      res.locals.error = "Permission not found in the database.";
+      return res.status(404).json();
     }
 
     await permission.destroy();
-    return res.status(204).send();
+    res.locals.message = "Permission deleted successfully";
+    return res.status(204).json();
   } catch (error) {
     console.error("Error deleting permission:", error);
-    return res.status(500).json({ message: "Internal server error." });
+    res.locals.message = "Internal Server Error";
+    res.locals.error = error.message;
+    return res.status(500).json();
   }
 };
 
