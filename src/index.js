@@ -14,9 +14,10 @@ const app = express();
 const port = 3080;
 
 const corsOptions = {
-  origin: "*",
+  origin: ["http://localhost:4200", "http://localhost:3080"],
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: ["Authorization", "Content-Type"],
+  credentials: true,
 };
 
 const swaggerOptions = {

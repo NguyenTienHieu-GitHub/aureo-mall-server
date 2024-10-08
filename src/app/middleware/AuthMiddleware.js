@@ -7,9 +7,9 @@ const authMiddleware = {
   verifyToken: (req, res, next) => {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(" ")[1];
-    const refreshToken = req.cookies?.refreshKey;
+    const refreshKey = req.cookies["XSRF-TOKEN"];
 
-    if (!refreshToken) {
+    if (!refreshKey) {
       res.locals.message = "Please log in again.";
       res.locals.error =
         "RefreshKey is missing. AccessKey will be invalidated.";

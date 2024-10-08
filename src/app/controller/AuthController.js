@@ -118,7 +118,7 @@ const loginUser = async (req, res) => {
       expiresAt.setDate(expiresAt.getDate() + 7);
       await saveRefreshTokenToDB(user.id, refreshKey, expiresAt);
 
-      res.cookie("refreshKey", refreshKey, {
+      res.cookie("XSRF-TOKEN", refreshKey, {
         httpOnly: true,
         secure: false,
         path: "/",
@@ -192,7 +192,7 @@ const deleteRefreshTokenFromDB = async (refreshKey) => {
 
 const requestRefreshToken = async (req, res) => {
   try {
-    const refreshKey = req.cookies.refreshKey;
+    const refreshKey = req.cookies["XSRF-TOKEN"];
     if (!refreshKey) {
       res.locals.message = "You are not authenticated";
       res.locals.error = "RefreshKey is not in cookie";
@@ -220,7 +220,7 @@ const requestRefreshToken = async (req, res) => {
       await deleteRefreshTokenFromDB(refreshKey);
       await saveRefreshTokenToDB(tokenRecord.userId, newRefreshKey, expiresAt);
 
-      res.cookie("refreshKey", newRefreshKey, {
+      res.cookie("XSRF-TOKEN", newRefreshKey, {
         httpOnly: true,
         secure: false, // Đặt true nếu sử dụng HTTPS
         path: "/",
@@ -256,7 +256,7 @@ cron.schedule("0 * * * *", async () => {
 
 const logoutUser = async (req, res) => {
   try {
-    const refreshKey = req.cookies.refreshKey;
+    const refreshKey = req.cookies["XSRF-TOKEN"];
     if (!refreshKey) {
       res.locals.message = "You are not authenticated";
       res.locals.error = "RefreshKey is not in cookie";
@@ -264,7 +264,7 @@ const logoutUser = async (req, res) => {
     }
     await Token.destroy({ where: { refreshToken: refreshKey } });
 
-    res.clearCookie("refreshKey", {
+    res.clearCookie("XSRF-TOKEN", {
       httpOnly: true,
       secure: false, // Đặt true nếu sử dụng HTTPS
       path: "/",
