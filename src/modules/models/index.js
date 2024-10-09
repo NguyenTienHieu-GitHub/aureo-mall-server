@@ -139,18 +139,8 @@ const syncModels = async () => {
     await createDefaultPermission({ transaction });
     await createDefaultRolePermission({ transaction });
     await createAdminIfNotExists({ transaction });
-
-    const rolesWithPermissions = await Role.findAll({
-      include: {
-        model: Permission,
-        through: RolePermission,
-      },
-    });
-    await transaction.commit();
-    console.log(JSON.stringify(rolesWithPermissions, null, 2));
     console.log("All tables synced successfully");
   } catch (error) {
-    await transaction.rollback();
     console.error("Error syncing tables:", error);
   }
 };

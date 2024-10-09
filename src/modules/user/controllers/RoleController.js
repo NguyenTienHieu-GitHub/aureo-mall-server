@@ -1,95 +1,130 @@
-const Role = require("../../auth/models/RoleModel");
+const RoleService = require("../services/RoleService");
 
 const getAllRole = async (req, res) => {
   try {
-    const getAllRoleResult = await Role.findAll();
-    if (getAllRoleResult.length === 0) {
-      res.locals.message = "Roles not found";
-      res.locals.error = "Roles not found in the database.";
-      return res.status(404).json();
-    }
+    const getAllRoleResult = await RoleService.getAllRole();
     res.locals.data = getAllRoleResult;
+    res.locals.message = "Show all roles successfully";
     return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    res.locals.message = "Internal Server Error";
-    res.locals.error = error.message;
-    return res.status(500).json();
+    if (error.message === "Roles not found") {
+      res.locals.message = error.message;
+      res.locals.error = "Roles not found in the database.";
+      return res.status(404).json();
+    } else {
+      res.locals.message = "Internal Server Error";
+      res.locals.error = error.message;
+      return res.status(500).json();
+    }
   }
 };
 const getRoleById = async (req, res) => {
   const roleId = req.params.id;
+  if (!roleId) {
+    res.locals.message = "Missing required fields";
+    res.locals.error = "Missing required fields: id";
+    return res.status(400).json();
+  }
   try {
-    const getRoleByIdResult = await Role.findByPk(roleId);
-    if (getRoleByIdResult.length === 0) {
-      res.locals.message = "Role not found";
-      res.locals.error = "Role not found in the database.";
-      return res.status(404).json();
-    }
+    const getRoleByIdResult = await RoleService.getRoleById(roleId);
     res.locals.data = getRoleByIdResult;
+    res.locals.message = "Show role successfully";
     return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    res.locals.message = "Internal Server Error";
-    res.locals.error = error.message;
-    return res.status(500).json();
+    if (error.message === "Roles not found") {
+      res.locals.message = error.message;
+      res.locals.error = "Roles not found in the database.";
+      return res.status(404).json();
+    } else {
+      res.locals.message = "Internal Server Error";
+      res.locals.error = error.message;
+      return res.status(500).json();
+    }
   }
 };
 
 const addRole = async (req, res) => {
   const { roleName, description } = req.body;
+  if (!roleName || !description) {
+    res.locals.message = "Missing required fields";
+    res.locals.error = "Missing required fields: roleName, description";
+    return res.status(401).json();
+  }
   try {
-    const addRoleResult = await Role.create({ roleName, description });
-    if (!addRoleResult) {
-      res.locals.message = "Role created failed";
-      res.locals.error = "Unable to create role in the database.";
-      return res.status(404).json();
-    }
+    const addRoleResult = await RoleService.addRole({ roleName, description });
     res.locals.data = addRoleResult;
+    res.locals.message = "Create role successfully";
     return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    res.locals.message = "Internal Server Error";
-    res.locals.error = error.message;
-    return res.status(500).json();
+    console.error(error);
+    if (error.message === "Role created failed") {
+      res.locals.message = error.message;
+      res.locals.error = "Unable to create role in the database.";
+      return res.status(404).json();
+    } else {
+      res.locals.message = "Internal Server Error";
+      res.locals.error = error.message;
+      return res.status(500).json();
+    }
   }
 };
 
 const updateRole = async (req, res) => {
   const roleId = req.params.id;
+  if (!roleId) {
+    res.locals.message = "Missing required fields";
+    res.locals.error = "Missing required fields: id";
+    return res.status(400).json();
+  }
   const { roleName, description } = req.body;
+  if (!roleName || !description) {
+    res.locals.message = "Missing required fields";
+    res.locals.error = "Missing required fields: roleName, description";
+    return res.status(401).json();
+  }
   try {
-    const findRole = await Role.findByPk(roleId);
-    if (findRole) {
-      await Role.update({ roleName, description }, { where: { id: roleId } });
-      const updateResult = await Role.findByPk(roleId);
-      res.locals.message = "Role updated successfully";
-      res.locals.data = updateResult;
-      return res.status(200).json({ data: res.locals.data });
-    } else {
-      res.locals.message = "Role not found";
-      res.locals.error = "Role not found in the database";
-      res.status(404).json();
-    }
+    const updateResult = await RoleService.updateRole({
+      roleId,
+      roleName,
+      description,
+    });
+    res.locals.message = "Role updated successfully";
+    res.locals.data = updateResult;
+    return res.status(200).json({ data: res.locals.data });
   } catch (error) {
-    res.locals.message = "Internal Server Error";
-    res.locals.error = error.message;
-    return res.status(500).json();
+    if (error.message === "Role not found") {
+      res.locals.message = error.message;
+      res.locals.error = "Role not found in the database";
+      return res.status(404).json();
+    } else {
+      res.locals.message = "Internal Server Error";
+      res.locals.error = error.message;
+      return res.status(500).json();
+    }
   }
 };
 
 const deleteRole = async (req, res) => {
   const roleId = req.params.id;
+  if (!roleId) {
+    res.locals.message = "Missing required fields";
+    res.locals.error = "Missing required fields: id";
+    return res.status(400).json();
+  }
   try {
-    const deletedRoleResult = await Role.destroy({ where: { id: roleId } });
-    if (!deletedRoleResult) {
-      res.locals.message = "Role not found";
-      res.locals.error = "Role not found in the database";
-      return res.status(400).json();
-    }
+    await RoleService.deleteRole(roleId);
     res.locals.message = "Role Deteled Succesfully";
     return res.status(200).json();
   } catch (error) {
-    res.locals.message = "Internal Server Error";
-    res.locals.error = error.message;
-    res.status(500).json();
+    if (error.message === "Role not found") {
+      res.locals.message = error.message;
+      res.locals.error = "Role not found in the database";
+      return res.status(404).json();
+    } else {
+      res.locals.message = "Internal Server Error";
+      res.locals.error = error.message;
+      res.status(500).json();
+    }
   }
 };
 module.exports = {

@@ -49,7 +49,9 @@ const generateAccessToken = async (user) => {
     throw new Error("Missing userId or email");
   }
   const payload = { id: user.id, email: user.email };
-  return jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "600s" });
+  return jwt.sign(payload, process.env.SECRET_KEY, {
+    expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
+  });
 };
 
 const generateRefreshToken = async (user) => {
@@ -57,7 +59,9 @@ const generateRefreshToken = async (user) => {
     throw new Error("Missing userId or email");
   }
   const payload = { id: user.id, email: user.email };
-  return jwt.sign(payload, process.env.REFRESH_KEY, { expiresIn: "7d" });
+  return jwt.sign(payload, process.env.REFRESH_KEY, {
+    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+  });
 };
 
 const saveRefreshTokenToDB = async (userId, refreshKey, expiresAt) => {

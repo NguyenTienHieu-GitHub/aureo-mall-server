@@ -4,7 +4,7 @@ const roleController = require("../controllers/RoleController");
 const { authMiddleware } = require("../../../shared/middleware/AuthMiddleware");
 
 router.post(
-  "/add",
+  "/create",
   authMiddleware.verifyToken,
   authMiddleware.checkPermission("create", "Role"),
   roleController.addRole

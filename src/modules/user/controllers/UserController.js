@@ -14,7 +14,7 @@ const getMyInfo = async (req, res) => {
     res.locals.message = "User information retrieved successfully";
     res.locals.data = {
       userId: userData.id,
-      fullName: `${userData.lastName} ${userData.firstName}`,
+      fullName: `${userData.firstName} ${userData.lastName}`,
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,

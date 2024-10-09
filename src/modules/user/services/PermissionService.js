@@ -51,8 +51,8 @@ const addPermission = async ({ action, resource, description, roleId }) => {
 
     await transaction.commit();
 
-    const roleDetails = await RolePermission.findOne({
-      where: { permissionId: newPermission.id },
+    const roleDetails = await Permission.findOne({
+      where: { id: newPermission.id },
       include: [
         {
           model: Role,
@@ -63,7 +63,7 @@ const addPermission = async ({ action, resource, description, roleId }) => {
 
     const responseData = {
       ...newPermission.toJSON(),
-      roleName: roleDetails ? roleDetails.Role.roleName : null,
+      roleList: roleDetails.Roles?.map((role) => role.roleName) || [],
     };
 
     return responseData;
@@ -74,8 +74,33 @@ const addPermission = async ({ action, resource, description, roleId }) => {
     throw err;
   }
 };
+
+const updatePermission = async ({
+  permissionId,
+  action,
+  resource,
+  description,
+}) => {
+  const permission = await Permission.findByPk(permissionId);
+  if (!permission) {
+    throw new Error("Permission not found.");
+  }
+  await permission.update({ action, resource, description });
+  return permission;
+};
+
+const deletePermission = async (permissionId) => {
+  const permission = await Permission.findByPk(permissionId);
+  if (!permission) {
+    throw new Error("Permission not found");
+  }
+
+  await permission.destroy();
+};
 module.exports = {
   getAllPermissions,
   getPermissionById,
   addPermission,
+  updatePermission,
+  deletePermission,
 };
