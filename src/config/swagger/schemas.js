@@ -224,6 +224,28 @@ module.exports = {
         },
         required: ["email", "password"],
       },
+      requestRegistered: {
+        type: "object",
+        properties: {
+          firstName: {
+            type: "string",
+            example: "User",
+          },
+          lastName: {
+            type: "string",
+            example: "One",
+          },
+          email: {
+            type: "string",
+            example: "user1@gmail.com",
+          },
+          password: {
+            type: "string",
+            example: "User1@12345678",
+          },
+        },
+        required: ["email", "firstName", "lastName", "password"],
+      },
 
       responseLoginSuccess: {
         type: "object",
@@ -547,30 +569,20 @@ module.exports = {
           },
         },
       },
-      responseRegister: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponse",
-          },
-          message: {
-            $ref: "#/components/schemas/messageResponse",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponse",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponse",
-          },
-        },
-      },
-
       paramsIdFind: {
+        type: "integer",
+        description: "Nhập Id muốn tìm kiếm",
+      },
+      paramsIdFindUser: {
         type: "string",
         format: "uuid",
         description: "Nhập Id muốn tìm kiếm",
       },
       paramsIdDelete: {
+        type: "integer",
+        description: "Nhập Id muốn xóa",
+      },
+      paramsIdDeleteUser: {
         type: "string",
         format: "uuid",
         description: "Nhập Id muốn xóa",
@@ -797,7 +809,7 @@ module.exports = {
           },
           email: {
             type: "string",
-            example: "user1@gamil.com",
+            example: "user1@gmail.com",
           },
           password: {
             type: "string",
@@ -823,7 +835,7 @@ module.exports = {
           },
           email: {
             type: "string",
-            example: "user1@gamil.com",
+            example: "user1@gmail.com",
           },
           password: {
             type: "string",

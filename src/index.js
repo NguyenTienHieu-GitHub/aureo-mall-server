@@ -2,12 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
-const route = require("./router");
+const routes = require("./modules/routes/index");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./config/swagger/swagger");
-const { syncModels } = require("./app/models/index");
-const responsesFormatter = require("./app/middleware/responseFormatter");
+const { syncModels, rolesWithPermissions } = require("./modules/models/index");
+const responsesFormatter = require("./shared/middleware/responseFormatter");
 
 dotenv.config();
 const app = express();
@@ -34,13 +34,16 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(responsesFormatter);
 
 app.get("/api/data", (req, res) => {
-  res.json({ message: "CORS is working!" });
+  res.locals.message = "CORS is working!";
+  res.json();
 });
-
 syncModels();
-// Router init
-route(app);
 
+routes(app);
+
+app.use((req, res, next) => {
+  res.status(404).json({ message: "Không tìm thấy trang" });
+});
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong!" });

@@ -11,26 +11,7 @@ module.exports = {
         content: {
           "application/json": {
             schema: {
-              type: "object",
-              properties: {
-                firstName: {
-                  type: "string",
-                  example: "User",
-                },
-                lastName: {
-                  type: "string",
-                  example: "One",
-                },
-                email: {
-                  type: "string",
-                  example: "user1@gamil.com",
-                },
-                password: {
-                  type: "string",
-                  example: "User1@12345678",
-                },
-              },
-              required: ["email", "firstName", "lastName", "password"],
+              $ref: "#/components/schemas/requestRegistered",
             },
           },
         },
@@ -71,7 +52,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/passwordRegexError",
+                $ref: "#/components/schemas/mailExists",
               },
             },
           },
@@ -311,7 +292,7 @@ module.exports = {
           in: "path",
           require: "true",
           schema: {
-            $ref: "#/components/schemas/paramsIdFind",
+            $ref: "#/components/schemas/paramsIdFindUser",
           },
         },
       ],
@@ -496,7 +477,7 @@ module.exports = {
           in: "path",
           require: "true",
           schema: {
-            $ref: "#/components/schemas/paramsIdDelete",
+            $ref: "#/components/schemas/paramsIdDeleteUser",
           },
         },
       ],
