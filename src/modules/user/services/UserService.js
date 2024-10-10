@@ -39,7 +39,7 @@ const getAllUsers = async () => {
       firstName: userJson.firstName,
       lastName: userJson.lastName,
       email: userJson.email,
-      roleName: userJson.Roles?.map((role) => role.roleName) || [],
+      roleList: userJson.Roles?.map((role) => role.roleName) || [],
       createdAt: userJson.createdAt,
       updatedAt: userJson.updatedAt,
     };

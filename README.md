@@ -1,8 +1,25 @@
 # Hướng Dẫn Cài Đặt Dự Án
 
+## Mục lục
+
+- [Giới thiệu](#giới-thiệu)
+- [Yêu cầu](#yêu-cầu)
+- [Cài đặt](#cài-đặt)
+  - [Bước 1: Clone repository](#bước-1-clone-repository)
+  - [Bước 2: Cài đặt các gói phụ thuộc](#bước-2-cài-đặt-các-gói-phụ-thuộc)
+  - [Bước 3: Cấu hình biến môi trường](#bước-3-cấu-hình-biến-môi-trường)
+  - [Bước 4: Khởi động dự án](#bước-4-khởi-động-dự-án)
+- [Lưu ý quan trọng](#lưu-ý-quan-trọng)
+
 ## Giới Thiệu
 
-Đây là một dự án E-commerce Node.js. Dự án này sử dụng [Express](https://expressjs.com/) và [Sequelize](https://sequelize.org/) để quản lý cơ sở dữ liệu.
+Đây là một dự án **E-commerce Node.js** có tên là **Aureo Mall**. Dự án này sử dụng [Express](https://expressjs.com/) và [Sequelize](https://sequelize.org/) để quản lý cơ sở dữ liệu.
+
+## Yêu Cầu
+
+- **Node.js** v20.x trở lên
+- **NPM** hoặc **Yarn**
+- Một cơ sở dữ liệu (ví dụ: **MySQL**, **PostgreSQL**)
 
 ## Cài Đặt
 
@@ -14,12 +31,6 @@ Sao chép repository về máy tính của bạn:
 git https://github.com/NguyenTienHieu-GitHub/aureo-mall-server.git
 cd aureo-mall-server
 ```
-
-## Yêu Cầu
-
-- Node.js v20.x trở lên
-- NPM hoặc Yarn
-- Một cơ sở dữ liệu (ví dụ: MySQL, PostgreSQL)
 
 ### Bước 2: Cài đặt các gói phụ thuộc
 
@@ -33,7 +44,7 @@ npm install
 
 ### Bước 3: Cấu hình biến môi trường
 
-- Sao chép tệp cấu hình mẫu .env.example thành các tệp `.env.development`, `.env.production` và `.env.test `:
+- Sao chép tệp cấu hình mẫu `.env.example` thành các tệp `.env.development`, `.env.production` và `.env.test `:
 
 ```bash
 cp .env.example .env.development
@@ -92,25 +103,25 @@ SYNC_FORCE=true_or_false
 
 ### Bước 4: Khởi động dự án
 
-- Chạy ứng dụng bằng lệnh sau:
+- Chạy ứng dụng bằng một trong các lệnh sau:
 
 ```bash
 # chạy mới môi trường sản xuất
 npm run start
 
 # chạy với môi trường phát triền
-# npm run dev
+npm run dev
 
 # chạy với môi trường test
-# npm run test
+npm run test
 ```
 
 ## Lưu Ý Quan Trọng
 
-- **Bảo Mật**: Vui lòng không tiết lộ JWT secret và thông tin cơ sở dữ liệu trong mã nguồn. Sử dụng tệp `.env` để lưu trữ các biến môi trường.
-- **Cơ Sở Dữ Liệu**: Trước khi sử dụng `SYNC_FORCE=true`, hãy sao lưu cơ sở dữ liệu để tránh mất dữ liệu không mong muốn.
-- **Kiểm Thử**: Để chạy kiểm thử, sử dụng lệnh `npm test` sau khi đã cài đặt các gói phụ thuộc.
-- **Triển Khai**: Đảm bảo rằng bạn đã cấu hình môi trường sản xuất trước khi triển khai ứng dụng.
-- **Phiên Bản**: Ứng dụng yêu cầu Node.js phiên bản 20.x trở lên. Vui lòng kiểm tra phiên bản của bạn bằng lệnh `node -v`.
-- **Góp Phần**: Nếu bạn muốn đóng góp cho dự án, hãy tạo một pull request và đảm bảo tuân thủ các tiêu chuẩn mã hóa được nêu trong dự án.
-- **Liên Hệ Hỗ Trợ**: Nếu bạn gặp khó khăn hoặc cần hỗ trợ, hãy liên hệ qua email: [tienhieu2kk3@gmail.com](mailto:tienhieu2kk3@gmail.com).
+- **🔒 Bảo Mật**: Vui lòng không tiết lộ JWT secret và thông tin cơ sở dữ liệu trong mã nguồn. Sử dụng tệp `.env` để lưu trữ các biến môi trường.
+- **💾 Cơ Sở Dữ Liệu**: Trước khi sử dụng `SYNC_FORCE=true`, hãy sao lưu cơ sở dữ liệu để tránh mất dữ liệu không mong muốn.
+- **🧪 Kiểm Thử**: Để chạy kiểm thử, sử dụng lệnh `npm test` sau khi đã cài đặt các gói phụ thuộc.
+- **🚀 Triển Khai**: Đảm bảo rằng bạn đã cấu hình môi trường sản xuất trước khi triển khai ứng dụng.
+- **🔍 Phiên Bản**: Ứng dụng yêu cầu Node.js phiên bản 20.x trở lên. Vui lòng kiểm tra phiên bản của bạn bằng lệnh `node -v`.
+- **🤝 Góp Phần**: Nếu bạn muốn đóng góp cho dự án, hãy tạo một pull request và đảm bảo tuân thủ các tiêu chuẩn mã hóa được nêu trong dự án.
+- **📞 Liên Hệ Hỗ Trợ**: Nếu bạn gặp khó khăn hoặc cần hỗ trợ, hãy liên hệ qua email: [tienhieu2kk3@gmail.com](mailto:tienhieu2kk3@gmail.com).
