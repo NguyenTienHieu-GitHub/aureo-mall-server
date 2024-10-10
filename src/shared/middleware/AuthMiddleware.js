@@ -35,11 +35,33 @@ const authMiddleware = {
       return res.status(403).json();
     }
   },
+  verifyRefreshToken: (req, res, next) => {
+    const refreshKey = req.cookies["XSRF-TOKEN"];
+    if (!refreshKey) {
+      res.locals.message = "Refresh token not found.";
+      res.locals.error = "Refresh token not found in the cookie";
+      return res.status(401).json();
+    }
+    jwt.verify(refreshKey, process.env.REFRESH_KEY, (err, user) => {
+      if (err) {
+        res.clearCookie("XSRF-TOKEN");
+        res.locals.message = "Refresh token expired or invalid";
+        res.locals.error = "Please log in again.";
+        return res.status(403).json();
+      }
+      next();
+    });
+  },
 
   checkPermission: (action, resource) => {
     return async (req, res, next) => {
       try {
         const userId = req.user.id;
+        if (!userId) {
+          res.locals.message = "You are not authenticated";
+          res.locals.error = "You need to login";
+          return res.status(400).json();
+        }
         const user = await UserRole.findByPk(userId);
         if (!user) {
           res.locals.message = "User not found";

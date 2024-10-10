@@ -9,7 +9,7 @@ const Warehouse = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
+    warehouseName: {
       type: DataTypes.STRING,
       allowNull: false,
     },

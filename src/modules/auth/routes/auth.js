@@ -5,7 +5,11 @@ const { authMiddleware } = require("../../../shared/middleware/AuthMiddleware");
 
 router.post("/register", authController.registerUser);
 router.post("/login", authController.loginUser);
-router.post("/refresh", authController.requestRefreshToken);
+router.post(
+  "/refresh",
+  authMiddleware.verifyRefreshToken,
+  authController.refreshToken
+);
 router.post("/logout", authMiddleware.verifyToken, authController.logoutUser);
 
 module.exports = router;

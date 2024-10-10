@@ -6,10 +6,15 @@ const routes = require("./modules/routes/index");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./config/swagger/swagger");
-const { syncModels, rolesWithPermissions } = require("./modules/models/index");
+const { syncModels } = require("./modules/models/index");
 const responsesFormatter = require("./shared/middleware/responseFormatter");
 
-dotenv.config();
+const envFile = `.env.${process.env.NODE_ENV || "development"}`;
+const result = dotenv.config({ path: envFile });
+if (result.error) {
+  throw result.error;
+}
+
 const app = express();
 const port = 3080;
 

@@ -6,7 +6,7 @@ const responseFormatter = (req, res, next) => {
     const response = {
       success: !isErrorResponse,
       message: isErrorResponse
-        ? res.locals.error || "An error occurred"
+        ? res.locals.message || "An error occurred"
         : res.locals.message || "Request successful",
       data: res.locals.data !== undefined ? res.locals.data : null,
       error: isErrorResponse ? res.locals.error || null : null,

@@ -55,9 +55,7 @@ const getUserById = async (userId) => {
     },
   });
   if (!getUsersByIdResult) {
-    res.locals.message = "User not found";
-    res.locals.error = "User not found in the database";
-    return res.status(404).json();
+    throw new Error("User not found");
   }
   const userDataById = getUsersByIdResult.toJSON();
   return userDataById;
@@ -71,7 +69,7 @@ const checkMailExists = async (email) => {
     throw new Error("Internal Server Error");
   }
 };
-const addUser = async ({ firstName, lastName, email, password, roleId }) => {
+const createUser = async ({ firstName, lastName, email, password, roleId }) => {
   const transaction = await sequelize.transaction();
   try {
     const emailExists = await checkMailExists(email);
@@ -211,7 +209,7 @@ module.exports = {
   getAllUsers,
   getUserById,
   checkMailExists,
-  addUser,
+  createUser,
   deleteUser,
   deleteMyUser,
   updateUserByAdmin,

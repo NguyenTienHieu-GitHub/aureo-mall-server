@@ -16,7 +16,7 @@ const registerUser = async (req, res) => {
     return res.status(400).json();
   }
   try {
-    await AuthService.registerUser({ firstName, lastName, email, password });
+    await AuthService.register({ firstName, lastName, email, password });
     res.locals.message = "Registered account successfully";
     return res.status(201).json();
   } catch (error) {
@@ -41,7 +41,7 @@ const loginUser = async (req, res) => {
     return res.status(401).json();
   }
   try {
-    const { accessKey, refreshKey } = await AuthService.loginUser({
+    const { accessKey, refreshKey } = await AuthService.login({
       email,
       password,
     });
@@ -68,7 +68,7 @@ const loginUser = async (req, res) => {
   }
 };
 
-const requestRefreshToken = async (req, res) => {
+const refreshToken = async (req, res) => {
   try {
     const refreshKey = req.cookies["XSRF-TOKEN"];
     if (!refreshKey) {
@@ -77,8 +77,9 @@ const requestRefreshToken = async (req, res) => {
       return res.status(401).json();
     }
 
-    const { newAccessKey, newRefreshKey } =
-      await AuthService.requestRefreshToken(refreshKey);
+    const { newAccessKey, newRefreshKey } = await AuthService.refreshToken(
+      refreshKey
+    );
     res.cookie("XSRF-TOKEN", newRefreshKey, {
       httpOnly: true,
       secure: false,
@@ -116,7 +117,7 @@ const logoutUser = async (req, res) => {
       return res.status(401).json();
     }
 
-    await AuthService.logoutUser(refreshKey);
+    await AuthService.logout(refreshKey);
 
     res.clearCookie("XSRF-TOKEN", {
       httpOnly: true,
@@ -138,6 +139,6 @@ const logoutUser = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
-  requestRefreshToken,
+  refreshToken,
   logoutUser,
 };

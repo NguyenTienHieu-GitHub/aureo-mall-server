@@ -5,8 +5,8 @@ const getMyInfo = async (req, res) => {
   try {
     const userId = req.user.id;
     if (!userId) {
-      res.locals.message = "User not authenticated";
-      res.locals.error = "User ID is required.";
+      res.locals.message = "You are not authenticated";
+      res.locals.error = "You need to login";
       return res.status(400).json();
     }
 
@@ -74,7 +74,7 @@ const getUsersById = async (req, res) => {
       firstName: userDataById.firstName,
       lastName: userDataById.lastName,
       email: userDataById.email,
-      roleName: userDataById.Roles?.map((role) => role.roleName) || [],
+      roleList: userDataById.Roles?.map((role) => role.roleName) || [],
       createdAt: userDataById.createdAt,
       updatedAt: userDataById.updatedAt,
     };
@@ -93,7 +93,7 @@ const getUsersById = async (req, res) => {
   }
 };
 
-const addUser = async (req, res) => {
+const createUser = async (req, res) => {
   const { firstName, lastName, email, password, roleId } = req.body;
   if (!firstName || !lastName || !email || !password || !roleId) {
     res.locals.message = "Missing required fields";
@@ -102,7 +102,7 @@ const addUser = async (req, res) => {
     return res.status(401).json();
   }
   try {
-    const userData = await UserService.addUser({
+    const userData = await UserService.createUser({
       firstName,
       lastName,
       email,
@@ -115,7 +115,7 @@ const addUser = async (req, res) => {
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      roleName: userData.Roles?.map((role) => role.roleName) || [],
+      roleList: userData.Roles?.map((role) => role.roleName) || [],
       createdAt: userData.createdAt,
       updatedAt: userData.updatedAt,
     };
@@ -166,8 +166,8 @@ const deleteUser = async (req, res) => {
 const deleteMyUser = async (req, res) => {
   const userId = req.user.id;
   if (!userId) {
-    res.locals.message = "Missing required fields";
-    res.locals.error = "Missing required fields: id";
+    res.locals.message = "You are not authenticated";
+    res.locals.error = "You need to login";
     return res.status(400).json();
   }
   try {
@@ -221,7 +221,7 @@ const updateUserByAdmin = async (req, res) => {
       firstName: updatedUserData.firstName,
       lastName: updatedUserData.lastName,
       email: updatedUserData.email,
-      roleName: updatedUserData.Roles?.map((role) => role.roleName) || [],
+      roleList: updatedUserData.Roles?.map((role) => role.roleName) || [],
       createdAt: updatedUserData.createdAt,
       updatedAt: updatedUserData.updatedAt,
     };
@@ -254,8 +254,8 @@ const updateUserByAdmin = async (req, res) => {
 const updateMyInfo = async (req, res) => {
   const userId = req.user.id;
   if (!userId) {
-    res.locals.message = "Missing required fields";
-    res.locals.error = "Missing required fields: id";
+    res.locals.message = "You are not authenticated";
+    res.locals.error = "You need to login";
     return res.status(400).json();
   } else if (!isUUID(userId)) {
     res.locals.message = "Invalid user ID format";
@@ -283,7 +283,7 @@ const updateMyInfo = async (req, res) => {
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      roleName: userData.Roles?.map((role) => role.roleName) || [],
+      roleList: userData.Roles?.map((role) => role.roleName) || [],
       createdAt: userData.createdAt,
       updatedAt: userData.updatedAt,
     };
@@ -315,7 +315,7 @@ module.exports = {
   getMyInfo,
   getAllUsers,
   getUsersById,
-  addUser,
+  createUser,
   deleteUser,
   deleteMyUser,
   updateUserByAdmin,

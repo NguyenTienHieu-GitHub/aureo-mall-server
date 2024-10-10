@@ -133,7 +133,7 @@ Inventory.belongsTo(Warehouse, {
 const syncModels = async () => {
   const transaction = await sequelize.transaction();
   try {
-    await sequelize.sync({ force: false });
+    await sequelize.sync({ force: process.env.SYNC_FORCE });
 
     await createDefaultRoles({ transaction });
     await createDefaultPermission({ transaction });

@@ -83,8 +83,8 @@ const addAddress = async (req, res) => {
   try {
     const userId = req.user.id;
     if (!userId) {
-      res.locals.message = "User not authenticated";
-      res.locals.error = "User ID is required.";
+      res.locals.message = "You are not authenticated";
+      res.locals.error = "You need to login";
       return res.status(400).json();
     }
 
@@ -158,8 +158,8 @@ const updateAddress = async (req, res) => {
   try {
     const userId = req.user.id;
     if (!userId) {
-      res.locals.message = "User not authenticated.";
-      res.locals.error = "User ID is required.";
+      res.locals.message = "You are not authenticated";
+      res.locals.error = "You need to login";
       return res.status(400).json();
     }
     const updatedAddress = await AddressService.updateAddress({
@@ -200,8 +200,8 @@ const deleteAddress = async (req, res) => {
   try {
     const userId = req.user.id;
     if (!userId) {
-      res.locals.message = "User not authenticated.";
-      res.locals.error = "User ID is required.";
+      res.locals.message = "You are not authenticated";
+      res.locals.error = "You need to login";
       return res.status(400).json();
     }
     await AddressService.deleteAddress({

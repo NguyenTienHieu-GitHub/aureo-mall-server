@@ -7,7 +7,7 @@ router.post(
   "/create",
   authMiddleware.verifyToken,
   authMiddleware.checkPermission("create", "User"),
-  userController.addUser
+  userController.createUser
 );
 router.delete(
   "/delete/myuser",

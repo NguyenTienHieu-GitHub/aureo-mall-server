@@ -9,7 +9,7 @@ const Shop = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
+    shopName: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
@@ -25,34 +25,40 @@ const Shop = sequelize.define(
     },
     description: {
       type: DataTypes.TEXT,
-      address: {
-        type: DataTypes.STRING,
-        allowNull: true,
+      defaultValue: null,
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        is: /^[0-9]+$/,
       },
-      phone: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        validate: {
-          is: /^[0-9]+$/,
-        },
+      defaultValue: null,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        isEmail: true,
       },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        validate: {
-          isEmail: true,
-        },
-      },
-      logo: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      website: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        validate: {
-          isUrl: true,
-        },
+      defaultValue: null,
+    },
+    logo: {
+      type: DataTypes.STRING,
+      defaultValue: null,
+      allowNull: true,
+    },
+    website: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        isUrl: true,
+        defaultValue: null,
       },
     },
   },

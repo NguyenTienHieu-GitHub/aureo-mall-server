@@ -7,7 +7,7 @@ const sequelize = require("../../../config/db/index");
 const { Op } = require("sequelize");
 const cron = require("node-cron");
 
-const registerUser = async ({ firstName, lastName, email, password }) => {
+const register = async ({ firstName, lastName, email, password }) => {
   const transaction = await sequelize.transaction();
   try {
     const emailExists = await User.findOne({ where: { email } });
@@ -105,7 +105,7 @@ const deleteRefreshTokenFromDB = async (refreshKey) => {
   }
 };
 
-const loginUser = async ({ email, password }) => {
+const login = async ({ email, password }) => {
   const user = await User.findOne({ where: { email: email } });
   if (!user) {
     throw new Error("Invalid email or password.");
@@ -124,7 +124,7 @@ const loginUser = async ({ email, password }) => {
   return { accessKey, refreshKey };
 };
 
-const requestRefreshToken = async (refreshKey) => {
+const refreshToken = async (refreshKey) => {
   const tokenRecord = await checkRefreshTokenInDB(refreshKey);
   if (!tokenRecord) {
     throw new Error("Refresh token is not valid");
@@ -156,7 +156,7 @@ const requestRefreshToken = async (refreshKey) => {
   });
 };
 
-const logoutUser = async (refreshKey) => {
+const logout = async (refreshKey) => {
   await Token.destroy({ where: { refreshToken: refreshKey } });
 };
 
@@ -179,10 +179,10 @@ cron.schedule("0 * * * *", async () => {
 });
 
 module.exports = {
-  registerUser,
-  loginUser,
-  requestRefreshToken,
-  logoutUser,
+  register,
+  login,
+  refreshToken,
+  logout,
   generateAccessToken,
   generateRefreshToken,
   saveRefreshTokenToDB,
