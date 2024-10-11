@@ -5,10 +5,11 @@ const { authMiddleware } = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");
 const Shop = require("../models/ShopModel");
 
+const models = [Shop];
 router.post(
   "/create",
   authMiddleware.verifyToken,
-  validateRequest(Shop),
+  validateRequest(models),
   shopController.createShop
 );
 

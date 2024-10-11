@@ -4,8 +4,9 @@ const authController = require("../controllers/AuthController");
 const { authMiddleware } = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");
 const User = require("../models/UserModel");
-router.post("/register", validateRequest(User), authController.registerUser);
-router.post("/login", validateRequest(User), authController.loginUser);
+const models = [User];
+router.post("/register", validateRequest(models), authController.registerUser);
+router.post("/login", validateRequest(models), authController.loginUser);
 router.post(
   "/refresh",
   authMiddleware.verifyRefreshToken,

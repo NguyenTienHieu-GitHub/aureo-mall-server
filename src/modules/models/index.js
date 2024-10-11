@@ -91,6 +91,7 @@ Product.belongsTo(Shop, {
 
 Product.hasMany(ProductPrice, {
   foreignKey: "productId",
+  as: "ProductPrice",
 });
 ProductPrice.belongsTo(Product, {
   foreignKey: "productId",
@@ -99,6 +100,7 @@ ProductPrice.belongsTo(Product, {
 
 Product.hasMany(Inventory, {
   foreignKey: "productId",
+  as: "Inventory",
 });
 Inventory.belongsTo(Product, {
   foreignKey: "productId",

@@ -4,11 +4,11 @@ const roleController = require("../controllers/RoleController");
 const { authMiddleware } = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");
 const Role = require("../../auth/models/RoleModel");
-
+const models = [Role];
 router.post(
   "/create",
   authMiddleware.verifyToken,
-  validateRequest(Role),
+  validateRequest(models),
   authMiddleware.checkPermission("create", "Role"),
   roleController.createRole
 );
@@ -21,7 +21,7 @@ router.delete(
 router.put(
   "/update/:id",
   authMiddleware.verifyToken,
-  validateRequest(Role),
+  validateRequest(models),
   authMiddleware.checkPermission("edit", "Role"),
   roleController.updateRole
 );

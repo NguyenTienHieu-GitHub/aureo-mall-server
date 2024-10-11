@@ -19,6 +19,7 @@ const ProductMedia = sequelize.define(
     },
     mediaType: {
       type: DataTypes.ENUM("image", "video"),
+      allowNull: false,
     },
     mediaUrl: {
       type: DataTypes.STRING,

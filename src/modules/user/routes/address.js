@@ -4,6 +4,7 @@ const addressController = require("../controllers/AddressController");
 const { authMiddleware } = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");
 const Address = require("../models/AddressModel");
+const models = [Address];
 
 router.delete(
   "/delete/:id",
@@ -14,14 +15,14 @@ router.delete(
 router.put(
   "/update/:id",
   authMiddleware.verifyToken,
-  validateRequest(Address),
+  validateRequest(models),
   authMiddleware.checkPermission("edit", "Address"),
   addressController.updateAddress
 );
 router.post(
   "/create",
   authMiddleware.verifyToken,
-  validateRequest(Address),
+  validateRequest(models),
   authMiddleware.checkPermission("create", "Address"),
   addressController.createAddress
 );

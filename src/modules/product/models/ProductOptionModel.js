@@ -19,11 +19,11 @@ const ProductOption = sequelize.define(
     },
     optionName: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     optionValue: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,
