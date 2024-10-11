@@ -2,10 +2,14 @@ const express = require("express");
 const router = express.Router();
 const permissionController = require("../controllers/PermissionController");
 const { authMiddleware } = require("../../../shared/middleware/AuthMiddleware");
+const validateRequest = require("../../../shared/middleware/validateRequest");
+const Permission = require("../models/PermissionModel");
+const RolePermission = require("../models/RolePermissionModel");
 
 router.put(
   "/update/:id",
   authMiddleware.verifyToken,
+  validateRequest(Permission),
   authMiddleware.checkPermission("edit", "Permission"),
   permissionController.updatePermission
 );
@@ -18,8 +22,9 @@ router.delete(
 router.post(
   "/create",
   authMiddleware.verifyToken,
+  validateRequest([Permission, RolePermission]),
   authMiddleware.checkPermission("create", "Permission"),
-  permissionController.addPermission
+  permissionController.createPermission
 );
 router.get(
   "/:id",

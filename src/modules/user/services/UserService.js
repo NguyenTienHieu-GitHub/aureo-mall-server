@@ -3,7 +3,6 @@ const Role = require("../../auth/models/RoleModel");
 const UserRole = require("../../auth/models/UserRoleModel");
 const bcrypt = require("bcrypt");
 const sequelize = require("../../../config/db/index");
-const { passwordRegex } = require("../../../shared/utils/validationUtils");
 
 const getMyInfo = async (userId) => {
   const userWithRole = await User.findOne({
@@ -36,6 +35,7 @@ const getAllUsers = async () => {
     const userJson = user.toJSON();
     return {
       userId: userJson.id,
+      fullName: `${userJson.firstName} ${userJson.lastName}`,
       firstName: userJson.firstName,
       lastName: userJson.lastName,
       email: userJson.email,
@@ -149,9 +149,6 @@ const updateUserByAdmin = async ({
     }
   }
   user.email = email;
-  if (!passwordRegex.test(password)) {
-    throw new Error("Password does not meet the requirements");
-  }
   user.password = await bcrypt.hash(password, 10);
 
   await user.save();
@@ -165,8 +162,8 @@ const updateUserByAdmin = async ({
       attributes: ["roleName"],
     },
   });
-  const updatedUserData = userWithRole.toJSON();
-  return updatedUserData;
+  const userData = userWithRole.toJSON();
+  return userData;
 };
 
 const updateMyInfo = async ({
@@ -179,10 +176,6 @@ const updateMyInfo = async ({
   const user = await User.findByPk(userId);
   if (!user) {
     throw new Error("User not found");
-  }
-
-  if (!passwordRegex.test(password)) {
-    throw new Error("Password does not meet the requirements");
   }
   user.password = await bcrypt.hash(password, 10);
 

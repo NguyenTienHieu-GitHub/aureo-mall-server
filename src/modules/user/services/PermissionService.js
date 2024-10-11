@@ -20,7 +20,7 @@ const getPermissionById = async (permissionId) => {
   return permission;
 };
 
-const addPermission = async ({ action, resource, description, roleId }) => {
+const createPermission = async ({ action, resource, description, roleId }) => {
   const transaction = await sequelize.transaction();
   try {
     const existingPermission = await Permission.findOne({
@@ -100,7 +100,7 @@ const deletePermission = async (permissionId) => {
 module.exports = {
   getAllPermissions,
   getPermissionById,
-  addPermission,
+  createPermission,
   updatePermission,
   deletePermission,
 };

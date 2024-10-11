@@ -2,9 +2,10 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/AuthController");
 const { authMiddleware } = require("../../../shared/middleware/AuthMiddleware");
-
-router.post("/register", authController.registerUser);
-router.post("/login", authController.loginUser);
+const validateRequest = require("../../../shared/middleware/validateRequest");
+const User = require("../models/UserModel");
+router.post("/register", validateRequest(User), authController.registerUser);
+router.post("/login", validateRequest(User), authController.loginUser);
 router.post(
   "/refresh",
   authMiddleware.verifyRefreshToken,

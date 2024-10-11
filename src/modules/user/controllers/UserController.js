@@ -71,6 +71,7 @@ const getUsersById = async (req, res) => {
     const userDataById = await UserService.getUserById(userId);
     res.locals.data = {
       userId: userDataById.id,
+      fullName: `${userDataById.firstName} ${userDataById.lastName}`,
       firstName: userDataById.firstName,
       lastName: userDataById.lastName,
       email: userDataById.email,
@@ -95,12 +96,6 @@ const getUsersById = async (req, res) => {
 
 const createUser = async (req, res) => {
   const { firstName, lastName, email, password, roleId } = req.body;
-  if (!firstName || !lastName || !email || !password || !roleId) {
-    res.locals.message = "Missing required fields";
-    res.locals.error =
-      "Missing required fields: firstName, lastName, email, password, roleId";
-    return res.status(401).json();
-  }
   try {
     const userData = await UserService.createUser({
       firstName,
@@ -112,6 +107,7 @@ const createUser = async (req, res) => {
     res.locals.message = "Created user successfully";
     res.locals.data = {
       userId: userData.id,
+      fullName: `${userData.firstName} ${userData.lastName}`,
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
@@ -200,14 +196,8 @@ const updateUserByAdmin = async (req, res) => {
     return res.status(400).json();
   }
   const { firstName, lastName, email, password, roleId } = req.body;
-  if (!firstName || !lastName || !email || !password || !roleId) {
-    res.locals.message = "Missing required fields";
-    res.locals.error =
-      "Missing required fields: firstName, lastName, email, password, roleId";
-    return res.status(401).json();
-  }
   try {
-    const updatedUserData = await UserService.updateUserByAdmin({
+    const userData = await UserService.updateUserByAdmin({
       userId: userId,
       firstName,
       lastName,
@@ -217,13 +207,14 @@ const updateUserByAdmin = async (req, res) => {
     });
     res.locals.message = "User updated successfully";
     res.locals.data = {
-      userId: updatedUserData.id,
-      firstName: updatedUserData.firstName,
-      lastName: updatedUserData.lastName,
-      email: updatedUserData.email,
-      roleList: updatedUserData.Roles?.map((role) => role.roleName) || [],
-      createdAt: updatedUserData.createdAt,
-      updatedAt: updatedUserData.updatedAt,
+      userId: userData.id,
+      fullName: `${userData.firstName} ${userData.lastName}`,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      roleList: userData.Roles?.map((role) => role.roleName) || [],
+      createdAt: userData.createdAt,
+      updatedAt: userData.updatedAt,
     };
     return res.status(200).json({
       data: res.locals.data,
@@ -263,12 +254,6 @@ const updateMyInfo = async (req, res) => {
     return res.status(400).json();
   }
   const { firstName, lastName, email, password } = req.body;
-  if (!firstName || !lastName || !email || !password) {
-    res.locals.message = "Missing required fields";
-    res.locals.error =
-      "Missing required fields: firstName, lastName, email, password";
-    return res.status(401).json();
-  }
   try {
     const userData = await UserService.updateMyInfo({
       userId: userId,
@@ -280,6 +265,7 @@ const updateMyInfo = async (req, res) => {
     res.locals.message = "Your information has been updated successfully";
     res.locals.data = {
       userId: userData.id,
+      fullName: `${userData.firstName} ${userData.lastName}`,
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,

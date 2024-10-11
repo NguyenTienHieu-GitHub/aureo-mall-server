@@ -1,20 +1,7 @@
 const AuthService = require("../services/AuthService");
-const { passwordRegex } = require("../../../shared/utils/validationUtils");
 
 const registerUser = async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
-  if (!firstName || !lastName || !email || !password) {
-    res.locals.message = "Missing required fields";
-    res.locals.error =
-      "Missing required fields: firstName, lastName, email, and password are required.";
-    return res.status(400).json();
-  }
-  if (!passwordRegex.test(password)) {
-    res.locals.message = "Password does not meet the requirements.";
-    res.locals.error =
-      "Password must be between 12 to 23 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.";
-    return res.status(400).json();
-  }
   try {
     await AuthService.register({ firstName, lastName, email, password });
     res.locals.message = "Registered account successfully";
@@ -35,11 +22,6 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    res.locals.message = "Missing required fields";
-    res.locals.error = "Missing required fields: email, password";
-    return res.status(401).json();
-  }
   try {
     const { accessKey, refreshKey } = await AuthService.login({
       email,

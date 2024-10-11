@@ -3,7 +3,7 @@ const Address = require("../models/AddressModel");
 const getAllAddress = async () => {
   const addressResult = await Address.findAll();
   if (addressResult.length === 0) {
-    throw new Error("No addresses found");
+    throw new Error("Address not found");
   }
   const addresses = addressResult.map((addressResult) => {
     const addr = addressResult.toJSON();
@@ -31,7 +31,7 @@ const getAddressById = async (addressId) => {
   return addressById;
 };
 
-const addAddress = async ({
+const createAddress = async ({
   userId,
   firstName,
   lastName,
@@ -119,7 +119,7 @@ const deleteAddress = async ({ addressId, userId }) => {
 module.exports = {
   getAllAddress,
   getAddressById,
-  addAddress,
+  createAddress,
   updateAddress,
   deleteAddress,
 };

@@ -9,20 +9,15 @@ const createShop = async (req, res) => {
   }
   const { shopName, description, address, phone, email, logo, website } =
     req.body;
-  if (!shopName) {
-    res.locals.message = "Missing required fields";
-    res.locals.error = "Missing required fields: shopName";
-    return res.status(400).json();
-  }
   const shopData = {
     userId: userId,
-    shopName: shopName.trim() === "" ? null : shopName,
-    description: description.trim() === "" ? null : description,
-    address: address.trim() === "" ? null : address,
-    phone: phone.trim() === "" ? null : phone,
-    email: email.trim() === "" ? null : email,
-    logo: logo.trim() === "" ? null : logo,
-    website: website.trim() === "" ? null : website,
+    shopName,
+    description,
+    address,
+    phone,
+    email,
+    logo,
+    website,
   };
   try {
     const newShop = await ShopService.createShop(shopData);

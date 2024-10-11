@@ -3,7 +3,6 @@ const createDefaultRoles = require("../../shared/utils/role");
 const createDefaultPermission = require("../../shared//utils/permission");
 const createDefaultRolePermission = require("../../shared//utils/rolePermission");
 const createAdminIfNotExists = require("../../shared//utils/createAdmin");
-const { Transaction } = require("sequelize");
 
 const User = require("../auth/models/UserModel");
 const Role = require("../auth/models/RoleModel");
@@ -132,15 +131,17 @@ Inventory.belongsTo(Warehouse, {
 
 const syncModels = async () => {
   const transaction = await sequelize.transaction();
+  const syncForce = process.env.SYNC_FORCE === "true";
   try {
-    await sequelize.sync({ force: process.env.SYNC_FORCE });
-
+    await sequelize.sync({ force: syncForce });
     await createDefaultRoles({ transaction });
     await createDefaultPermission({ transaction });
     await createDefaultRolePermission({ transaction });
     await createAdminIfNotExists({ transaction });
+    await transaction.commit();
     console.log("All tables synced successfully");
   } catch (error) {
+    await transaction.rollback();
     console.error("Error syncing tables:", error);
   }
 };

@@ -25,6 +25,7 @@ const Shop = sequelize.define(
     },
     description: {
       type: DataTypes.TEXT,
+      allowNull: true,
       defaultValue: null,
     },
     address: {
@@ -36,7 +37,9 @@ const Shop = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
-        is: /^[0-9]+$/,
+        is: {
+          args: [/^[0-9]+$/],
+        },
       },
       defaultValue: null,
     },
@@ -58,7 +61,27 @@ const Shop = sequelize.define(
       allowNull: true,
       validate: {
         isUrl: true,
-        defaultValue: null,
+      },
+      defaultValue: null,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      get() {
+        const rawValue = this.getDataValue("createdAt");
+        return rawValue
+          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          : null;
+      },
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      get() {
+        const rawValue = this.getDataValue("updatedAt");
+        return rawValue
+          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          : null;
       },
     },
   },

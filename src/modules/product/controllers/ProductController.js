@@ -28,12 +28,6 @@ const createProduct = async (req, res) => {
   }
   const { productName, description, mediaList, optionList, quantity } =
     req.body;
-  if (!productName || !description || !mediaList || !optionList || !quantity) {
-    res.locals.message = "Missing required fields";
-    res.locals.error =
-      "Missing required fields: productName, description, mediaList, optionList, quantity";
-    return res.status(400).json();
-  }
   try {
     const newProduct = await ProductService.createProduct({
       userId: userId,

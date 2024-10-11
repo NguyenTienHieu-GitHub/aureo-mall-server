@@ -43,15 +43,13 @@ const getRoleById = async (req, res) => {
   }
 };
 
-const addRole = async (req, res) => {
+const createRole = async (req, res) => {
   const { roleName, description } = req.body;
-  if (!roleName || !description) {
-    res.locals.message = "Missing required fields";
-    res.locals.error = "Missing required fields: roleName, description";
-    return res.status(401).json();
-  }
   try {
-    const addRoleResult = await RoleService.addRole({ roleName, description });
+    const addRoleResult = await RoleService.createRole({
+      roleName,
+      description,
+    });
     res.locals.data = addRoleResult;
     res.locals.message = "Create role successfully";
     return res.status(200).json({ data: res.locals.data });
@@ -77,11 +75,6 @@ const updateRole = async (req, res) => {
     return res.status(400).json();
   }
   const { roleName, description } = req.body;
-  if (!roleName || !description) {
-    res.locals.message = "Missing required fields";
-    res.locals.error = "Missing required fields: roleName, description";
-    return res.status(401).json();
-  }
   try {
     const updateResult = await RoleService.updateRole({
       roleId,
@@ -130,7 +123,7 @@ const deleteRole = async (req, res) => {
 module.exports = {
   getAllRole,
   getRoleById,
-  addRole,
+  createRole,
   updateRole,
   deleteRole,
 };

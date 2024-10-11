@@ -16,7 +16,7 @@ const getRoleById = async (roleId) => {
   return getRoleByIdResult;
 };
 
-const addRole = async ({ roleName, description }) => {
+const createRole = async ({ roleName, description }) => {
   const addRoleResult = await Role.create({ roleName, description });
   if (!addRoleResult) {
     throw new Error("Role created failed");
@@ -42,7 +42,7 @@ const deleteRole = async (roleId) => {
 module.exports = {
   getAllRole,
   getRoleById,
-  addRole,
+  createRole,
   updateRole,
   deleteRole,
 };

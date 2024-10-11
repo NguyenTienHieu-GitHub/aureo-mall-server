@@ -45,16 +45,10 @@ const getPermissionById = async (req, res) => {
     }
   }
 };
-const addPermission = async (req, res) => {
+const createPermission = async (req, res) => {
   const { action, resource, description, roleId } = req.body;
-  if (!action || !resource || !description || !roleId) {
-    res.locals.message = "Missing required fields";
-    res.locals.error =
-      "Missing required fields: action, resource, description, roleId";
-    return res.status(400).json();
-  }
   try {
-    const responseData = await PermissionService.addPermission({
+    const responseData = await PermissionService.createPermission({
       action,
       resource,
       description,
@@ -88,11 +82,7 @@ const updatePermission = async (req, res) => {
     return res.status(400).json();
   }
   const { action, resource, description } = req.body;
-  if (!action || !resource || !description) {
-    res.locals.message = "Missing required fields";
-    res.locals.error = "Missing required fields: action, resource, description";
-    return res.status(400).json();
-  }
+
   try {
     const permission = await PermissionService.updatePermission({
       permissionId,
@@ -142,7 +132,7 @@ const deletePermission = async (req, res) => {
 };
 
 module.exports = {
-  addPermission,
+  createPermission,
   updatePermission,
   deletePermission,
   getAllPermissions,

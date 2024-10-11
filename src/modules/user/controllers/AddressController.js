@@ -10,8 +10,8 @@ const getAllAddress = async (req, res) => {
   } catch (error) {
     console.error("Error retrieving addresses:", error);
     if (error.message === "Address not found") {
+      res.locals.message = error.message;
       res.locals.error = "Address not found in the database";
-      re.locals.message = error.message;
       return res.status(404).json();
     } else {
       res.locals.message = "Internal Server Error";
@@ -56,7 +56,7 @@ const getAddressById = async (req, res) => {
   }
 };
 
-const addAddress = async (req, res) => {
+const createAddress = async (req, res) => {
   const {
     firstName,
     lastName,
@@ -66,20 +66,6 @@ const addAddress = async (req, res) => {
     ward,
     address,
   } = req.body;
-  if (
-    !firstName ||
-    !lastName ||
-    !phoneNumber ||
-    !province ||
-    !district ||
-    !ward ||
-    !address
-  ) {
-    res.locals.message = "Missing required fields";
-    res.locals.error =
-      "Missing required fields: firstName, lastName, phoneNumber, province, district, ward, address";
-    return res.status(401).json();
-  }
   try {
     const userId = req.user.id;
     if (!userId) {
@@ -88,7 +74,7 @@ const addAddress = async (req, res) => {
       return res.status(400).json();
     }
 
-    const insertedAddress = await AddressService.addAddress({
+    const insertedAddress = await AddressService.createAddress({
       userId: userId,
       firstName,
       lastName,
@@ -141,20 +127,6 @@ const updateAddress = async (req, res) => {
     ward,
     address,
   } = req.body;
-  if (
-    !firstName ||
-    !lastName ||
-    !phoneNumber ||
-    !province ||
-    !district ||
-    !ward ||
-    !address
-  ) {
-    res.locals.message = "Missing required fields";
-    res.locals.error =
-      "Missing required fields: firstName, lastName, phoneNumber, province, district, ward, address";
-    return res.status(401).json();
-  }
   try {
     const userId = req.user.id;
     if (!userId) {
@@ -225,7 +197,7 @@ const deleteAddress = async (req, res) => {
 module.exports = {
   getAllAddress,
   getAddressById,
-  addAddress,
+  createAddress,
   updateAddress,
   deleteAddress,
 };

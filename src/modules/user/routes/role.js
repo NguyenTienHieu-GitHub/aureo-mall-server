@@ -2,12 +2,15 @@ const express = require("express");
 const router = express.Router();
 const roleController = require("../controllers/RoleController");
 const { authMiddleware } = require("../../../shared/middleware/AuthMiddleware");
+const validateRequest = require("../../../shared/middleware/validateRequest");
+const Role = require("../../auth/models/RoleModel");
 
 router.post(
   "/create",
   authMiddleware.verifyToken,
+  validateRequest(Role),
   authMiddleware.checkPermission("create", "Role"),
-  roleController.addRole
+  roleController.createRole
 );
 router.delete(
   "/delete/:id",
@@ -18,6 +21,7 @@ router.delete(
 router.put(
   "/update/:id",
   authMiddleware.verifyToken,
+  validateRequest(Role),
   authMiddleware.checkPermission("edit", "Role"),
   roleController.updateRole
 );

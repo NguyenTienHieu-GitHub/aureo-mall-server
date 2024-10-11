@@ -39,11 +39,31 @@ const Address = sequelize.define(
     address: {
       type: DataTypes.STRING(255),
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      get() {
+        const rawValue = this.getDataValue("createdAt");
+        return rawValue
+          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          : null;
+      },
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      get() {
+        const rawValue = this.getDataValue("updatedAt");
+        return rawValue
+          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          : null;
+      },
+    },
   },
   {
     tableName: "Addresses",
     modelName: "Address",
-    timestamps: false,
+    timestamps: true,
   }
 );
 

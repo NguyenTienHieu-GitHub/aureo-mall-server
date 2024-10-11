@@ -25,6 +25,26 @@ const ProductOption = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      get() {
+        const rawValue = this.getDataValue("createdAt");
+        return rawValue
+          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          : null;
+      },
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      get() {
+        const rawValue = this.getDataValue("updatedAt");
+        return rawValue
+          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          : null;
+      },
+    },
   },
   {
     tableName: "ProductOptions",
