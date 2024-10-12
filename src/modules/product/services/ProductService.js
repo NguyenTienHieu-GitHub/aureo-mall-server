@@ -129,6 +129,7 @@ const createProduct = async ({
         productId: newProduct.id,
         mediaType: item.mediaType,
         mediaUrl: item.mediaUrl,
+        isFeatured: item.isFeatured,
       }));
       await ProductMedia.bulkCreate(mediaData, { transaction });
     }
@@ -182,7 +183,7 @@ const createProduct = async ({
         },
         {
           model: ProductMedia,
-          attributes: ["mediaType", "mediaUrl"],
+          attributes: ["mediaType", "mediaUrl", "isFeatured"],
         },
         {
           model: ProductOption,
@@ -369,6 +370,7 @@ const deleteProduct = async (slug) => {
   });
 };
 module.exports = {
+  generateSlug,
   getAllProducts,
   createProduct,
   getProductBySlug,

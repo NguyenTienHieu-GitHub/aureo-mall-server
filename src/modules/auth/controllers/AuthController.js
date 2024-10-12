@@ -1,4 +1,5 @@
 const AuthService = require("../services/AuthService");
+const jwt = require("jsonwebtoken");
 
 const registerUser = async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
@@ -27,7 +28,14 @@ const loginUser = async (req, res) => {
       email,
       password,
     });
+    const decoded = jwt.decode(refreshKey);
+    const exp = decoded.exp;
+    const currentTime = Math.floor(Date.now() / 1000);
+
+    const timeLeft = exp - currentTime;
+
     res.cookie("XSRF-TOKEN", refreshKey, {
+      maxAge: timeLeft * 1000,
       httpOnly: true,
       secure: false,
       path: "/",
@@ -62,7 +70,14 @@ const refreshToken = async (req, res) => {
     const { newAccessKey, newRefreshKey } = await AuthService.refreshToken(
       refreshKey
     );
+    const decoded = jwt.decode(newRefreshKey);
+    const exp = decoded.exp;
+    const currentTime = Math.floor(Date.now() / 1000);
+
+    const timeLeft = exp - currentTime;
+
     res.cookie("XSRF-TOKEN", newRefreshKey, {
+      maxAge: timeLeft * 1000,
       httpOnly: true,
       secure: false,
       path: "/",

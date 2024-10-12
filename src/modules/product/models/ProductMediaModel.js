@@ -25,6 +25,11 @@ const ProductMedia = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    isFeatured: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,

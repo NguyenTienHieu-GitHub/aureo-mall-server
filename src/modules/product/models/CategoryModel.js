@@ -21,6 +21,11 @@ const Category = sequelize.define(
         key: "id",
       },
     },
+    slug: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
