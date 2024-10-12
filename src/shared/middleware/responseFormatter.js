@@ -3,15 +3,24 @@ const responseFormatter = (req, res, next) => {
 
   res.send = function (body) {
     const isErrorResponse = res.statusCode >= 400;
+    const statusCode = res.statusCode;
     const response = {
-      success: !isErrorResponse,
-      message: isErrorResponse
-        ? res.locals.message || "An error occurred"
-        : res.locals.message || "Request successful",
+      status: statusCode,
+      message: res.locals.message || "Request successful",
       data: res.locals.data !== undefined ? res.locals.data : null,
-      error: isErrorResponse ? res.locals.error || null : null,
     };
-
+    if (isErrorResponse) {
+      response.error = {
+        errorCode: res.statusCode,
+        errorMessage: res.locals.error || "An error occurred",
+      };
+      delete response.data;
+      delete response.message;
+    } else if (response.data === null) {
+      delete response.data;
+    } else {
+      delete response.error;
+    }
     try {
       const jsonResponse = JSON.stringify(response);
       return originalSend.call(this, jsonResponse);

@@ -1,6 +1,8 @@
 const User = require("../models/UserModel");
 const UserRole = require("../models/UserRoleModel");
 const Token = require("../models/TokenModel");
+const BlacklistToken = require("../models/BlacklistTokenModel");
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const sequelize = require("../../../config/db/index");
@@ -156,23 +158,55 @@ const refreshToken = async (refreshKey) => {
   });
 };
 
-const logout = async (refreshKey) => {
+const logout = async ({ refreshKey, userId, accessKey }) => {
   await Token.destroy({ where: { refreshToken: refreshKey } });
+  if (accessKey) {
+    const decoded = jwt.decode(accessKey);
+    const exp = decoded.exp;
+    await BlacklistToken.create({
+      userId,
+      accessToken: accessKey,
+      expiresAt: exp,
+    });
+  } else {
+    throw new Error("No token provided");
+  }
 };
 
 // Xóa các token hết hạn mỗi giờ
 cron.schedule("0 * * * *", async () => {
   try {
     const now = new Date();
-    const deletedCount = await Token.destroy({
+    const expiredTokens = await BlacklistToken.findAll({
       where: {
         expiresAt: {
-          [Op.lt]: now, // Sử dụng Op.lt để so sánh
+          [Op.lt]: now,
         },
       },
     });
-
-    console.log(`${deletedCount} expired refresh tokens deleted successfully`);
+    const expiredTokenIds = expiredTokens.map((token) => token.id);
+    if (expiredTokenIds.length > 0) {
+      const deletedCount = await BlacklistToken.destroy({
+        where: {
+          id: {
+            [Op.in]: expiredTokenIds,
+          },
+        },
+      });
+      console.log(
+        `${deletedCount} expired blacklisted tokens deleted successfully`
+      );
+    }
+    const deletedRefreshCount = await Token.destroy({
+      where: {
+        expiresAt: {
+          [Op.lt]: now,
+        },
+      },
+    });
+    console.log(
+      `${deletedRefreshCount} expired refresh tokens deleted successfully`
+    );
   } catch (error) {
     console.error("Error deleting expired refresh tokens:", error);
   }

@@ -8,6 +8,7 @@ const User = require("../auth/models/UserModel");
 const Role = require("../auth/models/RoleModel");
 const UserRole = require("../auth/models/UserRoleModel");
 const Token = require("../auth/models/TokenModel");
+const BlacklistToken = require("../auth/models/BlacklistTokenModel");
 
 const Product = require("../product/models/ProductModel");
 const Category = require("../product/models/CategoryModel");
@@ -69,6 +70,13 @@ User.hasMany(Token, {
   foreignKey: "userId",
 });
 Token.belongsTo(User, {
+  foreignKey: "userId",
+  as: "User",
+});
+User.hasMany(BlacklistToken, {
+  foreignKey: "userId",
+});
+BlacklistToken.belongsTo(User, {
   foreignKey: "userId",
   as: "User",
 });
@@ -153,6 +161,7 @@ module.exports = {
   Role,
   UserRole,
   Token,
+  BlacklistToken,
   Product,
   Category,
   ProductCategory,

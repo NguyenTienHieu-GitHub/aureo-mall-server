@@ -6,15 +6,13 @@ const getAllAddress = async (req, res) => {
 
     res.locals.message = "Show all addresses successfully";
     res.locals.data = addresses;
-    return res.status(200).json({ data: res.locals.data });
+    return res.status(200).json();
   } catch (error) {
     console.error("Error retrieving addresses:", error);
-    if (error.message === "Address not found") {
-      res.locals.message = error.message;
+    if (error.message.includes("Address not found")) {
       res.locals.error = "Address not found in the database";
       return res.status(404).json();
     } else {
-      res.locals.message = "Internal Server Error";
       res.locals.error = error.message;
       return res.status(500).json();
     }
@@ -23,7 +21,6 @@ const getAllAddress = async (req, res) => {
 const getAddressById = async (req, res) => {
   const addressId = req.params.id;
   if (!addressId) {
-    res.locals.message = "Missing required fields";
     res.locals.error = "Missing required fields: id";
     return res.status(400).json();
   }
@@ -41,15 +38,13 @@ const getAddressById = async (req, res) => {
       ward: addressById.ward,
       address: addressById.address,
     };
-    return res.status(200).json({ data: res.locals.data });
+    return res.status(200).json();
   } catch (error) {
     console.error(error);
-    if (error.message === "Address not found") {
+    if (error.message.includes("Address not found")) {
       res.locals.error = "Address not found in the database";
-      re.locals.message = error.message;
       return res.status(404).json();
     } else {
-      res.locals.message = "Internal Server Error";
       res.locals.error = error.message;
       return res.status(500).json();
     }
@@ -69,8 +64,7 @@ const createAddress = async (req, res) => {
   try {
     const userId = req.user.id;
     if (!userId) {
-      res.locals.message = "You are not authenticated";
-      res.locals.error = "You need to login";
+      res.locals.error = "You are not authenticated";
       return res.status(400).json();
     }
 
@@ -96,15 +90,13 @@ const createAddress = async (req, res) => {
       ward: insertedAddress.ward,
       address: insertedAddress.address,
     };
-    return res.status(201).json({ data: res.locals.data });
+    return res.status(201).json();
   } catch (error) {
     console.error("Error adding address:", error);
-    if (error.message === "Address creation failed") {
-      res.locals.message = error.message;
+    if (error.message.includes("Address creation failed")) {
       res.locals.error = "Address creation failed";
       return res.status(400).json();
     } else {
-      res.locals.message = "Internal Server Error";
       res.locals.error = error.message;
       return res.status(500).json();
     }
@@ -114,7 +106,6 @@ const createAddress = async (req, res) => {
 const updateAddress = async (req, res) => {
   const addressId = req.params.id;
   if (!addressId) {
-    res.locals.message = "Missing required fields";
     res.locals.error = "Missing required fields: id";
     return res.status(400).json();
   }
@@ -130,8 +121,7 @@ const updateAddress = async (req, res) => {
   try {
     const userId = req.user.id;
     if (!userId) {
-      res.locals.message = "You are not authenticated";
-      res.locals.error = "You need to login";
+      res.locals.error = "You are not authenticated";
       return res.status(400).json();
     }
     const updatedAddress = await AddressService.updateAddress({
@@ -147,15 +137,13 @@ const updateAddress = async (req, res) => {
     });
     res.locals.message = "Address updated successfully";
     res.locals.data = updatedAddress;
-    return res.status(200).json({ data: res.locals.data });
+    return res.status(200).json();
   } catch (error) {
     console.error("Error updating address: ", error);
-    if (error.message === "Address not found") {
+    if (error.message.includes("Address not found")) {
       res.locals.error = "Address not found in the database.";
-      res.locals.message = error.message;
       return res.status(404).json();
     } else {
-      res.locals.message = "Internal Server Error";
       res.locals.error = error.message;
       return res.status(500).json();
     }
@@ -165,15 +153,13 @@ const updateAddress = async (req, res) => {
 const deleteAddress = async (req, res) => {
   const addressId = req.params.id;
   if (!addressId) {
-    res.locals.message = "Missing required fields";
-    res.locals.error = "Missing required fields: id, userId";
+    res.locals.error = "Missing required fields: id";
     return res.status(400).json();
   }
   try {
     const userId = req.user.id;
     if (!userId) {
-      res.locals.message = "You are not authenticated";
-      res.locals.error = "You need to login";
+      res.locals.error = "You are not authenticated";
       return res.status(400).json();
     }
     await AddressService.deleteAddress({
@@ -183,15 +169,14 @@ const deleteAddress = async (req, res) => {
     res.locals.message = "Address deleted successfully";
     return res.status(200).json();
   } catch (error) {
+    console.error("Error deleting address", error);
     if (error.message === "Address not found") {
       res.locals.error = "Address not found in the database";
-      res.locals.message = error.message;
       return res.status(404).json();
+    } else {
+      res.locals.error = error.message;
+      return res.status(500).json();
     }
-    console.error("Error deleting address", error);
-    res.locals.message = "Internal Server Error";
-    res.locals.error = error.message;
-    return res.status(500).json();
   }
 };
 module.exports = {

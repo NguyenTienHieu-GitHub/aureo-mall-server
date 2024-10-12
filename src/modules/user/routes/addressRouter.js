@@ -1,41 +1,46 @@
 const express = require("express");
 const router = express.Router();
 const addressController = require("../controllers/AddressController");
-const { authMiddleware } = require("../../../shared/middleware/AuthMiddleware");
+const {
+  verifyToken,
+  verifyRefreshToken,
+  verifyTokenBlacklist,
+  checkPermission,
+} = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");
 const Address = require("../models/AddressModel");
 const models = [Address];
 
 router.delete(
   "/delete/:id",
-  authMiddleware.verifyToken,
-  authMiddleware.checkPermission("delete_my_address", "Address"),
+  verifyToken,
+  checkPermission("delete_my_address", "Address"),
   addressController.deleteAddress
 );
 router.put(
   "/update/:id",
-  authMiddleware.verifyToken,
+  verifyToken,
   validateRequest(models),
-  authMiddleware.checkPermission("edit", "Address"),
+  checkPermission("edit", "Address"),
   addressController.updateAddress
 );
 router.post(
   "/create",
-  authMiddleware.verifyToken,
+  verifyToken,
   validateRequest(models),
-  authMiddleware.checkPermission("create", "Address"),
+  checkPermission("create", "Address"),
   addressController.createAddress
 );
 router.get(
   "/:id",
-  authMiddleware.verifyToken,
-  authMiddleware.checkPermission("view_address", "Address"),
+  verifyToken,
+  checkPermission("view_address", "Address"),
   addressController.getAddressById
 );
 router.get(
   "/",
-  authMiddleware.verifyToken,
-  authMiddleware.checkPermission("view_all_addresses", "Address"),
+  verifyToken,
+  checkPermission("view_all_addresses", "Address"),
   addressController.getAllAddress
 );
 

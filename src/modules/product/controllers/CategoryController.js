@@ -9,14 +9,12 @@ const createCategory = async (req, res) => {
     });
     res.locals.message = "Category created successfully";
     res.locals.data = allCategories;
-    return res.status(200).json({ data: res.locals.data });
+    return res.status(200).json();
   } catch (error) {
     if (error.message.includes("Category created failed")) {
-      res.locals.message = error.message;
-      res.locals.error = error.message;
+      res.locals.error = "Category created failed";
       return res.status(400).json();
     } else {
-      res.locals.message = "Internal Server Error";
       res.locals.error = error.message;
       return res.status(500).json();
     }
@@ -27,14 +25,12 @@ const getAllCategory = async (req, res) => {
     const categoryTree = await CategoryService.getAllCategory();
     res.locals.message = "Show all categories";
     res.locals.data = categoryTree;
-    return res.status(200).json({ data: res.locals.data });
+    return res.status(200).json();
   } catch (error) {
     if (error.message.includes("Categories not found")) {
-      res.locals.message = "Categories not found in the database";
-      res.locals.error = error.message;
+      res.locals.error = "Categories not found in the database";
       return res.stats(404).json();
     } else {
-      res.locals.message = "Internal Server Error";
       res.locals.error = error.message;
       return res.status(500).json();
     }

@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const productController = require("../controllers/ProductController");
-const { authMiddleware } = require("../../../shared/middleware/AuthMiddleware");
+const {
+  verifyToken,
+  verifyRefreshToken,
+  verifyTokenBlacklist,
+} = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");
 const Product = require("../models/ProductModel");
 const ProductPrice = require("../models/ProductPriceModel");
@@ -15,26 +19,18 @@ const models = [Product, ProductPrice, ProductMedia, ProductOption, Inventory];
 
 router.post(
   "/create",
-  authMiddleware.verifyToken,
+  verifyToken,
   validateRequest(models),
   productController.createProduct
 );
-router.delete(
-  "/delete/:slug",
-  authMiddleware.verifyToken,
-  productController.deleteProduct
-);
+router.delete("/delete/:slug", verifyToken, productController.deleteProduct);
 router.put(
   "/update/:slug",
-  authMiddleware.verifyToken,
+  verifyToken,
   validateRequest(models),
   productController.updateProduct
 );
-router.get(
-  "/:slug",
-  authMiddleware.verifyToken,
-  productController.getProductBySlug
-);
-router.get("/", authMiddleware.verifyToken, productController.getAllProducts);
+router.get("/:slug", verifyToken, productController.getProductBySlug);
+router.get("/", verifyToken, productController.getAllProducts);
 
 module.exports = router;

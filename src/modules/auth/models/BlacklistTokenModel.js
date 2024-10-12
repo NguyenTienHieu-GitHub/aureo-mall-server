@@ -1,13 +1,18 @@
 const sequelize = require("../../../config/db/index");
 const { DataTypes } = require("sequelize");
 
-const Token = sequelize.define(
-  "Tokens",
+const BlacklistToken = sequelize.define(
+  "BlacklistTokens",
   {
     id: {
       type: DataTypes.INTEGER,
-      autoIncrement: true,
       primaryKey: true,
+      autoIncrement: true,
+    },
+    accessToken: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
     },
     userId: {
       type: DataTypes.UUID,
@@ -17,10 +22,6 @@ const Token = sequelize.define(
         key: "id",
       },
       onDelete: "CASCADE",
-    },
-    refreshToken: {
-      type: DataTypes.TEXT,
-      allowNull: true,
     },
     expiresAt: {
       type: DataTypes.DATE,
@@ -34,10 +35,10 @@ const Token = sequelize.define(
     },
   },
   {
-    tableName: "Tokens",
-    modelName: "Token",
+    tableName: "BlacklistTokens",
+    modelName: "BlacklistToken",
     timestamps: false,
   }
 );
 
-module.exports = Token;
+module.exports = BlacklistToken;
