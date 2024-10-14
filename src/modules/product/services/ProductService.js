@@ -2,7 +2,10 @@ const Product = require("../models/ProductModel");
 const ProductPrice = require("../models/ProductPriceModel");
 const ProductMedia = require("../models/ProductMediaModel");
 const ProductOption = require("../models/ProductOptionModel");
+const ProductOptionValue = require("../models/ProductOptionValueModel");
 const Inventory = require("../models/InventoryModel");
+const Category = require("../models/CategoryModel");
+const ProductCategory = require("../models/ProductCategoryModel");
 const Warehouse = require("../models/WarehouseModel");
 const Shop = require("../models/ShopModel");
 const slugify = require("slugify");
@@ -46,6 +49,10 @@ const getAllProducts = async () => {
         ],
       },
       {
+        model: Category,
+        attributes: ["categoryName"],
+      },
+      {
         model: Inventory,
         as: "Inventory",
         attributes: ["quantity"],
@@ -79,6 +86,8 @@ const getAllProducts = async () => {
       discountEndDate: product.ProductPrice[0]?.discountEndDate,
       finalPrice: product.ProductPrice[0]?.finalPrice,
       description: product.description,
+      categoryList:
+        product.Categories?.map((category) => category.categoryName) || [],
       mediaList: product.ProductMedia,
       optionList: product.ProductOptions,
       quantity: product.Inventory[0]?.quantity,
@@ -98,6 +107,7 @@ const createProduct = async ({
   discountStartDate,
   discountEndDate,
   description,
+  categoryId,
   mediaList,
   optionList,
   quantity,
@@ -123,6 +133,15 @@ const createProduct = async ({
       },
       { transaction }
     );
+    if (categoryId) {
+      await ProductCategory.create(
+        {
+          productId: newProduct.id,
+          categoryId: categoryId,
+        },
+        { transaction }
+      );
+    }
 
     if (Array.isArray(mediaList) && mediaList.length > 0) {
       const mediaData = mediaList.map((item) => ({
@@ -133,15 +152,25 @@ const createProduct = async ({
       }));
       await ProductMedia.bulkCreate(mediaData, { transaction });
     }
+    for (const optionName in optionList) {
+      const option = await ProductOption.create(
+        {
+          productId: newProduct.id,
+          optionName: optionName,
+        },
+        { transaction }
+      );
 
-    if (Array.isArray(optionList) && optionList.length > 0) {
-      const optionData = optionList.map((option) => ({
-        productId: newProduct.id,
-        optionName: option.optionName,
-        optionValue: option.optionValue,
-      }));
-      await ProductOption.bulkCreate(optionData, { transaction });
+      const values = optionList[optionName];
+      await ProductOptionValue.bulkCreate(
+        values.map((value) => ({
+          optionId: option.id,
+          optionValue: value,
+        })),
+        { transaction }
+      );
     }
+
     await Inventory.create(
       {
         productId: newProduct.id,
@@ -187,7 +216,18 @@ const createProduct = async ({
         },
         {
           model: ProductOption,
-          attributes: ["optionName", "optionValue"],
+          attributes: ["optionName"],
+          include: [
+            {
+              model: ProductOptionValue,
+              attributes: ["optionValue"],
+            },
+          ],
+        },
+        {
+          model: Category,
+          as: "Categories",
+          attributes: ["categoryName"],
         },
         {
           model: Shop,
@@ -258,25 +298,45 @@ const updateProduct = async ({
   discountStartDate,
   discountEndDate,
   description,
+  categoryId,
   mediaList,
   optionList,
   quantity,
 }) => {
-  const product = await Product.findOne({ where: { slug: slug } });
-  if (!product) {
-    throw new Error("Product not found");
-  }
   const transaction = await sequelize.transaction();
   try {
-    const newSlug = await generateSlug(productName);
-    await Product.update(
-      {
-        productName,
-        description,
-        slug: newSlug,
-      },
-      { where: { slug: slug }, transaction }
-    );
+    const product = await Product.findOne({ where: { slug }, transaction });
+    if (!product) {
+      throw new Error("Product not found");
+    }
+    if (product.productName !== productName) {
+      const newSlug = await generateSlug(productName);
+      await Product.update(
+        {
+          productName,
+          description,
+          slug: newSlug,
+        },
+        { where: { slug: slug }, transaction }
+      );
+    } else {
+      await Product.update(
+        {
+          description,
+        },
+        { where: { slug }, transaction }
+      );
+    }
+    if (categoryId) {
+      await ProductCategory.update(
+        {
+          productId: product.id,
+          categoryId: categoryId,
+        },
+
+        { where: { productId: product.id }, transaction }
+      );
+    }
     await ProductPrice.update(
       {
         originalPrice,
@@ -287,28 +347,35 @@ const updateProduct = async ({
       },
       { where: { productId: product.id }, transaction }
     );
-    if (Array.isArray(mediaList) && mediaList.length > 0) {
-      const mediaData = mediaList.map((item) => ({
-        productId: product.id,
-        mediaType: item.mediaType,
-        mediaUrl: item.mediaUrl,
-      }));
-      await ProductMedia.bulkCreate(mediaData, {
-        updateOnDuplicate: ["mediaType", "mediaUrl"],
-        transaction,
-      });
+    const mediaId = await ProductMedia.findAll({
+      where: { productId: product.id },
+      transaction,
+    });
+    for (const item of mediaList) {
+      await ProductMedia.update(
+        {
+          id: mediaId.id,
+          productId: product.id,
+          mediaUrl: item.mediaUrl,
+          mediaType: item.mediaType,
+          isFeatured: item.isFeatured,
+        },
+        { where: { id: optionId }, transaction }
+      );
     }
-
-    if (Array.isArray(optionList) && optionList.length > 0) {
-      const optionData = optionList.map((option) => ({
-        productId: product.id,
-        optionName: option.optionName,
-        optionValue: option.optionValue,
-      }));
-      await ProductOption.bulkCreate(optionData, {
-        updateOnDuplicate: ["optionName", "optionValue"],
-        transaction,
-      });
+    const optionId = await ProductOption.findAll({
+      where: { productId: product.id },
+      transaction,
+    });
+    for (const option of optionList) {
+      await ProductOption.update(
+        {
+          productId: product.id,
+          optionName: option.optionName,
+          optionValue: option.optionValue,
+        },
+        { where: { id: optionId }, transaction }
+      );
     }
     await Inventory.update(
       { quantity },
@@ -342,6 +409,10 @@ const updateProduct = async ({
         {
           model: ProductOption,
           attributes: ["optionName", "optionValue"],
+        },
+        {
+          model: Category,
+          attributes: ["categoryName"],
         },
         {
           model: Shop,

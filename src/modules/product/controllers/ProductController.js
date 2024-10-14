@@ -1,19 +1,30 @@
 const ProductService = require("../../product/services/ProductService");
+const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
 
 const getAllProducts = async (req, res) => {
   try {
     const products = await ProductService.getAllProducts();
-
-    res.locals.message = "Show all products";
-    res.locals.data = products;
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Show all products",
+      data: products,
+    });
   } catch (error) {
     if (error.message.includes("Product not found")) {
-      res.locals.error = "Product not found in the database";
-      return res.status(404).json();
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PRODUCT_NOT_FOUND",
+        errorMessage: "Product not found in the database",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
@@ -21,8 +32,12 @@ const getAllProducts = async (req, res) => {
 const createProduct = async (req, res) => {
   const userId = req.user.id;
   if (!userId) {
-    res.locals.error = "You are not authenticated";
-    return res.status(400).json();
+    return setResponseLocals({
+      res,
+      statusCode: 401,
+      errorCode: "TOKEN_INVALID",
+      errorMessage: "You are not authenticated",
+    });
   }
   const {
     productName,
@@ -32,6 +47,7 @@ const createProduct = async (req, res) => {
     discountStartDate,
     discountEndDate,
     description,
+    categoryId,
     mediaList,
     optionList,
     quantity,
@@ -46,30 +62,37 @@ const createProduct = async (req, res) => {
       discountStartDate,
       discountEndDate,
       description,
+      categoryId,
       mediaList,
       optionList,
       quantity,
     });
 
-    res.locals.message = "Product created successfully";
-    res.locals.data = {
-      shopName: productData.Shop?.shopName,
-      productName: productData.productName,
-      originalPrice: productData.ProductPrice[0]?.originalPrice,
-      discountPrice: productData.ProductPrice[0]?.discountPrice,
-      discountType: productData.ProductPrice[0]?.discountType,
-      discountStartDate: productData.ProductPrice[0]?.discountStartDate,
-      discountEndDate: productData.ProductPrice[0]?.discountEndDate,
-      finalPrice: productData.ProductPrice[0]?.finalPrice,
-      description: productData.description,
-      mediaList: productData.ProductMedia,
-      optionList: productData.ProductOptions,
-      quantity: productData.Inventory[0]?.quantity,
-      slug: productData.slug,
-      createdAt: productData.createdAt,
-      updatedAt: productData.updatedAt,
-    };
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Product created successfully",
+      data: {
+        shopName: productData.Shop?.shopName,
+        productName: productData.productName,
+        originalPrice: productData.ProductPrice[0]?.originalPrice,
+        discountPrice: productData.ProductPrice[0]?.discountPrice,
+        discountType: productData.ProductPrice[0]?.discountType,
+        discountStartDate: productData.ProductPrice[0]?.discountStartDate,
+        discountEndDate: productData.ProductPrice[0]?.discountEndDate,
+        finalPrice: productData.ProductPrice[0]?.finalPrice,
+        description: productData.description,
+        categoryList:
+          productData.Categories?.map((category) => category.categoryName) ||
+          [],
+        mediaList: productData.ProductMedia,
+        optionList: productData.ProductOptions,
+        quantity: productData.Inventory[0]?.quantity,
+        slug: productData.slug,
+        createdAt: productData.createdAt,
+        updatedAt: productData.updatedAt,
+      },
+    });
   } catch (error) {
     console.error(error);
     if (
@@ -77,27 +100,43 @@ const createProduct = async (req, res) => {
         "You need to create a store before creating products"
       )
     ) {
-      res.locals.error = "You need to create a store before creating products";
-      return res.status(404).json();
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "CREATE_PRODUCT_NO_ASSOCIATED_SHOP",
+        errorMessage: "You need to create a store before creating products",
+      });
     } else if (
       error.message.includes(
         "Both the discount type, discount start date and discount end date must be provided when the discount price is set"
       )
     ) {
-      res.locals.error =
-        "You need to create a discount type, a discount start date and a discount end date";
-      return res.status(400).json();
+      return setResponseLocals({
+        res,
+        statusCode: 400,
+        errorCode: "CREATE_DISCOUNT_MISSING_REQUIRED_FIELDS",
+        errorMessage:
+          "You need to create a discount type, a discount start date and a discount end date",
+      });
     } else if (
       error.message.includes(
         "Discount end date must be greater than the start date"
       )
     ) {
-      res.locals.error =
-        "You need to create a discount end date that is less than the discount start date";
-      return res.status(400).json();
+      return setResponseLocals({
+        res,
+        statusCode: 400,
+        errorCode: "DISCOUNT_INVALID_DATE_RANGE",
+        errorMessage:
+          "You need to create a discount end date that is less than the discount start date",
+      });
     } else {
-      res.locals.error = error;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
@@ -105,45 +144,71 @@ const createProduct = async (req, res) => {
 const getProductBySlug = async (req, res) => {
   const slug = req.params.slug;
   if (!slug) {
-    res.locals.error = "Missing required field: slug";
-    return res.status(404).json();
+    return setResponseLocals({
+      res,
+      statusCode: 404,
+      errorCode: "MISSING_FIELD",
+      errorMessage: "Missing required field: slug",
+    });
   }
   try {
     const productData = await ProductService.getProductBySlug(slug);
-    res.locals.message = "Show product successfully";
-    res.locals.data = {
-      shopName: productData.Shop?.shopName,
-      productName: productData.productName,
-      originalPrice: productData.ProductPrice[0]?.originalPrice,
-      discountPrice: productData.ProductPrice[0]?.discountPrice,
-      discountType: productData.ProductPrice[0]?.discountType,
-      discountStartDate: productData.ProductPrice[0]?.discountStartDate,
-      discountEndDate: productData.ProductPrice[0]?.discountEndDate,
-      finalPrice: productData.ProductPrice[0]?.finalPrice,
-      description: productData.description,
-      mediaList: productData.ProductMedia,
-      optionList: productData.ProductOptions,
-      quantity: productData.Inventory[0]?.quantity,
-      slug: productData.slug,
-      createdAt: productData.createdAt,
-      updatedAt: productData.updatedAt,
-    };
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Show product successfully",
+      data: {
+        shopName: productData.Shop?.shopName,
+        productName: productData.productName,
+        originalPrice: productData.ProductPrice[0]?.originalPrice,
+        discountPrice: productData.ProductPrice[0]?.discountPrice,
+        discountType: productData.ProductPrice[0]?.discountType,
+        discountStartDate: productData.ProductPrice[0]?.discountStartDate,
+        discountEndDate: productData.ProductPrice[0]?.discountEndDate,
+        finalPrice: productData.ProductPrice[0]?.finalPrice,
+        description: productData.description,
+        categoryList:
+          productData.Categories?.map((category) => category.categoryName) ||
+          [],
+        mediaList: {
+          mediaType: productData.ProductMedia[0]?.mediaType,
+          mediaUrl: productData.ProductMedia[0]?.mediaUrl,
+          isFeatured: productData.ProductMedia[0]?.isFeatured,
+        },
+        optionList: productData.ProductOptions,
+        quantity: productData.Inventory[0]?.quantity,
+        slug: productData.slug,
+        createdAt: productData.createdAt,
+        updatedAt: productData.updatedAt,
+      },
+    });
   } catch (error) {
     if (error.message.includes("Product not found")) {
-      res.locals.error = "Product not found in database";
-      return res.status(404).json();
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PRODUCT_NOT_FOUND",
+        errorMessage: "Product not found in database",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
 const updateProduct = async (req, res) => {
   const slug = req.params.slug;
   if (!slug) {
-    res.locals.error = "Missing required field: slug";
-    return res.status(404).json();
+    return setResponseLocals({
+      res,
+      statusCode: 404,
+      errorCode: "MISSING_FIELD",
+      errorMessage: "Missing required field: slug",
+    });
   }
   const {
     productName,
@@ -153,6 +218,7 @@ const updateProduct = async (req, res) => {
     discountStartDate,
     discountEndDate,
     description,
+    categoryId,
     mediaList,
     optionList,
     quantity,
@@ -167,57 +233,86 @@ const updateProduct = async (req, res) => {
       discountStartDate,
       discountEndDate,
       description,
+      categoryId,
       mediaList,
       optionList,
       quantity,
     });
-
-    res.locals.message = "Product created successfully";
-    res.locals.data = {
-      shopName: productData.Shop?.shopName,
-      productName: productData.productName,
-      originalPrice: productData.ProductPrice[0]?.originalPrice,
-      discountPrice: productData.ProductPrice[0]?.discountPrice,
-      discountType: productData.ProductPrice[0]?.discountType,
-      discountStartDate: productData.ProductPrice[0]?.discountStartDate,
-      discountEndDate: productData.ProductPrice[0]?.discountEndDate,
-      finalPrice: productData.ProductPrice[0]?.finalPrice,
-      description: productData.description,
-      mediaList: productData.ProductMedia,
-      optionList: productData.ProductOptions,
-      quantity: productData.Inventory[0]?.quantity,
-      slug: productData.slug,
-      createdAt: productData.createdAt,
-      updatedAt: productData.updatedAt,
-    };
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Product created successfully",
+      data: {
+        shopName: productData.Shop?.shopName,
+        productName: productData.productName,
+        originalPrice: productData.ProductPrice[0]?.originalPrice,
+        discountPrice: productData.ProductPrice[0]?.discountPrice,
+        discountType: productData.ProductPrice[0]?.discountType,
+        discountStartDate: productData.ProductPrice[0]?.discountStartDate,
+        discountEndDate: productData.ProductPrice[0]?.discountEndDate,
+        finalPrice: productData.ProductPrice[0]?.finalPrice,
+        description: productData.description,
+        categoryList:
+          productData.Categories?.map((category) => category.categoryName) ||
+          [],
+        mediaList: productData.ProductMedia,
+        optionList: productData.ProductOptions,
+        quantity: productData.Inventory[0]?.quantity,
+        slug: productData.slug,
+        createdAt: productData.createdAt,
+        updatedAt: productData.updatedAt,
+      },
+    });
   } catch (error) {
     if (error.message.includes("Product not found")) {
-      res.locals.error = "Product not found in database";
-      return res.status(404).json();
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PRODUCT_NOT_FOUND",
+        errorMessage: "Product not found in database",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
 const deleteProduct = async (req, res) => {
   const slug = req.params.slug;
   if (!slug) {
-    res.locals.error = "Missing required field: slug";
-    return res.status(404).json();
+    return setResponseLocals({
+      res,
+      statusCode: 404,
+      errorCode: "MISSING_FIELD",
+      errorMessage: "Missing required field: slug",
+    });
   }
   try {
     await ProductService.deleteProduct(slug);
-    res.locals.message = "Product deleted successfully";
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Product deleted successfully",
+    });
   } catch (error) {
     if (error.message.includes("Product not found")) {
-      res.locals.error = "Product not found in database";
-      return res.status(404).json();
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PRODUCT_NOT_FOUND",
+        errorMessage: "Product not found in database",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };

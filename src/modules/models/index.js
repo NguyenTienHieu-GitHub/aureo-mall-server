@@ -19,6 +19,7 @@ const Inventory = require("../product/models/InventoryModel");
 const Warehouse = require("../product/models/WarehouseModel");
 const ProductMedia = require("../product/models/ProductMediaModel");
 const ProductOption = require("../product/models/ProductOptionModel");
+const ProductOptionValue = require("../product/models/ProductOptionValueModel");
 
 const Address = require("../user/models/AddressModel");
 const Permission = require("../user/models/PermissionModel");
@@ -131,6 +132,14 @@ ProductOption.belongsTo(Product, {
   as: "Product",
 });
 
+ProductOption.hasMany(ProductOptionValue, {
+  foreignKey: "optionId",
+});
+ProductOptionValue.belongsTo(ProductOption, {
+  foreignKey: "optionId",
+  as: "ProductOption",
+});
+
 Warehouse.hasMany(Inventory, {
   foreignKey: "warehouseId",
 });
@@ -171,6 +180,7 @@ module.exports = {
   Warehouse,
   ProductMedia,
   ProductOption,
+  ProductOptionValue,
   Address,
   Permission,
   RolePermission,

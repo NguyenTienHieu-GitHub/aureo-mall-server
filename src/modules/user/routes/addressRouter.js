@@ -3,8 +3,6 @@ const router = express.Router();
 const addressController = require("../controllers/AddressController");
 const {
   verifyToken,
-  verifyRefreshToken,
-  verifyTokenBlacklist,
   checkPermission,
 } = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");

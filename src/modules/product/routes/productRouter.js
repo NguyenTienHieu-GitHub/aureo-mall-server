@@ -1,21 +1,25 @@
 const express = require("express");
 const router = express.Router();
 const productController = require("../controllers/ProductController");
-const {
-  verifyToken,
-  verifyRefreshToken,
-  verifyTokenBlacklist,
-} = require("../../../shared/middleware/AuthMiddleware");
+const { verifyToken } = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");
 const Product = require("../models/ProductModel");
 const ProductPrice = require("../models/ProductPriceModel");
 const ProductMedia = require("../models/ProductMediaModel");
 const ProductOption = require("../models/ProductOptionModel");
 const Inventory = require("../models/InventoryModel");
+const ProductCategory = require("../models/ProductCategoryModel");
 const Warehouse = require("../models/WarehouseModel");
 const Shop = require("../models/ShopModel");
 
-const models = [Product, ProductPrice, ProductMedia, ProductOption, Inventory];
+const models = [
+  Product,
+  ProductPrice,
+  ProductMedia,
+  ProductOption,
+  Inventory,
+  ProductCategory,
+];
 
 router.post(
   "/create",

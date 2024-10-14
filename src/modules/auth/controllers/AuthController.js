@@ -1,20 +1,32 @@
 const AuthService = require("../services/AuthService");
+const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
 const jwt = require("jsonwebtoken");
 
 const registerUser = async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
   try {
     await AuthService.register({ firstName, lastName, email, password });
-    res.locals.message = "Registered account successfully";
-    return res.status(201).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Registered account successfully",
+    });
   } catch (error) {
+    console.error("ERROR DURING REGISTER: ", error);
     if (error.message.includes("Email already exists.")) {
-      res.locals.error =
-        "This email is already associated with another account.";
-      return res.status(409).json();
+      return setResponseLocals({
+        res,
+        statusCode: 409,
+        errorCode: "EMAIL_EXISTS",
+        errorMessage: "This email is already associated with another account",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
@@ -39,17 +51,28 @@ const loginUser = async (req, res) => {
       path: "/",
       sameSite: "strict",
     });
-    res.locals.message = "Login Successfully";
-    res.locals.data = { accessKey };
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Login Successfully",
+      data: { accessKey },
+    });
   } catch (error) {
-    console.error("Error during login:", error);
-    if (error.message.includes("Invalid email or password.")) {
-      res.locals.error = "Invalid email or password";
-      return res.status(401).json();
+    console.error("ERROR DURING LOGIN: ", error);
+    if (error.message.includes("Invalid email or password")) {
+      return setResponseLocals({
+        res,
+        statusCode: 401,
+        errorCode: "INVALID_EMAIL_OR_PASSWORD",
+        errorMessage: "Invalid email or password",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
@@ -58,8 +81,13 @@ const refreshToken = async (req, res) => {
   try {
     const refreshKey = req.cookies["XSRF-TOKEN"];
     if (!refreshKey) {
-      res.locals.error = "You are not authenticated";
-      return res.status(401).json();
+      res.locals.errorMessage = "You are not authenticated";
+      return setResponseLocals({
+        res,
+        statusCode: 401,
+        errorCode: "TOKEN_INVALID",
+        errorMessage: "You are not authenticated",
+      });
     }
 
     const { newAccessKey, newRefreshKey } = await AuthService.refreshToken(
@@ -68,9 +96,7 @@ const refreshToken = async (req, res) => {
     const decoded = jwt.decode(newRefreshKey);
     const exp = decoded.exp;
     const currentTime = Math.floor(Date.now() / 1000);
-
     const timeLeft = exp - currentTime;
-
     res.cookie("XSRF-TOKEN", newRefreshKey, {
       maxAge: timeLeft * 1000,
       httpOnly: true,
@@ -78,21 +104,35 @@ const refreshToken = async (req, res) => {
       path: "/",
       sameSite: "strict",
     });
-
-    res.locals.message = "Refresh token successfully";
-    res.locals.data = { newAccessKey };
-    return res.status(200).json({ data: res.locals.data });
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Refresh token successfully",
+      data: { newAccessKey },
+    });
   } catch (error) {
-    console.error("Error during RefreshToken:", error);
-    if (error.message.includes("Refresh token is not valid")) {
-      res.locals.error = "Refresh token not in the database";
-      return res.status(404).json();
-    } else if (error.message.includes("Token is not valid")) {
-      res.locals.error = "You are not authenticated";
-      return res.status(403).json();
+    console.error("ERROR DURING REFRESH: ", error);
+    if (error.message.includes("Refresh token is not found")) {
+      return setResponseLocals({
+        res,
+        statusCode: 401,
+        errorCode: "TOKEN_NOT_FOUND",
+        errorMessage: "Token not in the database",
+      });
+    } else if (error.message.includes("Refresh token is not valid")) {
+      return setResponseLocals({
+        res,
+        statusCode: 401,
+        errorCode: "TOKEN_INVALID",
+        errorMessage: "You are not authenticated",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
@@ -104,8 +144,12 @@ const logoutUser = async (req, res) => {
   try {
     const refreshKey = req.cookies["XSRF-TOKEN"];
     if (!refreshKey) {
-      res.locals.error = "You are not authenticated";
-      return res.status(401).json();
+      return setResponseLocals({
+        res,
+        statusCode: 401,
+        errorCode: "TOKEN_INVALID",
+        errorMessage: "You are not authenticated",
+      });
     }
     await AuthService.logout({
       refreshKey,
@@ -118,12 +162,19 @@ const logoutUser = async (req, res) => {
       path: "/",
       sameSite: "strict",
     });
-    res.locals.message = "Logout Successfully";
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Logout Successfully",
+    });
   } catch (error) {
-    console.error("Error during logout:", error);
-    res.locals.error = error.message;
-    return res.status(500).json();
+    console.error("ERROR DURING LOGOUT: ", error);
+    return setResponseLocals({
+      res,
+      statusCode: 500,
+      errorCode: "INTERNAL_SERVER_ERROR",
+      errorMessage: error.message,
+    });
   }
 };
 

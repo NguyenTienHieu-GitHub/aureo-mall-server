@@ -1,31 +1,30 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../../../config/db/index");
 
-const ProductOption = sequelize.define(
-  "ProductOptions",
+const ProductOptionValue = sequelize.define(
+  "ProductOptionValues",
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    productId: {
+    optionId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "Products",
+        model: "ProductOptions",
         key: "id",
       },
     },
-    optionName: {
+    optionValue: {
       type: DataTypes.STRING,
       allowNull: true,
     },
   },
   {
-    tableName: "ProductOptions",
-    modelName: "ProductOption",
+    tableName: "ProductOptionValues",
     timestamps: false,
   }
 );
-module.exports = ProductOption;
+module.exports = ProductOptionValue;

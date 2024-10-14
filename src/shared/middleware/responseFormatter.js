@@ -6,20 +6,18 @@ const responseFormatter = (req, res, next) => {
     const statusCode = res.statusCode;
     const response = {
       status: statusCode,
-      message: res.locals.message || "Request successful",
+      message: res.locals.messageSuccess || "Request successful",
       data: res.locals.data !== undefined ? res.locals.data : null,
     };
     if (isErrorResponse) {
       response.error = {
-        errorCode: res.statusCode,
-        errorMessage: res.locals.error || "An error occurred",
+        errorCode: res.locals.errorCode || "ERROR",
+        errorMessage: res.locals.errorMessage || "An error occurred",
       };
       delete response.data;
       delete response.message;
-    } else if (response.data === null) {
-      delete response.data;
     } else {
-      delete response.error;
+      response.data === null ? delete response.data : delete response.error;
     }
     try {
       const jsonResponse = JSON.stringify(response);

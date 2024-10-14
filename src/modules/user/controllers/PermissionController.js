@@ -1,41 +1,68 @@
 const PermissionService = require("../services/PermissionService");
+const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
 
 const getAllPermissions = async (req, res) => {
   try {
     const allPermissions = await PermissionService.getAllPermissions();
-    res.locals.message = "Show all successful permissions";
-    res.locals.data = allPermissions;
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Show all successful permissions",
+      data: allPermissions,
+    });
   } catch (error) {
     console.error(error);
     if (error.message.includes("Permissions not found")) {
-      res.locals.error = "Permissions not found in the database";
-      return res.status(404).json();
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PERMISSION_NOT_FOUND",
+        errorMessage: "Permissions not found in the database",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
 const getPermissionById = async (req, res) => {
   const permissionId = req.params.id;
   if (!permissionId) {
-    res.locals.error = "Missing required fields: id";
-    return res.status(400).json();
+    return setResponseLocals({
+      res,
+      statusCode: 400,
+      errorCode: "MISSING_FIELD",
+      errorMessage: "Missing required fields: id",
+    });
   }
   try {
     const permission = await PermissionService.getPermissionById(permissionId);
-    res.locals.message = "Show successful permission";
-    res.locals.data = permission;
-    return res.status(200).json({ data: res.locals.data });
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Show successful permission",
+      data: permission,
+    });
   } catch (error) {
     console.log(error);
     if (error.message.includes("Permissions not found")) {
-      res.locals.error = "Permissions not found in the database";
-      return res.status(404).json();
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PERMISSION_NOT_FOUND",
+        errorMessage: "Permissions not found in the database",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
@@ -48,9 +75,13 @@ const createPermission = async (req, res) => {
       description,
       roleId,
     });
-    res.locals.message = "Created permission";
-    res.locals.data = responseData;
-    return res.status(200).json();
+
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Create permission successfully",
+      data: responseData,
+    });
   } catch (error) {
     console.error(error);
     if (
@@ -58,20 +89,31 @@ const createPermission = async (req, res) => {
         "Permission with this action and resource already exists."
       )
     ) {
-      res.locals.error =
-        "Permission with this action and resource already exists";
-      return res.status(400).json();
+      return setResponseLocals({
+        res,
+        statusCode: 400,
+        errorCode: "PERMISSION_EXISTS",
+        errorMessage: "Permission with this action and resource already exists",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
 const updatePermission = async (req, res) => {
   const permissionId = req.params.id;
   if (!permissionId) {
-    res.locals.error = "Missing required fields: id";
-    return res.status(400).json();
+    return setResponseLocals({
+      res,
+      statusCode: 400,
+      errorCode: "MISSING_FIELD",
+      errorMessage: "Missing required fields: id",
+    });
   }
   const { action, resource, description } = req.body;
   try {
@@ -81,39 +123,64 @@ const updatePermission = async (req, res) => {
       resource,
       description,
     });
-    res.locals.message = "Permission updated successfully.";
-    res.locals.data = permission;
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Permission updated successfully",
+      data: permission,
+    });
   } catch (error) {
     console.error("Error updating permission:", error);
     if (error.message.includes("Permission not found")) {
-      res.locals.error = "Permission not found in the database.";
-      return res.status(404).json();
+      return setResponseLocals({
+        res,
+        statusCode: 400,
+        errorCode: "PERMISSION_NOT_FOUND",
+        errorMessage: "Permission not found in the database",
+      });
     } else {
-      res.locals.message = "Internal Server Error";
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
 const deletePermission = async (req, res) => {
   const permissionId = req.params.id;
   if (!permissionId) {
-    res.locals.error = "Missing required fields: id";
-    return res.status(400).json();
+    return setResponseLocals({
+      res,
+      statusCode: 400,
+      errorCode: "MISSING_FIELD",
+      errorMessage: "Missing required fields: id",
+    });
   }
   try {
     await PermissionService.deletePermission(permissionId);
-    res.locals.message = "Permission deleted successfully";
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Permission deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting permission:", error);
     if (error.message.includes("Permission not found")) {
-      res.locals.error = "Permission not found in the database.";
-      return res.status(404).json();
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PERMISSION_NOT_FOUND",
+        errorMessage: "Permission not found in the database",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };

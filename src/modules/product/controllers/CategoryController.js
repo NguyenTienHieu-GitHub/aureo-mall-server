@@ -1,4 +1,5 @@
 const CategoryService = require("../services/CategoryService");
+const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
 
 const createCategory = async (req, res) => {
   const { categoryName, parentId } = req.body;
@@ -7,32 +8,54 @@ const createCategory = async (req, res) => {
       categoryName,
       parentId,
     });
-    res.locals.message = "Category created successfully";
-    res.locals.data = allCategories;
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Category created successfully",
+      data: allCategories,
+    });
   } catch (error) {
     if (error.message.includes("Category created failed")) {
-      res.locals.error = "Category created failed";
-      return res.status(400).json();
+      return setResponseLocals({
+        res,
+        statusCode: 400,
+        errorCode: "CREATE_CATEGORY_ERROR",
+        errorMessage: "Category created failed",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };
 const getAllCategory = async (req, res) => {
   try {
     const categoryTree = await CategoryService.getAllCategory();
-    res.locals.message = "Show all categories";
-    res.locals.data = categoryTree;
-    return res.status(200).json();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Show all categories",
+      data: categoryTree,
+    });
   } catch (error) {
     if (error.message.includes("Categories not found")) {
-      res.locals.error = "Categories not found in the database";
-      return res.stats(404).json();
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "CATEGORIES_NOT_FOUND",
+        errorMessage: "Categories not found in the database",
+      });
     } else {
-      res.locals.error = error.message;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };

@@ -2,6 +2,7 @@ const UserRole = require("../../modules/auth/models/UserRoleModel");
 const BlacklistToken = require("../../modules/auth/models/BlacklistTokenModel");
 const RolePermission = require("../../modules/user/models/RolePermissionModel");
 const Permission = require("../../modules/user/models/PermissionModel");
+const setResponseLocals = require("./setResponseLocals");
 const jwt = require("jsonwebtoken");
 
 const verifyToken = async (req, res, next) => {
@@ -21,38 +22,61 @@ const verifyToken = async (req, res, next) => {
           await BlacklistToken.destroy({ where: { accessToken: token } });
           console.log(`Removed expired token: ${token}`);
         }
-        res.locals.error = "Token has been blacklisted.";
-        return res.status(403).json();
+        return setResponseLocals({
+          res,
+          statusCode: 401,
+          errorCode: "TOKEN_BLACKLISTED",
+          errorMessage: "Token has been blacklisted",
+        });
       }
       jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
         if (err) {
-          res.locals.error = "Token has expired";
-          return res.status(401).json();
+          return setResponseLocals({
+            res,
+            statusCode: 401,
+            errorCode: "TOKEN_EXPIRED",
+            errorMessage: "Token has expired",
+          });
         }
         req.user = decoded;
         next();
       });
-    } catch (err) {
-      console.error("Error verifying token:", err);
-      res.locals.error = "Internal Server Error";
-      return res.status(500).json();
+    } catch (error) {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   } else {
-    res.locals.error = "You are not authenticated.";
-    return res.status(403).json();
+    return setResponseLocals({
+      res,
+      statusCode: 401,
+      errorCode: "TOKEN_INVALID",
+      errorMessage: "You are not authenticated",
+    });
   }
 };
-const verifyRefreshToken = async (req, res, next) => {
+const verifyRefreshToken = (req, res, next) => {
   const refreshKey = req.cookies["XSRF-TOKEN"];
   if (!refreshKey) {
-    res.locals.error = "Refresh token not found in the cookie";
-    return res.status(401).json();
+    return setResponseLocals({
+      res,
+      statusCode: 401,
+      errorCode: "TOKEN_NOT_FOUND",
+      errorMessage: "Token not found in the cookie",
+    });
   }
   jwt.verify(refreshKey, process.env.REFRESH_KEY, (err, user) => {
     if (err) {
       res.clearCookie("XSRF-TOKEN");
-      res.locals.error = "Refresh token expired or invalid";
-      return res.status(403).json();
+      return setResponseLocals({
+        res,
+        statusCode: 401,
+        errorCode: "TOKEN_EXPIRED",
+        errorMessage: "Token expired or invalid",
+      });
     }
     next();
   });
@@ -62,15 +86,21 @@ const checkPermission = (action, resource) => {
     try {
       const userId = req.user.id;
       if (!userId) {
-        res.locals.message = "You are not authenticated";
-        res.locals.error = "You need to login";
-        return res.status(400).json();
+        return setResponseLocals({
+          res,
+          statusCode: 401,
+          errorCode: "TOKEN_INVALID",
+          errorMessage: "You are not authenticated",
+        });
       }
       const user = await UserRole.findByPk(userId);
       if (!user) {
-        res.locals.message = "User not found";
-        res.locals.error = "User not found in the database";
-        return res.status(404).json();
+        return setResponseLocals({
+          res,
+          statusCode: 404,
+          errorCode: "USER_NOT_FOUND",
+          errorMessage: "User not found in the database",
+        });
       }
       const roleId = user.roleId;
       const permission = await Permission.findOne({
@@ -81,10 +111,13 @@ const checkPermission = (action, resource) => {
         attributes: ["id"],
       });
       if (!permission) {
-        res.locals.message = "Permission not found for the provided";
-        res.locals.error =
-          "Permission not found for the provided action and resource";
-        return res.status(403).json();
+        return setResponseLocals({
+          res,
+          statusCode: 403,
+          errorCode: "PERMISSION_NOT_FOUND",
+          errorMessage:
+            "Permission not found for the provided action and resource",
+        });
       }
       const rolePermission = await RolePermission.findOne({
         where: {
@@ -96,15 +129,21 @@ const checkPermission = (action, resource) => {
       if (rolePermission) {
         next();
       } else {
-        res.locals.message = "Permission denied";
-        res.locals.error = "User does not have permission";
-        return res.status(403).json();
+        return setResponseLocals({
+          res,
+          statusCode: 403,
+          errorCode: "PERMISSION_DENIED",
+          errorMessage: "User does not have permission",
+        });
       }
     } catch (error) {
-      console.error("Error checking permissions:", error);
-      res.locals.message = "Internal Server Error";
-      res.locals.error = error.message;
-      return res.status(500).json();
+      console.error(error);
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   };
 };

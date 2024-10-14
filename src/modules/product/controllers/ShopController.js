@@ -1,10 +1,15 @@
 const ShopService = require("../services/ShopService");
+const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
 
 const createShop = async (req, res) => {
   const userId = req.user.id;
   if (!userId) {
-    res.locals.error = "You are not authenticated";
-    return res.status(400).json();
+    return setResponseLocals({
+      res,
+      statusCode: 400,
+      errorCode: "TOKEN_ERROR",
+      errorMessage: "You are not authenticated",
+    });
   }
   const { shopName, description, address, phone, email, logo, website } =
     req.body;
@@ -20,19 +25,34 @@ const createShop = async (req, res) => {
   };
   try {
     const newShop = await ShopService.createShop(shopData);
-    res.locals.message = "Created shop successfully";
-    res.locals.data = newShop;
-    return res.status(200).json({ data: res.locals.data });
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Created shop successfully",
+      data: newShop,
+    });
   } catch (error) {
     if (error.message.includes("Create shop failed")) {
-      res.locals.error = "Create shop failed";
-      return res.status(400).json();
+      return setResponseLocals({
+        res,
+        statusCode: 400,
+        errorCode: "CREATE_SHOP_ERROR",
+        errorMessage: "Create shop failed",
+      });
     } else if (error.message.includes("Shop name already exists")) {
-      res.locals.error = "You need to create a name for a new shop.";
-      return res.status(400).json();
+      return setResponseLocals({
+        res,
+        statusCode: 400,
+        errorCode: "SHOP_NAME_EXISTS",
+        errorMessage: "You need to create a name for a new shop",
+      });
     } else {
-      res.locals.error = error;
-      return res.status(500).json();
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
     }
   }
 };

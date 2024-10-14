@@ -3,9 +3,7 @@ const router = express.Router();
 const userController = require("../controllers/UserController");
 const {
   verifyToken,
-  verifyRefreshToken,
   checkPermission,
-  verifyTokenBlacklist,
 } = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");
 const User = require("../../auth/models/UserModel");

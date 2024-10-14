@@ -78,6 +78,7 @@ const saveRefreshTokenToDB = async (userId, refreshKey, expiresAt) => {
       await Token.create({ userId, refreshToken: refreshKey, expiresAt });
     }
   } catch (error) {
+    console.error("ERROR DURING SAVE REFRESH TOKEN TO DATABASE: ", error);
     throw new Error("Unable to save refresh token");
   }
 };
@@ -87,23 +88,22 @@ const checkRefreshTokenInDB = async (refreshKey) => {
     const tokenRecord = await Token.findOne({
       where: { refreshToken: refreshKey },
     });
-    if (!tokenRecord) return null;
-
-    if (new Date(tokenRecord.expiresAt) < new Date()) {
+    if (!tokenRecord) {
+      console.log("No token record found.");
+      return null;
+    }
+    const decoded = jwt.decode(tokenRecord.refreshToken);
+    const exp = decoded.exp;
+    const currentTime = Math.floor(Date.now() / 1000);
+    const timeLeft = exp - currentTime;
+    if (timeLeft < 0) {
       await Token.destroy({ where: { id: tokenRecord.id } });
       return null;
     }
     return tokenRecord;
   } catch (error) {
+    console.error("ERROR DURING CHECK REFRESH TOKEN IN DATABASE: ", error);
     throw error;
-  }
-};
-
-const deleteRefreshTokenFromDB = async (refreshKey) => {
-  try {
-    await Token.destroy({ where: { refreshToken: refreshKey } });
-  } catch (error) {
-    console.error("Error deleting refresh token:", error);
   }
 };
 
@@ -129,12 +129,12 @@ const login = async ({ email, password }) => {
 const refreshToken = async (refreshKey) => {
   const tokenRecord = await checkRefreshTokenInDB(refreshKey);
   if (!tokenRecord) {
-    throw new Error("Refresh token is not valid");
+    throw new Error("Refresh token is not found");
   }
   return new Promise((resolve, reject) => {
     jwt.verify(refreshKey, process.env.REFRESH_KEY, async (err, user) => {
       if (err) {
-        throw new Error("Token is not valid");
+        throw new Error("Refresh token is not valid");
       }
       try {
         const newAccessKey = await generateAccessToken(user);
@@ -143,13 +143,11 @@ const refreshToken = async (refreshKey) => {
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7);
 
-        await deleteRefreshTokenFromDB(refreshKey);
         await saveRefreshTokenToDB(
           tokenRecord.userId,
           newRefreshKey,
           expiresAt
         );
-
         resolve({ newAccessKey, newRefreshKey });
       } catch (error) {
         reject(error);
@@ -169,6 +167,7 @@ const logout = async ({ refreshKey, userId, accessKey }) => {
       expiresAt: exp,
     });
   } else {
+    console.error("ERROR DURING LOGOUT: ", error);
     throw new Error("No token provided");
   }
 };
@@ -221,5 +220,4 @@ module.exports = {
   generateRefreshToken,
   saveRefreshTokenToDB,
   checkRefreshTokenInDB,
-  deleteRefreshTokenFromDB,
 };

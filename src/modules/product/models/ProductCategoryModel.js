@@ -5,7 +5,8 @@ const ProductCategory = sequelize.define(
   "ProductCategories",
   {
     productId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
         model: "Products",
         key: "id",
@@ -13,6 +14,7 @@ const ProductCategory = sequelize.define(
     },
     categoryId: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
         model: "Categories",
         key: "id",
