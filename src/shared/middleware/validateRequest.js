@@ -1,4 +1,4 @@
-const setResponseLocals = require("../middleware/setResponseLocals");
+const setResponseLocals = require("./setResponseLocals");
 const validateRequest = (models) => {
   return (req, res, next) => {
     if (!req.body || typeof req.body !== "object") {

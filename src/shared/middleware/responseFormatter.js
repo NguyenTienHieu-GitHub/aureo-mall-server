@@ -24,14 +24,14 @@ const responseFormatter = (req, res, next) => {
       return originalSend.call(this, jsonResponse);
     } catch (error) {
       console.error("Error when sending response:", error);
-      return originalSend.call(
-        this,
-        JSON.stringify({
-          success: false,
-          message: "Internal server error",
-          error: error.message,
-        })
-      );
+      const errorResponse = {
+        status: 500,
+        error: {
+          errorCode: "INTERNAL_SERVER_ERROR",
+          errorMessage: error.message,
+        },
+      };
+      return originalSend.call(this, JSON.stringify(errorResponse));
     }
   };
 
