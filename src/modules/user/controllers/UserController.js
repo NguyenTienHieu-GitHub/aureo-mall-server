@@ -21,6 +21,7 @@ const getMyInfo = async (req, res) => {
       messageSuccess: "User information retrieved successfully",
       data: {
         userId: userData.id,
+        avatar: userData.avatar,
         fullName: `${userData.firstName} ${userData.lastName}`,
         firstName: userData.firstName,
         lastName: userData.lastName,
@@ -104,6 +105,7 @@ const getUsersById = async (req, res) => {
       messageSuccess: "Show user successfully",
       data: {
         userId: userDataById.id,
+        avatar: userDataById.avatar,
         fullName: `${userDataById.firstName} ${userDataById.lastName}`,
         firstName: userDataById.firstName,
         lastName: userDataById.lastName,
@@ -134,9 +136,11 @@ const getUsersById = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
+  const { path } = req.file;
   const { firstName, lastName, email, password, roleId } = req.body;
   try {
     const userData = await UserService.createUser({
+      avatar: path,
       firstName,
       lastName,
       email,
@@ -149,6 +153,7 @@ const createUser = async (req, res) => {
       messageSuccess: "User created successfully",
       data: {
         userId: userData.id,
+        avatar: userData.avatar,
         fullName: `${userData.firstName} ${userData.lastName}`,
         firstName: userData.firstName,
         lastName: userData.lastName,
@@ -276,10 +281,12 @@ const updateUserByAdmin = async (req, res) => {
       errorMessage: "Invalid user ID format: uuid",
     });
   }
+  const { path } = req.file;
   const { firstName, lastName, email, password, roleId } = req.body;
   try {
     const userData = await UserService.updateUserByAdmin({
       userId: userId,
+      avatar: path,
       firstName,
       lastName,
       email,
@@ -355,10 +362,12 @@ const updateMyInfo = async (req, res) => {
       errorMessage: "Invalid user ID format: uuid",
     });
   }
+  const { filename } = req.file;
   const { firstName, lastName, email, password } = req.body;
   try {
     const userData = await UserService.updateMyInfo({
       userId: userId,
+      avatar: `http://localhost:3080/avatar/${filename}`,
       firstName,
       lastName,
       email,
@@ -370,6 +379,7 @@ const updateMyInfo = async (req, res) => {
       messageSuccess: "Your information has been updated successfully",
       data: {
         userId: userData.id,
+        avatar: userData.avatar,
         fullName: `${userData.firstName} ${userData.lastName}`,
         firstName: userData.firstName,
         lastName: userData.lastName,

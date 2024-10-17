@@ -20,7 +20,6 @@ const getMyInfo = async (userId) => {
   const userData = userWithRole.toJSON();
   return userData;
 };
-
 const getAllUsers = async () => {
   const allUserResults = await User.findAll({
     include: {
@@ -35,6 +34,7 @@ const getAllUsers = async () => {
     const userJson = user.toJSON();
     return {
       userId: userJson.id,
+      avatar: userJson.avatar,
       fullName: `${userJson.firstName} ${userJson.lastName}`,
       firstName: userJson.firstName,
       lastName: userJson.lastName,
@@ -69,7 +69,14 @@ const checkMailExists = async (email) => {
     throw new Error("Internal Server Error");
   }
 };
-const createUser = async ({ firstName, lastName, email, password, roleId }) => {
+const createUser = async ({
+  avatar,
+  firstName,
+  lastName,
+  email,
+  password,
+  roleId,
+}) => {
   const transaction = await sequelize.transaction();
   try {
     const emailExists = await checkMailExists(email);
@@ -79,6 +86,7 @@ const createUser = async ({ firstName, lastName, email, password, roleId }) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const addUserResult = await User.create(
       {
+        avatar,
         firstName,
         lastName,
         email,
@@ -129,6 +137,7 @@ const deleteMyUser = async (userId) => {
 
 const updateUserByAdmin = async ({
   userId,
+  avatar,
   firstName,
   lastName,
   email,
@@ -139,7 +148,7 @@ const updateUserByAdmin = async ({
   if (!user) {
     throw new Error("User not found");
   }
-
+  user.avatar = avatar;
   user.firstName = firstName;
   user.lastName = lastName;
   if (email && email !== user.email) {
@@ -168,6 +177,7 @@ const updateUserByAdmin = async ({
 
 const updateMyInfo = async ({
   userId,
+  avatar,
   firstName,
   lastName,
   email,
@@ -185,7 +195,13 @@ const updateMyInfo = async ({
       throw new Error("Email already exists");
     }
   }
-  await user.update({ firstName, lastName, email, password: user.password });
+  await user.update({
+    avatar,
+    firstName,
+    lastName,
+    email,
+    password: user.password,
+  });
 
   const userWithRole = await User.findOne({
     where: { id: userId },

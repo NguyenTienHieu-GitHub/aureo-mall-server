@@ -8,7 +8,13 @@ const {
 const validateRequest = require("../../../shared/middleware/validateRequest");
 const User = require("../../auth/models/UserModel");
 const Role = require("../../auth/models/RoleModel");
+const {
+  uploadAvatar,
+  fixFilePath,
+} = require("../../../shared/middleware/multer");
+
 const models = [User, Role];
+
 router.post(
   "/create",
   verifyToken,
@@ -33,6 +39,8 @@ router.put(
   verifyToken,
   validateRequest(models),
   checkPermission("edit_my_info", "User"),
+  uploadAvatar,
+  fixFilePath,
   userController.updateMyInfo
 );
 router.put(

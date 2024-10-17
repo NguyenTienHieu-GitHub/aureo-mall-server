@@ -9,6 +9,8 @@ const swaggerDocument = require("./config/swagger/swagger");
 const { syncModels } = require("./modules/models/index");
 const responsesFormatter = require("./shared/middleware/responseFormatter");
 
+const path = require("path");
+
 const envFile = `.env.${process.env.NODE_ENV || "development"}`;
 const result = dotenv.config({ path: envFile });
 if (result.error) {
@@ -37,11 +39,14 @@ app.use(cookieParser());
 app.use(express.json());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(responsesFormatter);
-
 app.get("/api/data", (req, res) => {
   res.locals.message = "CORS is working!";
   res.json();
 });
+app.use(
+  "/avatar",
+  express.static(path.join(__dirname, "../src/modules/uploads/avatars"))
+);
 syncModels();
 
 routes(app);
@@ -53,7 +58,6 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong!" });
 });
-
 app.listen(port, () => {
   console.log(`Server đang chạy tại http://localhost:${port}`);
   console.log(`Swagger đang chạy tại http://localhost:${port}/api-docs`);

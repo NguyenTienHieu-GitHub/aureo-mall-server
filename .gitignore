@@ -2,3 +2,9 @@
 .env.development
 .env.test
 node_modules/
+
+src/modules/uploads/avatars/*
+!src/modules/uploads/avatars/.gitkeep
+
+src/modules/uploads/products/*
+!src/modules/uploads/products/.gitkeep
