@@ -835,7 +835,7 @@ module.exports = {
           in: "path",
           require: "true",
           schema: {
-            $ref: "#/components/schemas/paramsIdFind",
+            $ref: "#/components/schemas/paramsIdFindUser",
           },
         },
       ],
@@ -962,7 +962,7 @@ module.exports = {
     put: {
       summary: "Cập nhật tài khoản",
       description: "Cập nhật tài khoản bằng id",
-      tags: ["User"],
+      tags: ["Address"],
       operationId: "updataAddress",
       security: [
         {
@@ -975,7 +975,7 @@ module.exports = {
           in: "path",
           require: "true",
           schema: {
-            $ref: "#/components/schemas/paramsIdFind",
+            $ref: "#/components/schemas/paramsIdFindUser",
           },
         },
       ],
@@ -1060,7 +1060,7 @@ module.exports = {
           in: "path",
           require: "true",
           schema: {
-            $ref: "#/components/schemas/paramsIdDelete",
+            $ref: "#/components/schemas/paramsIdFindUser",
           },
         },
       ],
@@ -1105,6 +1105,229 @@ module.exports = {
             },
           },
         },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+
+  "/api/address/provinces": {
+    get: {
+      summary: "Hiển thị tất cả tỉnh/thành phố",
+      description: "Hiển thị tât cả tỉnh/thành phố",
+      tags: ["Province"],
+      operationId: "getProvince",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      responses: {
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/address/districts": {
+    get: {
+      summary: "Hiển thị tất cả Quận/Huyện",
+      description: "Hiển thị tât cả Quận/Huyện",
+      tags: ["Province"],
+      operationId: "getDistrict",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      responses: {
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/address/wards": {
+    get: {
+      summary: "Hiển thị tất cả Xã/Phường",
+      description: "Hiển thị tât cả Xã/Phường",
+      tags: ["Province"],
+      operationId: "getWard",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      responses: {
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/address/units": {
+    get: {
+      summary: "Hiển thị tất cả đơn vị hành chánh",
+      description: "Hiển thị tât cả đơn vị hành chánh",
+      tags: ["Province"],
+      operationId: "getUnit",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      responses: {
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/address/regions": {
+    get: {
+      summary: "Hiển thị tất cả khu vực",
+      description: "Hiển thị tât cả khu vực",
+      tags: ["Province"],
+      operationId: "getRegion",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      responses: {
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/address/my-address": {
+    get: {
+      summary: "Hiển thị tất cả địa chỉ của người dùng",
+      description: "Hiển thị tât cả địa chỉ của người dùng",
+      tags: ["Province"],
+      operationId: "getMyAddress",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      responses: {
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/address/districts/{provinceCode}": {
+    get: {
+      summary: "Tìm kiếm quận/huyện theo tỉnh/thành phố",
+      description: "Tìm kiếm quận/huyện theo tỉnh/thành phố",
+      tags: ["Province"],
+      operationId: "getDistrictsByProvinceCode",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: "provinceCode",
+          in: "path",
+          require: "true",
+          schema: {
+            type: "string",
+            description: "Nhập Id muốn tìm kiếm",
+          },
+        },
+      ],
+      responses: {
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/address/wards/{districtCode}": {
+    get: {
+      summary: "Tìm kiếm xã/phương theo quận/huyện",
+      description: "Tìm kiếm xã/phương theo quận/huyện",
+      tags: ["Province"],
+      operationId: "getWardByDistrictCode",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: "districtCode",
+          in: "path",
+          require: "true",
+          schema: {
+            type: "string",
+            description: "Nhập Id muốn tìm kiếm",
+          },
+        },
+      ],
+      responses: {
         500: {
           description: "Lỗi server",
           content: {

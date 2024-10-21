@@ -6,13 +6,61 @@ const {
   checkPermission,
 } = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");
-const Address = require("../models/AddressModel");
+const { Address } = require("../models/AddressModel");
 const models = [Address];
 
+router.get(
+  "/wards/:districtCode",
+  verifyToken,
+  checkPermission("view_address", "Address"),
+  addressController.getWardByDistrictCode
+);
+router.get(
+  "/districts/:provinceCode",
+  verifyToken,
+  checkPermission("view_address", "Address"),
+  addressController.getDistrictsByProvinceCode
+);
+router.get(
+  "/my-address",
+  verifyToken,
+  checkPermission("view_address", "Address"),
+  addressController.getMyAddress
+);
+router.get(
+  "/regions",
+  verifyToken,
+  checkPermission("view_address", "Address"),
+  addressController.getAdministrativeRegion
+);
+router.get(
+  "/units",
+  verifyToken,
+  checkPermission("view_address", "Address"),
+  addressController.getAdministrativeUnit
+);
+router.get(
+  "/wards",
+  verifyToken,
+  checkPermission("view_address", "Address"),
+  addressController.getWards
+);
+router.get(
+  "/districts",
+  verifyToken,
+  checkPermission("view_address", "Address"),
+  addressController.getDistricts
+);
+router.get(
+  "/provinces",
+  verifyToken,
+  checkPermission("view_address", "Address"),
+  addressController.getProvinces
+);
 router.delete(
   "/delete/:id",
   verifyToken,
-  checkPermission("delete_my_address", "Address"),
+  checkPermission("delete", "Address"),
   addressController.deleteAddress
 );
 router.put(

@@ -499,36 +499,136 @@ module.exports = {
       responseCreateAddressSuccess: {
         type: "object",
         properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
+          status: {
+            type: "integer",
+            example: 200,
           },
-          message: {
+          messageSuccess: {
             type: "string",
-            example: "Created address successfully",
+            example: "Address created successfully",
           },
           data: {
-            $ref: "#/components/schemas/dataResponseObject",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
+            type: "object",
+            properties: {
+              addressId: {
+                type: "string",
+                format: "uuid",
+                example: "f8c6bd3f-461a-4b70-8cd3-c50ca5c0621a",
+              },
+              fullName: {
+                type: "string",
+                example: "Nguyễn Tiến Hiệu",
+              },
+              phoneNumber: {
+                type: "string",
+                example: "0975515940",
+              },
+              provinceCode: {
+                type: "string",
+                example: "02",
+              },
+              provinceName: {
+                type: "string",
+                example: "Hà Giang",
+              },
+              districtCode: {
+                type: "string",
+                example: "027",
+              },
+              districtName: {
+                type: "string",
+                example: "Mèo Vạc",
+              },
+              wardCode: {
+                type: "string",
+                example: "00817",
+              },
+              wardName: {
+                type: "string",
+                example: "Niêm Sơn",
+              },
+              address: {
+                type: "string",
+                example: "51 Lê Thị Nho",
+              },
+              addressType: {
+                type: "string",
+                enum: ["HOME", "OFFICE"],
+                example: "HOME",
+              },
+              isPrimary: {
+                type: "boolean",
+                example: true,
+              },
+            },
           },
         },
       },
       responseUpdateAddressSuccess: {
         type: "object",
         properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
+          status: {
+            type: "integer",
+            example: 200,
           },
-          message: {
+          messageSuccess: {
             type: "string",
             example: "Address updated successfully",
           },
           data: {
-            $ref: "#/components/schemas/dataResponseAddressObject",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
+            type: "object",
+            properties: {
+              addressId: {
+                type: "string",
+                format: "uuid",
+                example: "f8c6bd3f-461a-4b70-8cd3-c50ca5c0621a",
+              },
+              fullName: {
+                type: "string",
+                example: "Nguyễn Tiến Hiệu",
+              },
+              phoneNumber: {
+                type: "string",
+                example: "0975515940",
+              },
+              provinceCode: {
+                type: "string",
+                example: "02",
+              },
+              provinceName: {
+                type: "string",
+                example: "Hà Giang",
+              },
+              districtCode: {
+                type: "string",
+                example: "027",
+              },
+              districtName: {
+                type: "string",
+                example: "Mèo Vạc",
+              },
+              wardCode: {
+                type: "string",
+                example: "00817",
+              },
+              wardName: {
+                type: "string",
+                example: "Niêm Sơn",
+              },
+              address: {
+                type: "string",
+                example: "51 Lê Thị Nho",
+              },
+              addressType: {
+                type: "string",
+                enum: ["HOME", "OFFICE"],
+                example: "HOME",
+              },
+              isPrimary: {
+                type: "boolean",
+                example: true,
+              },
+            },
           },
         },
       },
@@ -847,33 +947,38 @@ module.exports = {
       fieldUpdateAndCreateAddress: {
         type: "object",
         properties: {
-          firstName: {
+          fullName: {
             type: "string",
-            example: "Admin",
-          },
-          lastName: {
-            type: "string",
-            example: "Admin",
+            example: "Admin To You",
           },
           phoneNumber: {
             type: "string",
             example: "0975515940",
           },
-          province: {
+          provinceCode: {
             type: "string",
-            example: "Hồ Chí Minh",
+            example: "01",
           },
-          district: {
+          districtCode: {
             type: "string",
-            example: "Gò Vấp",
+            example: "001",
           },
-          ward: {
+          wardCode: {
             type: "string",
-            example: "Phường 12",
+            example: "00001",
           },
           address: {
             type: "string",
             example: "230/20/1 Phan Huy Ích",
+          },
+          addressType: {
+            type: "string",
+            enum: ["HOME", "OFFICE"],
+            example: "HOME",
+          },
+          isPrimary: {
+            type: "boolean",
+            example: true,
           },
         },
       },

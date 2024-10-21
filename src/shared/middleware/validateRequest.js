@@ -54,6 +54,17 @@ const validateRequest = (models) => {
             });
           }
         }
+        if (key === "addressType") {
+          const validTypes = ["HOME", "OFFICE"];
+          if (req.body[key] && !validTypes.includes(req.body[key])) {
+            return setResponseLocals({
+              res,
+              statusCode: 400,
+              errorCode: "INVALID_ADDRESS_TYPE_FORMAT",
+              errorMessage: `The field '${key}' must be one of: ${validTypes.join()}.`,
+            });
+          }
+        }
         if (req.body.mediaList) {
           for (const media of req.body.mediaList) {
             if (

@@ -112,7 +112,7 @@ const createDefaultPermission = async () => {
       description: "Edit Address",
     },
     {
-      action: "delete_my_address",
+      action: "delete",
       resource: "Address",
       description: "Edit Address",
     },
