@@ -3,10 +3,21 @@ const router = express.Router();
 const categoryController = require("../controllers/CategoryController");
 const { verifyToken } = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");
-const Category = require("../models/CategoryModel");
+const { Category, ImageCategory } = require("../models/CategoryModel");
 
-const models = [Category];
+const models = [Category, ImageCategory];
 
+router.delete(
+  "/delete/:categoryId",
+  verifyToken,
+  categoryController.deleteCategoryById
+);
+router.put(
+  "/update/:categoryId",
+  verifyToken,
+  validateRequest(models),
+  categoryController.updateCategoryById
+);
 router.post(
   "/create",
   verifyToken,

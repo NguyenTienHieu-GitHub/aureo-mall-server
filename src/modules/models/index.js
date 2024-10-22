@@ -18,7 +18,7 @@ const Token = require("../auth/models/TokenModel");
 const BlacklistToken = require("../auth/models/BlacklistTokenModel");
 
 const Product = require("../product/models/ProductModel");
-const Category = require("../product/models/CategoryModel");
+const { Category, ImageCategory } = require("../product/models/CategoryModel");
 const ProductCategory = require("../product/models/ProductCategoryModel");
 const ProductPrice = require("../product/models/ProductPriceModel");
 const Shop = require("../product/models/ShopModel");
@@ -48,6 +48,21 @@ Category.belongsToMany(Product, {
   through: ProductCategory,
   foreignKey: "categoryId",
   otherKey: "productId",
+});
+
+Category.hasMany(Category, {
+  foreignKey: "parentId",
+  as: "children",
+});
+
+Category.belongsTo(Category, {
+  foreignKey: "parentId",
+  as: "parent",
+});
+Category.hasMany(ImageCategory, { foreignKey: "categoryId" });
+ImageCategory.belongsTo(Category, {
+  foreignKey: "categoryId",
+  as: "ImageCategories",
 });
 
 Role.belongsToMany(Permission, {

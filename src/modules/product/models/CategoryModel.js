@@ -21,20 +21,10 @@ const Category = sequelize.define(
         key: "id",
       },
     },
-    slug: {
-      type: DataTypes.STRING,
+    toggle: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
-      unique: true,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      get() {
-        const rawValue = this.getDataValue("createdAt");
-        return rawValue
-          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
-          : null;
-      },
+      defaultValue: true,
     },
     updatedAt: {
       type: DataTypes.DATE,
@@ -49,9 +39,32 @@ const Category = sequelize.define(
   },
   {
     tableName: "Categories",
-    modelName: "Category",
     timestamps: true,
   }
 );
+const ImageCategory = sequelize.define(
+  "ImageCategories",
+  {
+    imageUrl: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    categoryId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "Categories",
+        key: "id",
+      },
+    },
+  },
+  {
+    tableName: "ImageCategories",
+    timestamps: false,
+  }
+);
 
-module.exports = Category;
+module.exports = {
+  Category,
+  ImageCategory,
+};

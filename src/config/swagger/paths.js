@@ -1341,4 +1341,431 @@ module.exports = {
       },
     },
   },
+
+  "/api/category": {
+    get: {
+      summary: "Hiển thị tất cả danh mục",
+      description: "Hiển thị tât cả danh mục",
+      tags: ["Category"],
+      operationId: "getAllCategory",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Hiển thị tất cả địa chỉ có trong database",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  status: {
+                    type: "integer",
+                    example: 200,
+                  },
+                  message: {
+                    type: "string",
+                    example: "Show all categories",
+                  },
+                  data: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        categoryId: {
+                          type: "integer",
+                          example: 7,
+                        },
+                        categoryName: {
+                          type: "string",
+                          example: "Áo Tee",
+                        },
+                        toggle: {
+                          type: "boolean",
+                          example: true,
+                        },
+                        updatedAt: {
+                          type: "string",
+                          format: "date-time",
+                          example: "2024-10-22T12:23:30Z",
+                        },
+                        images: {
+                          type: "array",
+                          items: {
+                            type: "string",
+                            format: "uri",
+                            example: "https://cf.shopee.sg/file/1002",
+                          },
+                        },
+                        path: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              categoryId: {
+                                type: "integer",
+                                example: 5,
+                              },
+                              categoryName: {
+                                type: "string",
+                                example: "Thời trang nam",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/category/create": {
+    post: {
+      summary: "Tạo địa chỉ người dùng",
+      description: "Tạo địa của người dùng",
+      tags: ["Category"],
+      operationId: "createCategory",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              properties: {
+                categoryName: {
+                  type: "string",
+                  example: "Thời trang nữ",
+                },
+                parentId: {
+                  type: "string",
+                  example: "",
+                },
+                toggle: {
+                  type: "boolean",
+                  example: true, // Có thể sửa thành boolean nếu cần
+                },
+                imageUrls: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    format: "uri",
+                    example: "https://cf.shopee.sg/file/1002",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        201: {
+          description: "Tạo đại chỉ thành công",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  status: {
+                    type: "integer",
+                    example: 200,
+                  },
+                  message: {
+                    type: "string",
+                    example: "Category created successfully",
+                  },
+                  data: {
+                    type: "object",
+                    properties: {
+                      categoryId: {
+                        type: "integer",
+                        example: 8,
+                      },
+                      categoryName: {
+                        type: "string",
+                        example: "Thời trang nữ",
+                      },
+                      toggle: {
+                        type: "boolean",
+                        example: true,
+                      },
+                      updatedAt: {
+                        type: "string",
+                        format: "date-time",
+                        example: "2024-10-22T17:55:59Z",
+                      },
+                      images: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          format: "uri",
+                          example: "https://cf.shopee.sg/file/1002",
+                        },
+                      },
+                      path: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            categoryId: {
+                              type: "integer",
+                              example: 8,
+                            },
+                            categoryName: {
+                              type: "string",
+                              example: "Thời trang nữ",
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/category/update/{categoryId}": {
+    put: {
+      summary: "Cập nhật danh mục",
+      description: "Cập nhật danh mục bằng id",
+      tags: ["Category"],
+      operationId: "updataCategory",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: "categoryId",
+          in: "path",
+          require: "true",
+          schema: {
+            $ref: "#/components/schemas/paramsIdFind",
+          },
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              properties: {
+                categoryName: {
+                  type: "string",
+                  example: "Thời trang nữ",
+                },
+                parentId: {
+                  type: "string",
+                  example: "",
+                },
+                toggle: {
+                  type: "boolean",
+                  example: true, // Có thể sửa thành boolean nếu cần
+                },
+                imageUrls: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    format: "uri",
+                    example: "https://cf.shopee.sg/file/1002",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Hiển thị thông tin tài khoản đã cập nhật thành công",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  status: {
+                    type: "integer",
+                    example: 200,
+                  },
+                  message: {
+                    type: "string",
+                    example: "Category created successfully",
+                  },
+                  data: {
+                    type: "object",
+                    properties: {
+                      categoryId: {
+                        type: "integer",
+                        example: 8,
+                      },
+                      categoryName: {
+                        type: "string",
+                        example: "Thời trang nữ",
+                      },
+                      toggle: {
+                        type: "boolean",
+                        example: true,
+                      },
+                      updatedAt: {
+                        type: "string",
+                        format: "date-time",
+                        example: "2024-10-22T17:55:59Z",
+                      },
+                      images: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          format: "uri",
+                          example: "https://cf.shopee.sg/file/1002",
+                        },
+                      },
+                      path: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            categoryId: {
+                              type: "integer",
+                              example: 8,
+                            },
+                            categoryName: {
+                              type: "string",
+                              example: "Thời trang nữ",
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: "Thiếu trường bắt buộc",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#components/schemas/missingRequireFields",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Người dùng chưa được xác thực",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/userIdIsRequired",
+              },
+            },
+          },
+        },
+        404: {
+          description: "Địa chỉ không tồn tại",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/addressNotFound",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/category/delete/{categoryId}": {
+    delete: {
+      summary: "Xóa địa chỉ",
+      description: "Xóa tài địa chỉ bằng id",
+      tags: ["Category"],
+      operationId: "deleteCategory",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: "categoryId",
+          in: "path",
+          require: "true",
+          schema: {
+            $ref: "#/components/schemas/paramsIdDelete",
+          },
+        },
+      ],
+      responses: {
+        200: {
+          description: "Xóa địa chỉ thành công",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/responseDeleteAddressSuccess",
+              },
+            },
+          },
+        },
+
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/internalServerErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 };

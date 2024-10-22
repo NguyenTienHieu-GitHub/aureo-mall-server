@@ -1,66 +1,279 @@
-const Category = require("../models/CategoryModel");
-const slugify = require("slugify");
+const { Category, ImageCategory } = require("../models/CategoryModel");
 
-const generateSlug = async (categoryName, existingSlug = null) => {
-  const baseSlug = slugify(categoryName, { lower: true });
-  let slug = baseSlug;
-  let index = 1;
-
-  while (
-    existingSlug === slug ||
-    (await Category.findOne({ where: { slug } }))
-  ) {
-    slug = `${baseSlug}-${index}`;
-    index++;
-  }
-
-  return slug;
-};
-const createCategory = async ({ categoryName, parentId }) => {
-  const slug = await generateSlug(categoryName);
+const createCategory = async ({
+  categoryName,
+  parentId,
+  toggle,
+  imageUrls,
+}) => {
   const category = await Category.create({
     categoryName,
     parentId,
-    slug: slug,
+    toggle,
   });
   if (!category) {
     throw new Error("Category created failed: " + categoryName);
   }
-  const categories = await getCategoriesTree();
+  if (imageUrls && imageUrls.length > 0) {
+    await Promise.all(
+      imageUrls.map((imageUrl) =>
+        ImageCategory.create({
+          imageUrl: imageUrl,
+          categoryId: category.id,
+        })
+      )
+    );
+  } else {
+    throw new Error("ImageUrls missing");
+  }
+  const categories = await getCategoriesData(category.id);
   return categories;
 };
-const getCategoriesTree = async () => {
-  try {
-    const categories = await Category.findAll();
-    const buildCategoryTree = (categories, parentId = null) => {
-      return categories
-        .filter((category) => category.parentId === parentId)
-        .map((category) => ({
-          id: category.id,
-          categoryName: category.categoryName,
-          slug: category.slug,
-          children: buildCategoryTree(categories, category.id),
-        }));
-    };
-
-    const categoryTree = await buildCategoryTree(categories);
-    return categoryTree;
-  } catch (error) {
-    throw new Error("Error fetching category tree: " + error.message);
-  }
-};
-const getAllCategory = async () => {
-  const categories = await Category.findAll();
-  if (categories.length == 0) {
+const getAllCategories = async () => {
+  const allCategories = [];
+  const categories = await Category.findAll({
+    include: [
+      {
+        model: ImageCategory,
+        as: "ImageCategories",
+        attributes: ["imageUrl"],
+      },
+      {
+        model: Category,
+        as: "children",
+        attributes: ["id", "categoryName", "parentId"],
+        include: [
+          {
+            model: ImageCategory,
+            as: "ImageCategories",
+            attributes: ["imageUrl"],
+          },
+        ],
+      },
+    ],
+  });
+  if (categories.length === 0) {
     throw new Error("Categories not found");
   }
+  for (const category of categories) {
+    const path = [];
+    const imageUrls = [];
+    if (category.ImageCategories) {
+      imageUrls.push(...category.ImageCategories.map((img) => img.imageUrl));
+    }
+    let parentId = category.parentId;
+    while (parentId) {
+      const parentCategory = await Category.findOne({
+        where: { id: parentId },
+        attributes: ["id", "categoryName", "parentId"],
+        include: [
+          {
+            model: ImageCategory,
+            as: "ImageCategories",
+            attributes: ["imageUrl"],
+          },
+        ],
+      });
+      if (parentCategory) {
+        path.unshift({
+          categoryId: parentCategory.id,
+          categoryName: parentCategory.categoryName,
+        });
+        if (parentCategory.ImageCategories) {
+          imageUrls.push(
+            ...parentCategory.ImageCategories.map((img) => img.imageUrl)
+          );
+        }
+        parentId = parentCategory.parentId;
+      } else {
+        break;
+      }
+    }
 
-  const categoriesTree = await getCategoriesTree();
-  return categoriesTree;
+    for (const child of category.children) {
+      if (child.ImageCategories) {
+        imageUrls.push(...child.ImageCategories.map((img) => img.imageUrl));
+      }
+    }
+    if (category.children && category.children.length > 0) {
+      continue;
+    }
+    const categoryData = {
+      categoryId: category.id,
+      categoryName: category.categoryName,
+      toggle: category.toggle,
+      updatedAt: category.updatedAt,
+      images: imageUrls,
+      path: [
+        ...path,
+        {
+          categoryId: category.id,
+          categoryName: category.categoryName,
+        },
+      ],
+    };
+    allCategories.push(categoryData);
+  }
+
+  return allCategories;
 };
+
+const getCategoriesData = async (categoryId) => {
+  const category = await Category.findOne({
+    where: { id: categoryId },
+    include: [
+      {
+        model: Category,
+        as: "parent",
+        attributes: ["id", "categoryName"],
+      },
+    ],
+  });
+  if (!category) {
+    return null;
+  }
+  const categoryData = {
+    categoryId: category.id,
+    categoryName: category.categoryName,
+    toggle: category.toggle,
+    updatedAt: category.updatedAt,
+    images: await getAllImagesParentAndChildren(categoryId),
+    path: await getCategoryPath(category),
+  };
+  return categoryData;
+};
+const getCategoryPath = async (category) => {
+  const path = [];
+  let currentCategory = category;
+  while (currentCategory) {
+    path.unshift({
+      categoryId: currentCategory.id,
+      categoryName: currentCategory.categoryName,
+    });
+
+    if (currentCategory.parentId) {
+      currentCategory = await Category.findOne({
+        where: { id: currentCategory.parentId },
+      });
+    } else {
+      currentCategory = null;
+    }
+  }
+  return path;
+};
+const getAllImagesParentAndChildren = async (categoryId) => {
+  const allImagesSet = new Set();
+  const fetchCategoryImages = async (id) => {
+    const category = await Category.findOne({
+      where: { id },
+      include: [
+        {
+          model: ImageCategory,
+          as: "ImageCategories",
+          attributes: ["imageUrl"],
+        },
+        {
+          model: Category,
+          as: "children",
+          attributes: ["id"],
+        },
+      ],
+    });
+
+    if (category) {
+      category.ImageCategories.forEach((img) => allImagesSet.add(img.imageUrl));
+
+      for (const child of category.children) {
+        await fetchCategoryImages(child.id);
+      }
+    }
+  };
+  await fetchCategoryImages(categoryId);
+  const fetchParentImages = async (id) => {
+    const category = await Category.findOne({
+      where: { id },
+      include: [
+        {
+          model: ImageCategory,
+          as: "ImageCategories",
+          attributes: ["imageUrl"],
+        },
+        {
+          model: Category,
+          as: "parent",
+          attributes: ["id"],
+        },
+      ],
+    });
+
+    if (category) {
+      category.ImageCategories.forEach((img) => allImagesSet.add(img.imageUrl));
+
+      if (category.parent) {
+        await fetchParentImages(category.parent.id);
+      }
+    }
+  };
+
+  await fetchParentImages(categoryId);
+
+  return Array.from(allImagesSet);
+};
+const updateCategoryById = async ({
+  categoryId,
+  categoryName,
+  parentId,
+  toggle,
+  imageUrls,
+}) => {
+  const [updatedRows] = await Category.update(
+    { categoryName, parentId, toggle },
+    { where: { id: categoryId } }
+  );
+  if (updatedRows === 0) {
+    throw new Error("Category update failed: " + categoryName);
+  }
+  if (imageUrls && imageUrls.length > 0) {
+    await ImageCategory.destroy({ where: { categoryId } });
+    await Promise.all(
+      imageUrls.map((imageUrl) =>
+        ImageCategory.create({ imageUrl, categoryId })
+      )
+    );
+  } else {
+    throw new Error("ImageUrls missing");
+  }
+  const categories = await getCategoriesData(categoryId);
+  return categories;
+};
+const deleteCategoryAndChildren = async (categoryId) => {
+  try {
+    const category = await Category.findOne({
+      where: { id: categoryId },
+    });
+    if (!category) {
+      throw new Error(`Category with id ${categoryId} not found`);
+    }
+    const children = await Category.findAll({
+      where: { parentId: categoryId },
+    });
+    if (children.length > 0) {
+      for (const child of children) {
+        if (child && child.id) {
+          await deleteCategoryAndChildren(child.id);
+        }
+      }
+    }
+    await Category.destroy({ where: { id: categoryId } });
+  } catch (error) {
+    console.error("Error in deleteCategoryAndChildren:", error.message);
+    throw error;
+  }
+};
+
 module.exports = {
-  generateSlug,
   createCategory,
-  getCategoriesTree,
-  getAllCategory,
+  getAllCategories,
+  updateCategoryById,
+  deleteCategoryAndChildren,
 };
