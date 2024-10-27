@@ -95,7 +95,6 @@ const ProductPrice = sequelize.define(
   },
   {
     tableName: "ProductPrices",
-    modelName: "ProductPrice",
     timestamps: true,
     validate: {
       discountDatesCheck() {

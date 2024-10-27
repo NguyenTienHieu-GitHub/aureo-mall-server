@@ -72,26 +72,7 @@ const createProduct = async (req, res) => {
       res,
       statusCode: 200,
       messageSuccess: "Product created successfully",
-      data: {
-        shopName: productData.Shop?.shopName,
-        productName: productData.productName,
-        originalPrice: productData.ProductPrice[0]?.originalPrice,
-        discountPrice: productData.ProductPrice[0]?.discountPrice,
-        discountType: productData.ProductPrice[0]?.discountType,
-        discountStartDate: productData.ProductPrice[0]?.discountStartDate,
-        discountEndDate: productData.ProductPrice[0]?.discountEndDate,
-        finalPrice: productData.ProductPrice[0]?.finalPrice,
-        description: productData.description,
-        categoryList:
-          productData.Categories?.map((category) => category.categoryName) ||
-          [],
-        mediaList: productData.ProductMedia,
-        optionList: productData.ProductOptions,
-        quantity: productData.Inventory[0]?.quantity,
-        slug: productData.slug,
-        createdAt: productData.createdAt,
-        updatedAt: productData.updatedAt,
-      },
+      data: productData,
     });
   } catch (error) {
     console.error(error);

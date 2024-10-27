@@ -4,10 +4,11 @@ const ProductMedia = require("../models/ProductMediaModel");
 const ProductOption = require("../models/ProductOptionModel");
 const ProductOptionValue = require("../models/ProductOptionValueModel");
 const Inventory = require("../models/InventoryModel");
-const Category = require("../models/CategoryModel");
+const { Category } = require("../models/CategoryModel");
 const ProductCategory = require("../models/ProductCategoryModel");
 const Warehouse = require("../models/WarehouseModel");
 const Shop = require("../models/ShopModel");
+const { getCategoryPath } = require("../services/CategoryService");
 const slugify = require("slugify");
 const sequelize = require("../../../config/db/index");
 
@@ -50,7 +51,13 @@ const getAllProducts = async () => {
       },
       {
         model: Category,
-        attributes: ["categoryName"],
+        attributes: ["categoryName", "id", "parentId"],
+        through: { attributes: [] },
+        include: {
+          model: Category,
+          as: "parent",
+          attributes: ["categoryName", "id", "parentId"],
+        },
       },
       {
         model: Inventory,
@@ -63,7 +70,13 @@ const getAllProducts = async () => {
       },
       {
         model: ProductOption,
-        attributes: ["optionName", "optionValue"],
+        attributes: ["optionName"],
+        include: [
+          {
+            model: ProductOptionValue,
+            attributes: ["optionValue"],
+          },
+        ],
       },
       {
         model: Shop,
@@ -75,25 +88,49 @@ const getAllProducts = async () => {
   if (products.length === 0) {
     throw new Error("Product not found");
   }
-  const formattedProducts = products.map((product) => {
+
+  const formattedProducts = products.map((productData) => {
+    const categoryList = [];
+    if (productData.Categories && productData.Categories.length > 0) {
+      productData.Categories.forEach((category) => {
+        const buildCategoryList = (cat) => {
+          if (cat) {
+            categoryList.unshift({
+              id: cat.id,
+              categoryName: cat.categoryName,
+            });
+            if (cat.parent) buildCategoryList(cat.parent);
+          }
+        };
+        buildCategoryList(category);
+      });
+    }
     return {
-      shopName: product.Shop?.shopName,
-      productName: product.productName,
-      originalPrice: product.ProductPrice[0]?.originalPrice,
-      discountPrice: product.ProductPrice[0]?.discountPrice,
-      discountType: product.ProductPrice[0]?.discountType,
-      discountStartDate: product.ProductPrice[0]?.discountStartDate,
-      discountEndDate: product.ProductPrice[0]?.discountEndDate,
-      finalPrice: product.ProductPrice[0]?.finalPrice,
-      description: product.description,
-      categoryList:
-        product.Categories?.map((category) => category.categoryName) || [],
-      mediaList: product.ProductMedia,
-      optionList: product.ProductOptions,
-      quantity: product.Inventory[0]?.quantity,
-      slug: product.slug,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt,
+      shopName: productData.Shop.shopName,
+      productName: productData.productName,
+      originalPrice: productData.ProductPrice[0].originalPrice,
+      discountPrice: productData.ProductPrice[0].discountPrice,
+      discountType: productData.ProductPrice[0].discountType,
+      discountStartDate: productData.ProductPrice[0].discountStartDate,
+      discountEndDate: productData.ProductPrice[0].discountEndDate,
+      finalPrice: productData.ProductPrice[0].finalPrice,
+      description: productData.description,
+      categoryList: categoryList,
+      mediaList: productData.ProductMedia,
+      optionList: productData.ProductOptions
+        ? productData.ProductOptions.map((productOption) => ({
+            optionName: productOption.optionName,
+            optionValues: productOption.ProductOptionValues
+              ? productOption.ProductOptionValues.map(
+                  (optionValue) => optionValue.optionValue
+                )
+              : [],
+          }))
+        : [],
+      quantity: productData.quantity,
+      slug: productData.slug,
+      createdAt: productData.createdAt,
+      updatedAt: productData.updatedAt,
     };
   });
   return formattedProducts;
@@ -226,8 +263,13 @@ const createProduct = async ({
         },
         {
           model: Category,
-          as: "Categories",
-          attributes: ["categoryName"],
+          attributes: ["categoryName", "id", "parentId"],
+          through: { attributes: [] },
+          include: {
+            model: Category,
+            as: "parent",
+            attributes: ["categoryName", "id", "parentId"],
+          },
         },
         {
           model: Shop,
@@ -239,7 +281,49 @@ const createProduct = async ({
     if (!productData) {
       throw new Error("Product not found");
     }
-    return productData;
+    const categoryList = [];
+    if (productData.Categories && productData.Categories.length > 0) {
+      productData.Categories.forEach((category) => {
+        const buildCategoryList = (cat) => {
+          if (cat) {
+            categoryList.unshift({
+              id: cat.id,
+              categoryName: cat.categoryName,
+            });
+            if (cat.parent) buildCategoryList(cat.parent);
+          }
+        };
+        buildCategoryList(category);
+      });
+    }
+    const responseData = {
+      shopName: productData.Shop.shopName,
+      productName: productData.productName,
+      originalPrice: productData.ProductPrice[0].originalPrice,
+      discountPrice: productData.ProductPrice[0].discountPrice,
+      discountType: productData.ProductPrice[0].discountType,
+      discountStartDate: productData.ProductPrice[0].discountStartDate,
+      discountEndDate: productData.ProductPrice[0].discountEndDate,
+      finalPrice: productData.ProductPrice[0].finalPrice,
+      description: productData.description,
+      categoryList: categoryList,
+      mediaList: productData.ProductMedia,
+      optionList: productData.ProductOptions
+        ? productData.ProductOptions.map((productOption) => ({
+            optionName: productOption.optionName,
+            optionValues: productOption.ProductOptionValues
+              ? productOption.ProductOptionValues.map(
+                  (optionValue) => optionValue.optionValue
+                )
+              : [],
+          }))
+        : [],
+      quantity: productData.quantity,
+      slug: productData.slug,
+      createdAt: productData.createdAt,
+      updatedAt: productData.updatedAt,
+    };
+    return responseData;
   } catch (err) {
     if (transaction.finished !== "commit") {
       await transaction.rollback();
