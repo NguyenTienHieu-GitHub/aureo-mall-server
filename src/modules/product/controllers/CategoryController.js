@@ -2,13 +2,14 @@ const CategoryService = require("../services/CategoryService");
 const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
 
 const createCategory = async (req, res) => {
-  const { categoryName, parentId, toggle, imageUrls } = req.body;
+  const { categoryName, parentId, toggle } = req.body;
+  const imagePaths = req.files.map((file) => file.path);
   try {
     const allCategories = await CategoryService.createCategory({
       categoryName,
       parentId,
       toggle,
-      imageUrls,
+      imageUrls: imagePaths,
     });
     return setResponseLocals({
       res,

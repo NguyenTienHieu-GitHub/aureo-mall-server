@@ -136,7 +136,7 @@ const getUsersById = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-  const { path } = req.file;
+  const { path } = req.file.path;
   const { firstName, lastName, email, password, roleId } = req.body;
   try {
     const userData = await UserService.createUser({
@@ -362,12 +362,12 @@ const updateMyInfo = async (req, res) => {
       errorMessage: "Invalid user ID format: uuid",
     });
   }
-  const { filename } = req.file;
+  const { path: avatarPath } = req.file;
   const { firstName, lastName, email, password } = req.body;
   try {
     const userData = await UserService.updateMyInfo({
       userId: userId,
-      avatar: `http://localhost:3080/avatar/${filename}`,
+      avatar: avatarPath,
       firstName,
       lastName,
       email,

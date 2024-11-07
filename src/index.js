@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const routes = require("./modules/routes/index");
 const swaggerJsdoc = require("swagger-jsdoc");
@@ -10,12 +9,6 @@ const { syncModels } = require("./modules/models/index");
 const responsesFormatter = require("./shared/middleware/responseFormatter");
 
 const path = require("path");
-
-const envFile = `.env.${process.env.NODE_ENV || "development"}`;
-const result = dotenv.config({ path: envFile });
-if (result.error) {
-  throw result.error;
-}
 
 const app = express();
 const port = 3080;

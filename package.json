@@ -4,9 +4,9 @@
   "description": "E-Commerce development server",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=production node src/index.js",
-    "dev": "cross-env NODE_ENV=development nodemon src/index.js",
-    "test": "cross-env NODE_ENV=test mocha --require test/setup.js"
+    "start": "node --env-file=.env.production --watch src/index.js",
+    "dev": "node --env-file=.env.development --watch src/index.js",
+    "test": "node --env-file=.env.test mocha --require test/setup.js"
   },
   "repository": {
     "type": "git",
@@ -21,11 +21,12 @@
   "dependencies": {
     "aureo-mall-server": "file:",
     "bcrypt": "^5.1.1",
+    "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "db-migrate-pg": "^1.5.2",
-    "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
@@ -36,9 +37,7 @@
     "validator": "^13.12.0"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
     "mocha": "^10.7.3",
-    "nodemon": "^3.1.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   }

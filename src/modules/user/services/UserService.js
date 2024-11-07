@@ -3,7 +3,8 @@ const Role = require("../../auth/models/RoleModel");
 const UserRole = require("../../auth/models/UserRoleModel");
 const bcrypt = require("bcrypt");
 const sequelize = require("../../../config/db/index");
-
+const { uploadImageToCloudinary } = require("../../../shared/utils/upload");
+const fs = require("fs");
 const getMyInfo = async (userId) => {
   const userWithRole = await User.findOne({
     where: { id: userId },
@@ -84,9 +85,10 @@ const createUser = async ({
       throw new Error("Email already exists");
     }
     const hashedPassword = await bcrypt.hash(password, 10);
+    const avatars = await uploadImageToCloudinary(avatar);
     const addUserResult = await User.create(
       {
-        avatar,
+        avatar: avatars,
         firstName,
         lastName,
         email,
@@ -195,8 +197,10 @@ const updateMyInfo = async ({
       throw new Error("Email already exists");
     }
   }
+  const avt = await uploadImageToCloudinary(avatar);
+  fs.unlinkSync(avatar);
   await user.update({
-    avatar,
+    avatar: avt,
     firstName,
     lastName,
     email,

@@ -1,4 +1,6 @@
 const { Category, ImageCategory } = require("../models/CategoryModel");
+const { uploadImagesToCloudinary } = require("../../../shared/utils/upload");
+const fs = require("fs");
 
 const createCategory = async ({
   categoryName,
@@ -6,6 +8,14 @@ const createCategory = async ({
   toggle,
   imageUrls,
 }) => {
+  const imageUrl = await uploadImagesToCloudinary(imageUrls);
+  imageUrls.forEach((imageUrl) => {
+    try {
+      fs.unlinkSync(imageUrl);
+    } catch (err) {
+      console.error(`Không thể xóa tệp: ${imageUrl}`, err);
+    }
+  });
   const category = await Category.create({
     categoryName,
     parentId,
@@ -14,9 +24,9 @@ const createCategory = async ({
   if (!category) {
     throw new Error("Category created failed: " + categoryName);
   }
-  if (imageUrls && imageUrls.length > 0) {
+  if (imageUrl && imageUrl.length > 0) {
     await Promise.all(
-      imageUrls.map((imageUrl) =>
+      imageUrl.map((imageUrl) =>
         ImageCategory.create({
           imageUrl: imageUrl,
           categoryId: category.id,
