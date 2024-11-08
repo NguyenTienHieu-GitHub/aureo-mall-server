@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const sequelize = require("../../../config/db/index");
 const { uploadImageToCloudinary } = require("../../../shared/utils/upload");
 const fs = require("fs");
+
 const getMyInfo = async (userId) => {
   const userWithRole = await User.findOne({
     where: { id: userId },

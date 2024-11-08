@@ -177,10 +177,83 @@ const logoutUser = async (req, res) => {
     });
   }
 };
+const forgetPassword = async (req, res) => {
+  const { email } = req.body;
 
+  try {
+    await AuthService.forgetPassword({ email: email });
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Forget Password",
+      data: {
+        message: "Password reset request has been sent to your email!",
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    if (error.message.includes("Email not found")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "EMAIL_NOT_FOUND",
+        errorMessage: "Email not found",
+      });
+    } else {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
+    }
+  }
+};
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password, confirmPassword } = req.body;
+  try {
+    await AuthService.resetPassword({
+      token: token,
+      password: password,
+      confirmPassword: confirmPassword,
+    });
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Password reset successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    if (error.message.includes("Token has expired")) {
+      return setResponseLocals({
+        res,
+        statusCode: 401,
+        errorCode: "TOKEN_EXPIRED",
+        errorMessage: "Token has expired",
+      });
+    } else if (error.message.includes("Token in the blacklist")) {
+      return setResponseLocals({
+        res,
+        statusCode: 401,
+        errorCode: "TOKEN_IN_BLACKLIST",
+        errorMessage: "Token in the backlist",
+      });
+    } else {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
+    }
+  }
+};
 module.exports = {
   registerUser,
   loginUser,
   refreshToken,
   logoutUser,
+  forgetPassword,
+  resetPassword,
 };

@@ -1,5 +1,5 @@
 const { Category, ImageCategory } = require("../models/CategoryModel");
-const { uploadImagesToCloudinary } = require("../../../shared/utils/upload");
+const { uploadFilesToCloudinary } = require("../../../shared/utils/upload");
 const fs = require("fs");
 
 const createCategory = async ({
@@ -8,7 +8,7 @@ const createCategory = async ({
   toggle,
   imageUrls,
 }) => {
-  const imageUrl = await uploadImagesToCloudinary(imageUrls);
+  const imageUrl = await uploadFilesToCloudinary(imageUrls);
   imageUrls.forEach((imageUrl) => {
     try {
       fs.unlinkSync(imageUrl);
