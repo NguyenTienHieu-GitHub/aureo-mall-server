@@ -61,6 +61,15 @@ cp .env.example .env.test
 # test : môi trường kiểm thử
 NODE_ENV=operating_environment
 
+#Cấu hình nodemailer
+USER_MAIL=your_email
+PASSWORD_MAIL=your_email_password
+
+#Cấu hình cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
 # Cấu hình cơ sở dữ liệu
 DB_USERNAME=your_db_username
 DB_PASSWORD=your_db_password
