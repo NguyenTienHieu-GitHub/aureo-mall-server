@@ -1,6 +1,5 @@
 const multer = require("multer");
 const path = require("path");
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     let folder = "src/modules/uploads/";
@@ -26,7 +25,8 @@ const storage = multer.diskStorage({
 
 const uploadAvatar = multer({ storage: storage }).single("avatar");
 const uploadProduct = multer({ storage: storage }).single("product");
-const uploadCategory = multer({ storage: storage }).array("imageUrls", 3);
+const uploadCategory = multer({ storage: storage }).array("imageUrls", 5);
+const uploadNone = multer({ storage: storage }).none();
 const fixFilePath = (req, res, next) => {
   if (req.file) {
     req.file.path = req.file.path.replace(/\\/g, "/");
@@ -39,4 +39,5 @@ module.exports = {
   fixFilePath,
   uploadProduct,
   uploadCategory,
+  uploadNone,
 };

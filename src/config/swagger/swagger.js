@@ -5,7 +5,7 @@ const swaggerDocument = {
   openapi: "3.0.0",
   info: {
     title: "API Documentation",
-    version: "1.0.0",
+    version: "1.0.7",
     description: "API documentation for the Node.js application",
   },
   servers: [

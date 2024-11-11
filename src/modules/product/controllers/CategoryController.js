@@ -18,19 +18,12 @@ const createCategory = async (req, res) => {
       data: allCategories,
     });
   } catch (error) {
-    if (error.message.includes("Category created failed")) {
+    if (error.message.includes("ImageUrls missing")) {
       return setResponseLocals({
         res,
         statusCode: 400,
-        errorCode: "CREATE_CATEGORY_ERROR",
-        errorMessage: "Category created failed",
-      });
-    } else if (error.message.includes("ImageUrls missing")) {
-      return setResponseLocals({
-        res,
-        statusCode: 404,
         errorCode: "MISSING_FIELD",
-        errorMessage: "Missing field imageUrls",
+        errorMessage: "The field ImageUrls is required and cannot be empty",
       });
     } else {
       return setResponseLocals({
@@ -71,14 +64,15 @@ const getAllCategory = async (req, res) => {
 };
 const updateCategoryById = async (req, res) => {
   const categoryId = req.params.categoryId;
-  const { categoryName, parentId, toggle, imageUrls } = req.body;
+  const { categoryName, parentId, toggle } = req.body;
+  const imageUrls = req.files.map((file) => file.path);
   try {
     const allCategories = await CategoryService.updateCategoryById({
       categoryId: categoryId,
       categoryName,
       parentId,
       toggle,
-      imageUrls,
+      imageUrls: imageUrls,
     });
     return setResponseLocals({
       res,
@@ -87,19 +81,12 @@ const updateCategoryById = async (req, res) => {
       data: allCategories,
     });
   } catch (error) {
-    if (error.message.includes("Category update failed")) {
+    if (error.message.includes("ImageUrls missing")) {
       return setResponseLocals({
         res,
         statusCode: 400,
-        errorCode: "CREATE_CATEGORY_ERROR",
-        errorMessage: "Category update failed",
-      });
-    } else if (error.message.includes("ImageUrls missing")) {
-      return setResponseLocals({
-        res,
-        statusCode: 404,
         errorCode: "MISSING_FIELD",
-        errorMessage: "Missing field imageUrls",
+        errorMessage: "The field ImageUrls is required and cannot be empty",
       });
     } else {
       return setResponseLocals({

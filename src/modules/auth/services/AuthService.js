@@ -258,6 +258,7 @@ const resetPassword = async ({ token, password, confirmPassword }) => {
         if (err) {
           throw new Error("Token has expired");
         }
+        return result;
       }
     });
     if (password !== confirmPassword) {

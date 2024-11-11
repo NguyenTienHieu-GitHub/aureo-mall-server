@@ -144,9 +144,6 @@ const createAddress = async ({
     addressType: addressType,
     isPrimary: isPrimary,
   });
-  if (!addAddressResult) {
-    throw new Error("Address creation failed");
-  }
   const addressData = await Address.findOne({
     where: { id: addAddressResult.id },
     include: [

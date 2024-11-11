@@ -4,23 +4,52 @@ const RolePermission = require("../models/RolePermissionModel");
 const sequelize = require("../../../config/db/index");
 
 const getAllPermissions = async () => {
-  const allPermissions = await Permission.findAll();
+  const allPermissions = await Permission.findAll({
+    include: [
+      {
+        model: Role,
+        attributes: ["roleName"],
+        through: {
+          attributes: [],
+        },
+      },
+    ],
+  });
   if (allPermissions.length === 0) {
     throw new Error("Permissions not found");
   }
-  return allPermissions;
+  const formattedPermissions = allPermissions.map((permission) => ({
+    id: permission.id,
+    action: permission.action,
+    resource: permission.resource,
+    description: permission.description,
+    roleList: permission.Roles.map((role) => role.roleName),
+    createdAt: permission.createdAt,
+    updatedAt: permission.updatedAt,
+  }));
+  return formattedPermissions;
 };
 
 const getPermissionById = async (permissionId) => {
-  const permission = await Permission.findByPk(permissionId);
+  const permission = await Permission.findByPk(permissionId, {
+    include: { model: Role, attributes: ["roleName"] },
+  });
   if (permission.length === 0) {
     throw new Error("Permissions not found");
   }
-
-  return permission;
+  const permissionsData = {
+    id: permission.id,
+    action: permission.action,
+    resource: permission.resource,
+    description: permission.description,
+    roleList: permission.Roles.map((role) => role.roleName),
+    createdAt: permission.createdAt,
+    updatedAt: permission.updatedAt,
+  };
+  return permissionsData;
 };
 
-const createPermission = async ({ action, resource, description, roleId }) => {
+const createPermission = async ({ action, resource, description, roleIds }) => {
   const transaction = await sequelize.transaction();
   try {
     const existingPermission = await Permission.findOne({
@@ -41,13 +70,12 @@ const createPermission = async ({ action, resource, description, roleId }) => {
       },
       { transaction }
     );
-    await RolePermission.create(
-      {
-        roleId: roleId,
-        permissionId: newPermission.id,
-      },
-      { transaction }
-    );
+    for (const roleId of roleIds) {
+      await RolePermission.create(
+        { roleId, permissionId: newPermission.id },
+        { transaction }
+      );
+    }
 
     await transaction.commit();
 
@@ -62,8 +90,13 @@ const createPermission = async ({ action, resource, description, roleId }) => {
     });
 
     const responseData = {
-      ...newPermission.toJSON(),
+      id: roleDetails.id,
+      action: roleDetails.action,
+      resource: roleDetails.resource,
+      description: roleDetails.description,
       roleList: roleDetails.Roles?.map((role) => role.roleName) || [],
+      createdAt: roleDetails.createdAt,
+      updatedAt: roleDetails.updatedAt,
     };
 
     return responseData;
@@ -80,13 +113,44 @@ const updatePermission = async ({
   action,
   resource,
   description,
+  roleIds,
 }) => {
-  const permission = await Permission.findByPk(permissionId);
-  if (!permission) {
-    throw new Error("Permission not found.");
+  const transaction = await sequelize.transaction();
+  try {
+    for (const roleId of roleIds) {
+      const roleCheck = await Role.findByPk(roleId);
+      if (!roleCheck) {
+        throw new Error("Please create role first");
+      }
+    }
+    const permission = await Permission.findByPk(permissionId);
+    if (!permission) {
+      throw new Error("Permission not found.");
+    }
+    await Permission.update(
+      { action, resource, description },
+      { where: { id: permission.id } },
+      { transaction }
+    );
+    await permission.setRoles(roleIds, { transaction });
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    throw new Error(error.message);
   }
-  await permission.update({ action, resource, description });
-  return permission;
+  const permissionData = await Permission.findByPk(permissionId, {
+    include: { model: Role, attributes: ["roleName"] },
+  });
+  const responseData = {
+    id: permissionData.id,
+    action: permissionData.action,
+    resource: permissionData.resource,
+    description: permissionData.description,
+    roleList: permissionData.Roles?.map((role) => role.roleName) || [],
+    createdAt: permissionData.createdAt,
+    updatedAt: permissionData.updatedAt,
+  };
+  return responseData;
 };
 
 const deletePermission = async (permissionId) => {

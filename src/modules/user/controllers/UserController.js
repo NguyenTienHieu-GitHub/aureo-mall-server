@@ -81,19 +81,12 @@ const getAllUsers = async (req, res) => {
 
 const getUsersById = async (req, res) => {
   const userId = req.params.id;
-  if (!userId) {
+  if (!isUUID(userId)) {
     return setResponseLocals({
       res,
       statusCode: 400,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required fields: id",
-    });
-  } else if (!isUUID(userId)) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "INVALID_USER_ID_FORMAT",
-      errorMessage: "Invalid user ID format: uuid",
+      errorCode: "PARAMS_INCORRECT_FORMAT",
+      errorMessage: "Invalid params format: uuid",
     });
   }
   try {
@@ -185,19 +178,12 @@ const createUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   const userId = req.params.id;
-  if (!userId) {
+  if (!isUUID(userId)) {
     return setResponseLocals({
       res,
       statusCode: 400,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required fields: id",
-    });
-  } else if (!isUUID(userId)) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "INVALID_USER_ID_FORMAT",
-      errorMessage: "Invalid user ID format: uuid",
+      errorCode: "PARAMS_INCORRECT_FORMAT",
+      errorMessage: "Invalid params format: uuid",
     });
   }
   try {
@@ -264,21 +250,14 @@ const deleteMyUser = async (req, res) => {
   }
 };
 
-const updateUserByAdmin = async (req, res) => {
+const updateUser = async (req, res) => {
   const userId = req.params.id;
-  if (!userId) {
+  if (!isUUID(userId)) {
     return setResponseLocals({
       res,
       statusCode: 400,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required fields: id",
-    });
-  } else if (!isUUID(userId)) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "INVALID_USER_ID_FORMAT",
-      errorMessage: "Invalid user ID format: uuid",
+      errorCode: "PARAMS_INCORRECT_FORMAT",
+      errorMessage: "Invalid params format: uuid",
     });
   }
   const { path } = req.file;
@@ -350,16 +329,9 @@ const updateMyInfo = async (req, res) => {
   if (!userId) {
     return setResponseLocals({
       res,
-      statusCode: 400,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required fields: id",
-    });
-  } else if (!isUUID(userId)) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "INVALID_USER_ID_FORMAT",
-      errorMessage: "Invalid user ID format: uuid",
+      statusCode: 401,
+      errorCode: "TOKEN_INVALID",
+      errorMessage: "You are not authenticated",
     });
   }
   const { path: avatarPath } = req.file;
@@ -391,7 +363,7 @@ const updateMyInfo = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating user info:", error);
-    if (error.message.includes("Email already exists.")) {
+    if (error.message.includes("Email already exists")) {
       return setResponseLocals({
         res,
         statusCode: 409,
@@ -433,6 +405,6 @@ module.exports = {
   createUser,
   deleteUser,
   deleteMyUser,
-  updateUserByAdmin,
+  updateUser,
   updateMyInfo,
 };

@@ -30,14 +30,6 @@ const getAllRole = async (req, res) => {
 };
 const getRoleById = async (req, res) => {
   const roleId = req.params.id;
-  if (!roleId) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required fields: id",
-    });
-  }
   try {
     const getRoleByIdResult = await RoleService.getRoleById(roleId);
     return setResponseLocals({
@@ -80,34 +72,17 @@ const createRole = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    if (error.message.includes("Role created failed")) {
-      return setResponseLocals({
-        res,
-        statusCode: 404,
-        errorCode: "CREATE_ROLE_ERROR",
-        errorMessage: "Unable to create role in the database",
-      });
-    } else {
-      return setResponseLocals({
-        res,
-        statusCode: 500,
-        errorCode: "INTERNAL_SERVER_ERROR",
-        errorMessage: error.message,
-      });
-    }
+    return setResponseLocals({
+      res,
+      statusCode: 500,
+      errorCode: "INTERNAL_SERVER_ERROR",
+      errorMessage: error.message,
+    });
   }
 };
 
 const updateRole = async (req, res) => {
   const roleId = req.params.id;
-  if (!roleId) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required fields: id",
-    });
-  }
   const { roleName, description } = req.body;
   try {
     const updateResult = await RoleService.updateRole({
@@ -142,14 +117,6 @@ const updateRole = async (req, res) => {
 
 const deleteRole = async (req, res) => {
   const roleId = req.params.id;
-  if (!roleId) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required fields: id",
-    });
-  }
   try {
     await RoleService.deleteRole(roleId);
     return setResponseLocals({

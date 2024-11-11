@@ -31,20 +31,12 @@ const getAllPermissions = async (req, res) => {
 };
 const getPermissionById = async (req, res) => {
   const permissionId = req.params.id;
-  if (!permissionId) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required fields: id",
-    });
-  }
   try {
     const permission = await PermissionService.getPermissionById(permissionId);
     return setResponseLocals({
       res,
       statusCode: 200,
-      messageSuccess: "Show successful permission",
+      messageSuccess: "Show successfully permission",
       data: permission,
     });
   } catch (error) {
@@ -67,13 +59,13 @@ const getPermissionById = async (req, res) => {
   }
 };
 const createPermission = async (req, res) => {
-  const { action, resource, description, roleId } = req.body;
+  const { action, resource, description, roleIds } = req.body;
   try {
     const responseData = await PermissionService.createPermission({
       action,
       resource,
       description,
-      roleId,
+      roleIds,
     });
 
     return setResponseLocals({
@@ -91,7 +83,7 @@ const createPermission = async (req, res) => {
     ) {
       return setResponseLocals({
         res,
-        statusCode: 400,
+        statusCode: 409,
         errorCode: "PERMISSION_EXISTS",
         errorMessage: "Permission with this action and resource already exists",
       });
@@ -107,21 +99,14 @@ const createPermission = async (req, res) => {
 };
 const updatePermission = async (req, res) => {
   const permissionId = req.params.id;
-  if (!permissionId) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required fields: id",
-    });
-  }
-  const { action, resource, description } = req.body;
+  const { action, resource, description, roleIds } = req.body;
   try {
     const permission = await PermissionService.updatePermission({
       permissionId,
       action,
       resource,
       description,
+      roleIds,
     });
     return setResponseLocals({
       res,
@@ -134,9 +119,16 @@ const updatePermission = async (req, res) => {
     if (error.message.includes("Permission not found")) {
       return setResponseLocals({
         res,
-        statusCode: 400,
+        statusCode: 404,
         errorCode: "PERMISSION_NOT_FOUND",
         errorMessage: "Permission not found in the database",
+      });
+    } else if (error.message.includes("Please create role first")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "ROLE_NOT_CREATED",
+        errorMessage: "Please create a role first",
       });
     } else {
       return setResponseLocals({
@@ -150,14 +142,6 @@ const updatePermission = async (req, res) => {
 };
 const deletePermission = async (req, res) => {
   const permissionId = req.params.id;
-  if (!permissionId) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required fields: id",
-    });
-  }
   try {
     await PermissionService.deletePermission(permissionId);
     return setResponseLocals({

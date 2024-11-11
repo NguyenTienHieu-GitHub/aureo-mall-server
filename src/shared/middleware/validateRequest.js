@@ -27,7 +27,7 @@ const validateRequest = (models) => {
             res,
             statusCode: 400,
             errorCode: "MISSING_FIELD",
-            errorMessage: `The field '${key}' is required and cannot be empty.`,
+            errorMessage: `The field '${key}' is required and cannot be empty`,
           });
         }
         if (key === "password" && req.body[key]) {
@@ -36,7 +36,7 @@ const validateRequest = (models) => {
           if (!passwordRegex.test(req.body[key])) {
             return setResponseLocals({
               res,
-              statusCode: 400,
+              statusCode: 422,
               errorCode: "INVALID_PASSWORD_FORMAT",
               errorMessage:
                 "Password must be 12-23 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character",
@@ -61,7 +61,7 @@ const validateRequest = (models) => {
               res,
               statusCode: 400,
               errorCode: "INVALID_ADDRESS_TYPE_FORMAT",
-              errorMessage: `The field '${key}' must be one of: ${validTypes.join()}.`,
+              errorMessage: `The field '${key}' must be one of: ${validTypes.join()}`,
             });
           }
         }
@@ -75,7 +75,7 @@ const validateRequest = (models) => {
                 res,
                 statusCode: 400,
                 errorCode: "MEDIA_TYPE_INVALID",
-                errorMessage: "The field 'mediaType' cannot be empty.",
+                errorMessage: "The field 'mediaType' cannot be empty",
               });
             } else if (media.mediaType && media.mediaType !== "") {
               const validTypes = ["image", "video"];
@@ -86,7 +86,7 @@ const validateRequest = (models) => {
                   errorCode: "MEDIA_TYPE_INVALID",
                   errorMessage: `The field 'mediaType' must be one of: ${validTypes.join(
                     ","
-                  )}.`,
+                  )}`,
                 });
               }
             }
@@ -103,7 +103,7 @@ const validateRequest = (models) => {
                 res,
                 statusCode: 400,
                 errorCode: "INCORRECT_FORMAT",
-                errorMessage: `Invalid format for field '${key}'.`,
+                errorMessage: `Invalid format for field '${key}'`,
               });
             }
           }

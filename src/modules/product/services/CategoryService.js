@@ -1,43 +1,56 @@
 const { Category, ImageCategory } = require("../models/CategoryModel");
 const { uploadFilesToCloudinary } = require("../../../shared/utils/upload");
 const fs = require("fs");
-
+const sequelize = require("../../../config/db/index");
 const createCategory = async ({
   categoryName,
   parentId,
   toggle,
   imageUrls,
 }) => {
-  const imageUrl = await uploadFilesToCloudinary(imageUrls);
-  imageUrls.forEach((imageUrl) => {
-    try {
-      fs.unlinkSync(imageUrl);
-    } catch (err) {
-      console.error(`Không thể xóa tệp: ${imageUrl}`, err);
+  try {
+    const transaction = await sequelize.transaction();
+    if (!imageUrls || imageUrls.length === 0) {
+      throw new Error("ImageUrls missing");
     }
-  });
-  const category = await Category.create({
-    categoryName,
-    parentId,
-    toggle,
-  });
-  if (!category) {
-    throw new Error("Category created failed: " + categoryName);
-  }
-  if (imageUrl && imageUrl.length > 0) {
+    const imageUrl = await uploadFilesToCloudinary(imageUrls);
     await Promise.all(
-      imageUrl.map((imageUrl) =>
-        ImageCategory.create({
-          imageUrl: imageUrl,
-          categoryId: category.id,
-        })
-      )
+      imageUrls.map(async (path) => {
+        try {
+          await fs.promises.unlink(path);
+        } catch (err) {
+          console.error(`Unable to delete file: ${path}`, err);
+        }
+      })
     );
-  } else {
-    throw new Error("ImageUrls missing");
+    const category = await Category.create(
+      {
+        categoryName,
+        parentId,
+        toggle,
+      },
+      { transaction }
+    );
+    if (imageUrl && imageUrl.length > 0) {
+      await Promise.all(
+        imageUrl.map((imageUrl) =>
+          ImageCategory.create(
+            {
+              imageUrl: imageUrl,
+              categoryId: category.id,
+            },
+            { transaction }
+          )
+        )
+      );
+    }
+    await transaction.commit();
+    const categories = await getCategoriesData(category.id);
+    return categories;
+  } catch (error) {
+    await transaction.rollback();
+    throw new Error(error.message);
   }
-  const categories = await getCategoriesData(category.id);
-  return categories;
 };
 const getAllCategories = async () => {
   const allCategories = [];
@@ -236,25 +249,42 @@ const updateCategoryById = async ({
   toggle,
   imageUrls,
 }) => {
-  const [updatedRows] = await Category.update(
-    { categoryName, parentId, toggle },
-    { where: { id: categoryId } }
-  );
-  if (updatedRows === 0) {
-    throw new Error("Category update failed: " + categoryName);
-  }
-  if (imageUrls && imageUrls.length > 0) {
-    await ImageCategory.destroy({ where: { categoryId } });
+  try {
+    const transaction = await sequelize.transaction();
+    if (!imageUrls || imageUrls.length === 0) {
+      throw new Error("ImageUrls missing");
+    }
+    const uploadedImageUrls = await uploadFilesToCloudinary(imageUrls);
     await Promise.all(
-      imageUrls.map((imageUrl) =>
-        ImageCategory.create({ imageUrl, categoryId })
+      imageUrls.map(async (path) => {
+        try {
+          await fs.promises.unlink(path);
+        } catch (err) {
+          console.error(`Unable to delete file: ${path}`, err);
+        }
+      })
+    );
+    await Category.update(
+      { categoryName, parentId, toggle },
+      { where: { id: categoryId } },
+      { transaction }
+    );
+    await Promise.all(
+      uploadedImageUrls.map((url) =>
+        ImageCategory.update(
+          { imageUrl: url },
+          { where: { categoryId } },
+          { transaction }
+        )
       )
     );
-  } else {
-    throw new Error("ImageUrls missing");
+    await transaction.commit();
+    const categories = await getCategoriesData(categoryId);
+    return categories;
+  } catch (error) {
+    await Transaction.rollback();
+    throw new Error(error.message);
   }
-  const categories = await getCategoriesData(categoryId);
-  return categories;
 };
 const deleteCategoryAndChildren = async (categoryId) => {
   try {
@@ -276,8 +306,7 @@ const deleteCategoryAndChildren = async (categoryId) => {
     }
     await Category.destroy({ where: { id: categoryId } });
   } catch (error) {
-    console.error("Error in deleteCategoryAndChildren:", error.message);
-    throw error;
+    throw new Error(error.message);
   }
 };
 

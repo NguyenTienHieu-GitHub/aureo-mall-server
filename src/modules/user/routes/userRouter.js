@@ -48,7 +48,7 @@ router.put(
   verifyToken,
   validateRequest(models),
   checkPermission("edit_user", "User"),
-  userController.updateUserByAdmin
+  userController.updateUser
 );
 router.get(
   "/myinfo",

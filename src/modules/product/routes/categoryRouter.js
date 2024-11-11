@@ -19,6 +19,8 @@ router.put(
   "/update/:categoryId",
   verifyToken,
   validateRequest(models),
+  uploadCategory,
+  fixFilePath,
   categoryController.updateCategoryById
 );
 router.post(

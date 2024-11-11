@@ -1,19 +1,405 @@
 module.exports = {
   components: {
     schemas: {
-      successResponseTrue: {
-        type: "boolean",
-        example: true,
+      //Params
+      TokenParams: {
+        type: "string",
+        description: "Token nhận được qua email",
       },
-      successResponseFalse: {
-        type: "boolean",
-        example: false,
+      uuidParams: {
+        type: "string",
+        format: "uuid",
+        description: "Nhập Id",
       },
-      dataResponseNull: {
-        oneOf: [{ type: "null" }, { type: "object" }],
-        example: null,
+      IdParams: {
+        type: "integer",
+        description: "Nhập Id",
       },
-      dataResponseUserArray: {
+      // =================================================================================================
+
+      //[Auth] Register
+      RegisterUserRequest: {
+        type: "object",
+        properties: {
+          firstName: {
+            type: "string",
+            example: "John",
+          },
+          lastName: {
+            type: "string",
+            example: "Doe",
+          },
+          email: {
+            type: "string",
+            example: "john.doe@example.com",
+          },
+          password: {
+            type: "string",
+            example: "your@Password123",
+          },
+        },
+        required: ["email", "firstName", "lastName", "password"],
+      },
+      RegisterUserResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Registered account successfully",
+          },
+        },
+      },
+      //[Auth] Forget Password
+      ForgetPasswordRequest: {
+        type: "object",
+        properties: {
+          email: { type: "string", example: "john.doe@example.com" },
+        },
+        required: ["email"],
+      },
+      ForgetPasswordResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Password reset request has been sent to your email!",
+          },
+        },
+      },
+      ResetPasswordRequest: {
+        type: "object",
+        properties: {
+          password: { type: "string", example: "your@NewPassword123" },
+          confirmPassword: { type: "string", example: "your@NewPassword123" },
+        },
+        required: ["password", "confirmPassword"],
+      },
+      ResetPasswordResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Password reset successfully",
+          },
+        },
+      },
+      //[Auth] login
+      LoginRequest: {
+        type: "object",
+        properties: {
+          email: {
+            type: "string",
+            example: "admin@gmail.com",
+          },
+          password: {
+            type: "string",
+            example: "Admin@12345678",
+          },
+        },
+        required: ["email", "password"],
+      },
+      LoginResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Login Successfully",
+          },
+          data: {
+            type: "object",
+            properties: {
+              accessKey: {
+                type: "string",
+                example:
+                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQxNjEwNDllLTQwNGMtNGUxNy04ZDViLWVmYmM2MDEzODg3ZSIsImVtYWlsIjoidGllbmhpZXUya2szQGdtYWlsLmNvbSIsImlhdCI6MTczMTE2MDMzMiwiZXhwIjoxNzMxMTYwOTMyfQ.mWQ7s8OuVfI5MlnjlJzDgnkh1M_Pn8TCtbljLoNs-m0",
+              },
+            },
+          },
+        },
+      },
+      LoginCheck: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 401,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "INVALID_EMAIL_OR_PASSWORD",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Invalid email or password",
+              },
+            },
+          },
+        },
+      },
+      //[Auth] Refresh Token
+      RefreshResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Refresh token successfully",
+          },
+          data: {
+            type: "object",
+            properties: {
+              newAccessKey: {
+                type: "string",
+                example:
+                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQxNjEwNDllLTQwNGMtNGUxNy04ZDViLWVmYmM2MDEzODg3ZSIsImVtYWlsIjoidGllbmhpZXUya2szQGdtYWlsLmNvbSIsImlhdCI6MTczMTE2MDMzMiwiZXhwIjoxNzMxMTYwOTMyfQ.mWQ7s8OuVfI5MlnjlJzDgnkh1M_Pn8TCtbljLoNs-m0",
+              },
+            },
+          },
+        },
+      },
+      //[Auth] Logout
+      LogoutResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Logout Successfully",
+          },
+          data: {
+            type: "object",
+            properties: {
+              newAccessKey: {
+                type: "string",
+                example:
+                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQxNjEwNDllLTQwNGMtNGUxNy04ZDViLWVmYmM2MDEzODg3ZSIsImVtYWlsIjoidGllbmhpZXUya2szQGdtYWlsLmNvbSIsImlhdCI6MTczMTE2MDMzMiwiZXhwIjoxNzMxMTYwOTMyfQ.mWQ7s8OuVfI5MlnjlJzDgnkh1M_Pn8TCtbljLoNs-m0",
+              },
+            },
+          },
+        },
+      },
+      // =================================================================================================
+
+      //[Role] Get All Roles
+      GetAllRolesResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all roles successfully",
+          },
+          data: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                createdAt: {
+                  type: "string",
+                  format: "date-time",
+                  example: "2024-10-22T12:17:47Z",
+                },
+                updatedAt: {
+                  type: "string",
+                  format: "date-time",
+                  example: "2024-10-22T12:17:47Z",
+                },
+                id: {
+                  type: "integer",
+                  example: 1,
+                },
+                roleName: {
+                  type: "string",
+                  example: "Admin",
+                },
+                description: {
+                  type: "string",
+                  example: "Administrator",
+                },
+              },
+            },
+          },
+        },
+      },
+      RoleNotFound: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 404,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "ROLE_NOT_FOUND",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Roles not found in the database",
+              },
+            },
+          },
+        },
+      },
+      //[Role] Get Role By Id
+      GetRoleByIdResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show role successfully",
+          },
+          data: {
+            type: "object",
+            properties: {
+              createdAt: {
+                type: "string",
+                format: "date-time",
+                example: "2024-10-22T12:17:47Z",
+              },
+              updatedAt: {
+                type: "string",
+                format: "date-time",
+                example: "2024-10-22T12:17:47Z",
+              },
+              id: {
+                type: "integer",
+                example: 1,
+              },
+              roleName: {
+                type: "string",
+                example: "Admin",
+              },
+              description: {
+                type: "string",
+                example: "Administrator",
+              },
+            },
+          },
+        },
+      },
+      //[Role] Create Or Update Role
+      CreateOrUpdateRoleRequest: {
+        type: "object",
+        properties: {
+          roleName: {
+            type: "string",
+            example: "Admin",
+          },
+          description: {
+            type: "string",
+            example: "Administrator",
+          },
+        },
+      },
+      CreateOrUpdateRoleResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 201,
+          },
+          message: {
+            type: "string",
+            example: "Create or Update role successfully",
+          },
+          data: {
+            type: "object",
+            properties: {
+              createdAt: {
+                type: "string",
+                format: "date-time",
+                example: "2024-10-22T12:17:47Z",
+              },
+              updatedAt: {
+                type: "string",
+                format: "date-time",
+                example: "2024-10-22T12:17:47Z",
+              },
+              id: {
+                type: "integer",
+                example: 1,
+              },
+              roleName: {
+                type: "string",
+                example: "Admin",
+              },
+              description: {
+                type: "string",
+                example: "Administrator",
+              },
+            },
+          },
+        },
+      },
+      //[Role] Delete Role
+      DeleteRoleResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Role deleted successfully",
+          },
+        },
+      },
+      // ====================================================================================================
+
+      //[User] Get All
+      GetAllUserResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all users successfully",
+          },
+          data: {
+            $ref: "#/components/schemas/DataUsers",
+          },
+        },
+      },
+      DataUsers: {
         oneOf: [{ type: "null" }, { type: "object" }],
         type: "array",
         items: {
@@ -22,7 +408,16 @@ module.exports = {
             userId: {
               type: "string",
               format: "uuid",
-              example: "",
+              example: "ababcbfb-f7b8-4d87-9c69-b1ae2355f565",
+            },
+            avatar: {
+              type: "string",
+              example:
+                "https://res.cloudinary.com/dfkadlnoh/image/upload/v1730995424/avatars/y1svl2iaw0vikbup34dw.jpg",
+            },
+            fullName: {
+              type: "string",
+              example: "Admin Promax",
             },
             firstName: {
               type: "string",
@@ -30,13 +425,13 @@ module.exports = {
             },
             lastName: {
               type: "string",
-              example: "Admin",
+              example: "Promax",
             },
             email: {
               type: "string",
               example: "admin@gmail.com",
             },
-            roleName: {
+            roleList: {
               type: "array",
               example: ["Admin", "Customer"],
             },
@@ -53,60 +448,212 @@ module.exports = {
           },
         },
       },
-      dataResponseAddressArray: {
-        oneOf: [{ type: "null" }, { type: "object" }],
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            addressId: {
-              type: "string",
-              example: "1",
-            },
-            userId: {
-              type: "string",
-              format: "uuid",
-              example: "",
-            },
-            firstName: {
-              type: "string",
-              example: "Admin",
-            },
-            lastName: {
-              type: "string",
-              example: "Admin",
-            },
-            phoneNumber: {
-              type: "string",
-              example: "0975515940",
-            },
-            province: {
-              type: "string",
-              example: "Hồ Chí Minh",
-            },
-            district: {
-              type: "string",
-              example: "Gò Vấp",
-            },
-            ward: {
-              type: "string",
-              example: "Phường 12",
-            },
-            address: {
-              type: "string",
-              example: "230/20/1 Phan Huy Ích",
+      UserNotFound: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 404,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "USER_NOT_FOUND",
+              },
+              errorMessage: {
+                type: "string",
+                example: "User not found in the database",
+              },
             },
           },
         },
       },
-      dataResponseObject: {
-        oneOf: [{ type: "null" }, { type: "object" }],
+      //[User] Get User By Id
+      GetUserByIdResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show user successfully",
+          },
+          data: {
+            $ref: "#/components/schemas/DataUser",
+          },
+        },
+      },
+      //[User] Get My User
+      GetMyUserResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "User information retrieved successfully",
+          },
+          data: {
+            $ref: "#/components/schemas/DataUsers",
+          },
+        },
+      },
+      //[User] Create Or Update User By Admin
+      CreateOrUpdateUserByAdminRequest: {
+        type: "object",
+        properties: {
+          firstName: {
+            type: "string",
+            example: "Admin",
+            description: "Nhập tên",
+          },
+          lastName: {
+            type: "string",
+            example: "Promax",
+            description: "Nhập họ",
+          },
+          email: {
+            type: "string",
+            description: "Nhập email",
+          },
+          password: {
+            type: "string",
+            example: "your@Password123",
+            description: "Nhập mật khẩu",
+          },
+          avatar: {
+            type: "string",
+            format: "binary",
+            description: "Tải lên ảnh đại diện",
+          },
+          roleId: {
+            type: "integer",
+            example: "2",
+            description: "Nhập vai trò",
+          },
+        },
+        required: [
+          "email",
+          "firstName",
+          "lastName",
+          "password",
+          "avatar",
+          "roleId",
+        ],
+      },
+      CreateOrUpdateUserByAdminResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "User 'created or updated' successfully",
+          },
+          data: {
+            $ref: "#/components/schemas/DataUser",
+          },
+        },
+      },
+      //[User] Delete User By Admin
+      DeleteUserResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 201,
+          },
+          message: {
+            type: "string",
+            example: "User deleted successfully",
+          },
+        },
+      },
+      //[User] Delete My User
+      DeleteMyUserResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 201,
+          },
+          message: {
+            type: "string",
+            example: "Your account has been deleted successfully",
+          },
+        },
+      },
+      //[User] Update My Info
+      UpdateMyInfoRequest: {
+        type: "object",
+        properties: {
+          firstName: {
+            type: "string",
+            example: "Admin",
+            description: "Nhập tên của bạn",
+          },
+          lastName: {
+            type: "string",
+            example: "Promax",
+            description: "Nhập họ của bạn",
+          },
+          email: {
+            type: "string",
+            description: "Nhập email của bạn",
+          },
+          password: {
+            type: "string",
+            example: "your@Password123",
+            description: "Nhập mật khẩu của bạn",
+          },
+          avatar: {
+            type: "string",
+            format: "binary",
+            description: "Tải lên ảnh đại diện",
+          },
+        },
+        required: ["firstName", "lastName", "email", "password", "avatar"],
+      },
+      UpdateMyInfoResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Your information has been updated successfully",
+          },
+          data: {
+            $ref: "#/components/schemas/DataUser",
+          },
+        },
+      },
+      DataUser: {
         type: "object",
         properties: {
           userId: {
             type: "string",
             format: "uuid",
-            example: "fe7089f4-f070-4b49-8602-0cd27d8fc975",
+            example: "ababcbfb-f7b8-4d87-9c69-b1ae2355f565",
+          },
+          avatar: {
+            type: "string",
+            example:
+              "https://res.cloudinary.com/dfkadlnoh/image/upload/v1730995424/avatars/y1svl2iaw0vikbup34dw.jpg",
+          },
+          fullName: {
+            type: "string",
+            example: "Admin Promax",
           },
           firstName: {
             type: "string",
@@ -114,13 +661,13 @@ module.exports = {
           },
           lastName: {
             type: "string",
-            example: "Admin",
+            example: "Promax",
           },
           email: {
             type: "string",
             example: "admin@gmail.com",
           },
-          roleName: {
+          roleList: {
             type: "array",
             example: ["Admin", "Customer"],
           },
@@ -136,820 +683,382 @@ module.exports = {
           },
         },
       },
-      dataResponseAddressObject: {
-        oneOf: [{ type: "null" }, { type: "object" }],
+      // =================================================================
+
+      //[Permission] Get All Permissions
+      GetAllPermissionsResponse: {
         type: "object",
         properties: {
-          addressId: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all successful permissions",
+          },
+          data: {
+            $ref: "#/components/schemas/DataPermissions",
+          },
+        },
+      },
+      PermissionNotFound: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 404,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "PERMISSION_NOT_FOUND",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Permissions not found in the database",
+              },
+            },
+          },
+        },
+      },
+      DataPermissions: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              example: "1",
+            },
+            action: {
+              type: "string",
+              example: "view_all_users",
+            },
+            resource: {
+              type: "string",
+              example: "User",
+            },
+            description: {
+              type: "string",
+              example: "View all user details",
+            },
+            roleList: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+              example: ["Admin", "Customer"],
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "12:17:47 22/10/2024",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              example: "12:17:47 22/10/2024",
+            },
+          },
+        },
+      },
+      //[Permission]  All Permission By Id
+      GetPermissionsByIdResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show successfully permission",
+          },
+          data: {
+            $ref: "#/components/schemas/DataPermission",
+          },
+        },
+      },
+      DataPermission: {
+        type: "object",
+        properties: {
+          id: {
             type: "string",
             example: "1",
           },
-          userId: {
+          action: {
             type: "string",
-            format: "uuid",
-            example: "",
+            example: "view_all_users",
           },
-          firstName: {
-            type: "string",
-            example: "Admin",
-          },
-          lastName: {
-            type: "string",
-            example: "Admin",
-          },
-          phoneNumber: {
-            type: "string",
-            example: "0975515940",
-          },
-          province: {
-            type: "string",
-            example: "Hồ Chí Minh",
-          },
-          district: {
-            type: "string",
-            example: "Gò Vấp",
-          },
-          ward: {
-            type: "string",
-            example: "Phường 12",
-          },
-          address: {
-            type: "string",
-            example: "230/20/1 Phan Huy Ích",
-          },
-        },
-      },
-      errorResponseServer: {
-        type: "string",
-        example: "Error details",
-      },
-      errorResponseNull: {
-        oneOf: [{ type: "null" }, { type: "string" }],
-        example: null,
-      },
-      messageResponseError: {
-        type: "string",
-        example: "Internal Server Error",
-      },
-      responseRegisterSuccess: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
-          },
-          message: {
-            type: "string",
-            example: "Registered account successfully",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-        },
-      },
-
-      requestLogin: {
-        type: "object",
-        properties: {
-          email: {
-            type: "string",
-            example: "admin@gmail.com",
-          },
-          password: {
-            type: "string",
-            example: "Admin@12345678",
-          },
-        },
-        required: ["email", "password"],
-      },
-      requestRegistered: {
-        type: "object",
-        properties: {
-          firstName: {
+          resource: {
             type: "string",
             example: "User",
           },
-          lastName: {
+          description: {
             type: "string",
-            example: "One",
+            example: "View all user details",
           },
-          email: {
-            type: "string",
-            example: "user1@gmail.com",
+          roleList: {
+            type: "array",
+            items: {
+              type: "string",
+            },
+            example: ["Admin", "Customer"],
           },
-          password: {
+          createdAt: {
             type: "string",
-            example: "User1@12345678",
+            format: "date-time",
+            example: "12:17:47 22/10/2024",
+          },
+          updatedAt: {
+            type: "string",
+            format: "date-time",
+            example: "12:17:47 22/10/2024",
           },
         },
-        required: ["email", "firstName", "lastName", "password"],
       },
-
-      responseLoginSuccess: {
+      //[Permission] Create Or Update Permission
+      CreateOrUpdatePermissionRequest: {
         type: "object",
         properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
+          action: {
+            type: "string",
+            example: "View_all_permission",
+          },
+          resource: {
+            type: "string",
+            example: "Permission",
+          },
+          description: {
+            type: "string",
+            example: "View all permission",
+          },
+          roleIds: {
+            type: "array",
+            example: ["1", "2", "3"],
+          },
+        },
+      },
+      CreateOrUpdatePermissionResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
           },
           message: {
             type: "string",
-            example: "Login Successfully",
+            example: "Create permission successfully",
           },
           data: {
+            $ref: "#/components/schemas/DataPermission",
+          },
+        },
+      },
+      PermissionExists: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 409,
+          },
+          error: {
             type: "object",
             properties: {
-              accessKey: {
+              errorCode: {
+                type: "string",
+                example: "PERMISSION_EXISTS",
+              },
+              errorMessage: {
                 type: "string",
                 example:
-                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjcwMmRmYzMyLWM1MWYtNDQ1OC1iMjZkLTBiZDdkMzRmNmNiNyIsImVtYWlsIjoiYWRtaW5AZ21haWwuY29tIiwiaWF0IjoxNzI4Mzc3MjEzLCJleHAiOjE3MjgzNzc4MTN9.VPFcK0AsFkqorkIwF_3knnqIcIq3EWL5bBLKpDdX9Dw",
+                  "Permission with this action and resource already exists",
               },
             },
           },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
-          },
         },
       },
-      responseRefreshSuccess: {
+      //[Permission] Update Permission
+      RoleNotCreated: {
         type: "object",
         properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
+          status: {
+            type: "integer",
+            example: 404,
           },
-          message: {
-            type: "string",
-            example: "Refresh token successfully",
-          },
-          data: {
+          error: {
             type: "object",
             properties: {
-              newAccessKey: {
+              errorCode: {
                 type: "string",
-                example:
-                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjcwMmRmYzMyLWM1MWYtNDQ1OC1iMjZkLTBiZDdkMzRmNmNiNyIsImVtYWlsIjoiYWRtaW5AZ21haWwuY29tIiwiaWF0IjoxNzI4Mzc5NjQyLCJleHAiOjE3MjgzODAyNDJ9.MgoA5BFemdUSnOd3vNF7SnkPpCSkftdmJOeGi2ieVIQ",
+                example: "ROLE_NOT_CREATED",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Please create a role first",
               },
             },
           },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
-          },
         },
       },
-      responseLogoutSuccess: {
+      //[Permission] Delete Permission
+      DeletePermissionResponse: {
         type: "object",
         properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
+          status: {
+            type: "integer",
+            example: 200,
           },
           message: {
             type: "string",
-            example: "Logout Successfully",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
+            example: "Permission deleted successfully",
           },
         },
       },
-      responseGetMyInfo: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
-          },
-          message: {
-            type: "string",
-            example: "User information retrieved successfully",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseObject",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
-          },
-        },
-      },
-      responseGetAllUserSuccess: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
-          },
-          message: {
-            type: "string",
-            example: "Show all users successfully",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseUserArray",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
-          },
-        },
-      },
-      responseGetUserByIdSuccess: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
-          },
-          message: {
-            type: "string",
-            example: "Show all users successfully",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseObject",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
-          },
-        },
-      },
-      responseCreateSuccess: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
-          },
-          message: {
-            type: "string",
-            example: "Created user successfully",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseObject",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
-          },
-        },
-      },
-      responseDeleteUserSuccess: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
-          },
-          message: {
-            type: "string",
-            example: "User deleted successfully",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
-          },
-        },
-      },
-      responseDeleteMyUserSuccess: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
-          },
-          message: {
-            type: "string",
-            example: "Your account has been deleted successfully",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
-          },
-        },
-      },
-      responseUpdateUserByIdSuccess: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
-          },
-          message: {
-            type: "string",
-            example: "User updated successfully",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseObject",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
-          },
-        },
-      },
-      responseUpdateMyInfoSuccess: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
-          },
-          message: {
-            type: "string",
-            example: "Your information has been updated successfully",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseObject",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
-          },
-        },
-      },
+      // =================================================================
 
-      responseGetAllAddress: {
+      //[Address] Get All Address
+      GetAllAddressResponse: {
         type: "object",
         properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
+          status: {
+            type: "integer",
+            example: 200,
           },
           message: {
             type: "string",
             example: "Show all addresses successfully",
           },
           data: {
-            $ref: "#/components/schemas/dataResponseAddressArray",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
+            $ref: "#/components/schemas/DataAddresses",
           },
         },
       },
-      responseGetAddressById: {
+      AddressNotFound: {
         type: "object",
         properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
-          },
-          message: {
-            type: "string",
-            example: "Show addresses successfully",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseAddressObject",
+          status: {
+            type: "integer",
+            example: 404,
           },
           error: {
-            $ref: "#/components/schemas/errorResponseNull",
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "ADDRESS_NOT_FOUND",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Address not found in the database",
+              },
+            },
           },
         },
       },
-      responseCreateAddressSuccess: {
+      DataAddresses: {
+        oneOf: [{ type: "null" }, { type: "object" }],
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            addressId: {
+              type: "string",
+              format: "uuid",
+              example: "abcdefgh-f7b8-4d87-9c69-b1ae2355f565",
+            },
+            userId: {
+              type: "string",
+              format: "uuid",
+              example: "ababcbfb-f7b8-4d87-9c69-b1ae2355f565",
+            },
+            fullName: {
+              type: "string",
+              example: "Admin Promax",
+            },
+            phoneNumber: {
+              type: "string",
+              example: "0975515940",
+            },
+            provinceCode: {
+              type: "string",
+              example: "02",
+            },
+            provinceName: {
+              type: "string",
+              example: "Hà Giang",
+            },
+            districtCode: {
+              type: "string",
+              example: "027",
+            },
+            districtName: {
+              type: "string",
+              example: "Mèo Vạc",
+            },
+            wardCode: {
+              type: "string",
+              example: "00817",
+            },
+            wardName: {
+              type: "string",
+              example: "Niêm Sơn",
+            },
+            address: {
+              type: "string",
+              example: "230/20/1 Phan Huy Ích",
+            },
+            addressType: {
+              type: "string",
+              enum: ["HOME", "OFFICE"],
+              default: "HOME",
+              description: "Type of address",
+              example: "HOME",
+            },
+            isPrimary: {
+              type: "boolean",
+              example: "true",
+            },
+          },
+        },
+      },
+      //[Address] Get Address By Id
+      GetAddressByIdResponse: {
         type: "object",
         properties: {
           status: {
             type: "integer",
             example: 200,
           },
-          messageSuccess: {
-            type: "string",
-            example: "Address created successfully",
-          },
-          data: {
-            type: "object",
-            properties: {
-              addressId: {
-                type: "string",
-                format: "uuid",
-                example: "f8c6bd3f-461a-4b70-8cd3-c50ca5c0621a",
-              },
-              fullName: {
-                type: "string",
-                example: "Nguyễn Tiến Hiệu",
-              },
-              phoneNumber: {
-                type: "string",
-                example: "0975515940",
-              },
-              provinceCode: {
-                type: "string",
-                example: "02",
-              },
-              provinceName: {
-                type: "string",
-                example: "Hà Giang",
-              },
-              districtCode: {
-                type: "string",
-                example: "027",
-              },
-              districtName: {
-                type: "string",
-                example: "Mèo Vạc",
-              },
-              wardCode: {
-                type: "string",
-                example: "00817",
-              },
-              wardName: {
-                type: "string",
-                example: "Niêm Sơn",
-              },
-              address: {
-                type: "string",
-                example: "51 Lê Thị Nho",
-              },
-              addressType: {
-                type: "string",
-                enum: ["HOME", "OFFICE"],
-                example: "HOME",
-              },
-              isPrimary: {
-                type: "boolean",
-                example: true,
-              },
-            },
-          },
-        },
-      },
-      responseUpdateAddressSuccess: {
-        type: "object",
-        properties: {
-          status: {
-            type: "integer",
-            example: 200,
-          },
-          messageSuccess: {
-            type: "string",
-            example: "Address updated successfully",
-          },
-          data: {
-            type: "object",
-            properties: {
-              addressId: {
-                type: "string",
-                format: "uuid",
-                example: "f8c6bd3f-461a-4b70-8cd3-c50ca5c0621a",
-              },
-              fullName: {
-                type: "string",
-                example: "Nguyễn Tiến Hiệu",
-              },
-              phoneNumber: {
-                type: "string",
-                example: "0975515940",
-              },
-              provinceCode: {
-                type: "string",
-                example: "02",
-              },
-              provinceName: {
-                type: "string",
-                example: "Hà Giang",
-              },
-              districtCode: {
-                type: "string",
-                example: "027",
-              },
-              districtName: {
-                type: "string",
-                example: "Mèo Vạc",
-              },
-              wardCode: {
-                type: "string",
-                example: "00817",
-              },
-              wardName: {
-                type: "string",
-                example: "Niêm Sơn",
-              },
-              address: {
-                type: "string",
-                example: "51 Lê Thị Nho",
-              },
-              addressType: {
-                type: "string",
-                enum: ["HOME", "OFFICE"],
-                example: "HOME",
-              },
-              isPrimary: {
-                type: "boolean",
-                example: true,
-              },
-            },
-          },
-        },
-      },
-      responseDeleteAddressSuccess: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseTrue",
-          },
           message: {
             type: "string",
-            example: "Address deleted successfully",
+            example: "Show address successfully",
           },
           data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseNull",
+            $ref: "#/components/schemas/DataAddress",
           },
         },
       },
-      errorCreateAddress: {
+      DataAddress: {
+        oneOf: [{ type: "null" }, { type: "object" }],
         type: "object",
         properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
+          addressId: {
             type: "string",
-            example: "Address creation failed",
+            format: "uuid",
+            example: "abcdefgh-f7b8-4d87-9c69-b1ae2355f565",
           },
-          data: {
-            $ref: "#/components/schemas/dataResponseObject",
-          },
-          error: {
+          userId: {
             type: "string",
-            example: "Address creation failed",
+            format: "uuid",
+            example: "ababcbfb-f7b8-4d87-9c69-b1ae2355f565",
           },
-        },
-      },
-      paramsIdFind: {
-        type: "integer",
-        description: "Nhập Id muốn tìm kiếm",
-      },
-      paramsIdFindUser: {
-        type: "string",
-        format: "uuid",
-        description: "Nhập Id muốn tìm kiếm",
-      },
-      paramsIdDelete: {
-        type: "integer",
-        description: "Nhập Id muốn xóa",
-      },
-      paramsIdDeleteUser: {
-        type: "string",
-        format: "uuid",
-        description: "Nhập Id muốn xóa",
-      },
-      userNotFound: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
-            type: "string",
-            example: "User not found",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            type: "string",
-            example: "User not found in the database",
-          },
-        },
-      },
-      addressNotFound: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
-            type: "string",
-            example: "Address not found",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            type: "string",
-            example: "Address not found in the database",
-          },
-        },
-      },
-      refreshKeyNotInCookie: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
-            type: "string",
-            example: "You are not authenticated",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            type: "string",
-            example: "RefreshKey is not in cookie",
-          },
-        },
-      },
-      refreshKeyNotInDB: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
-            type: "string",
-            example: "Refresh token is not valid",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            type: "string",
-            example: "RefreshKey not in the database",
-          },
-        },
-      },
-      emailOrPasswordFalse: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
-            type: "string",
-            example: "Invalid email or password.",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            type: "string",
-            example: "Authentication failed: Invalid email or password.",
-          },
-        },
-      },
-      missingRequireFields: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
-            type: "string",
-            example: "Missing required fields",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            type: "string",
-            example: "Missing required fields: 'details field'",
-          },
-        },
-      },
-      userIdIsRequired: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
-            type: "string",
-            example: "User not authenticated",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            type: "string",
-            example: "User ID is required.",
-          },
-        },
-      },
-      formatIdUser: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
-            type: "string",
-            example: "Invalid user ID format",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            type: "string",
-            example: "Invalid user ID format: uuid",
-          },
-        },
-      },
-      mailExists: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
-            type: "string",
-            example: "Email already exists.",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            type: "string",
-            example: "This email is already associated with another account.",
-          },
-        },
-      },
-      internalServerErrorResponse: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
-            $ref: "#/components/schemas/messageResponseError",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            $ref: "#/components/schemas/errorResponseServer",
-          },
-        },
-      },
-      passwordRegexError: {
-        type: "object",
-        properties: {
-          success: {
-            $ref: "#/components/schemas/successResponseFalse",
-          },
-          message: {
-            type: "string",
-            example: "Password does not meet the requirements.",
-          },
-          data: {
-            $ref: "#/components/schemas/dataResponseNull",
-          },
-          error: {
-            type: "string",
-            example:
-              "Password must be between 12 to 23 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
-          },
-        },
-      },
-
-      fieldUpdateAndCreateUserAdmin: {
-        type: "object",
-        properties: {
-          firstName: {
-            type: "string",
-            example: "User",
-          },
-          lastName: {
-            type: "string",
-            example: "One",
-          },
-          email: {
-            type: "string",
-            example: "user1@gmail.com",
-          },
-          password: {
-            type: "string",
-            example: "User1@12345678",
-          },
-          roleId: {
-            type: "integer",
-            example: "2",
-          },
-        },
-        required: ["email", "firstName", "lastName", "password", "roleId"],
-      },
-      fieldUpdateMyInfo: {
-        type: "object",
-        properties: {
-          firstName: {
-            type: "string",
-            example: "User",
-          },
-          lastName: {
-            type: "string",
-            example: "One",
-          },
-          email: {
-            type: "string",
-            example: "user1@gmail.com",
-          },
-          password: {
-            type: "string",
-            example: "User1@12345678",
-          },
-        },
-        required: ["email", "firstName", "lastName", "password"],
-      },
-      fieldUpdateAndCreateAddress: {
-        type: "object",
-        properties: {
           fullName: {
             type: "string",
-            example: "Admin To You",
+            example: "Admin Promax",
           },
           phoneNumber: {
             type: "string",
@@ -957,15 +1066,27 @@ module.exports = {
           },
           provinceCode: {
             type: "string",
-            example: "01",
+            example: "02",
+          },
+          provinceName: {
+            type: "string",
+            example: "Hà Giang",
           },
           districtCode: {
             type: "string",
-            example: "001",
+            example: "027",
+          },
+          districtName: {
+            type: "string",
+            example: "Mèo Vạc",
           },
           wardCode: {
             type: "string",
-            example: "00001",
+            example: "00817",
+          },
+          wardName: {
+            type: "string",
+            example: "Niêm Sơn",
           },
           address: {
             type: "string",
@@ -974,11 +1095,840 @@ module.exports = {
           addressType: {
             type: "string",
             enum: ["HOME", "OFFICE"],
+            default: "HOME",
+            description: "Type of address",
+            example: "HOME",
+          },
+          isPrimary: {
+            type: "boolean",
+            example: "true",
+          },
+        },
+      },
+      //[Address] Create Address
+      CreateOrUpdateAddressRequest: {
+        type: "object",
+        properties: {
+          fullName: {
+            type: "string",
+            example: "Admin Promax",
+          },
+          phoneNumber: {
+            type: "string",
+            example: "0975515940",
+          },
+          provinceCode: {
+            type: "string",
+            example: "02",
+          },
+          districtCode: {
+            type: "string",
+            example: "027",
+          },
+          wardCode: {
+            type: "string",
+            example: "00817",
+          },
+          address: {
+            type: "string",
+            example: "51 Lê Thị Nho",
+          },
+          addressType: {
+            type: "string",
+            enum: ["HOME", "OFFICE"],
+            default: "HOME",
+            description: "Type of address",
             example: "HOME",
           },
           isPrimary: {
             type: "boolean",
             example: true,
+          },
+        },
+      },
+      CreateOrUpdateAddressResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 201,
+          },
+          message: {
+            type: "string",
+            example: "Address 'created or update' successfully",
+          },
+          data: {
+            $ref: "#/components/schemas/DataAddress",
+          },
+        },
+      },
+      //[Address] Delete Address
+      DeleteAddressResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Address deleted successfully",
+          },
+        },
+      },
+      //[Address] Get My Address
+      GetMyAddressResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all addresses successfully",
+          },
+          data: {
+            $ref: "#/components/schemas/DataAddresses",
+          },
+        },
+      },
+      // =================================================================
+
+      //[Province] Get All Provinces
+      GetAllProvincesResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all provinces",
+          },
+          data: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                code: {
+                  type: "string",
+                  example: "01",
+                },
+                name: {
+                  type: "string",
+                  example: "Hà Nội",
+                },
+              },
+            },
+          },
+        },
+      },
+      //[Province] Get All Districts
+      GetAllDistrictResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all districts",
+          },
+          data: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                code: {
+                  type: "string",
+                  example: "001",
+                },
+                name: {
+                  type: "string",
+                  example: "Ba Đình",
+                },
+              },
+            },
+          },
+        },
+      },
+      //[Province] Get All Wards
+      GetAllWardResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all wards",
+          },
+          data: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                code: {
+                  type: "string",
+                  example: "00001",
+                },
+                name: {
+                  type: "string",
+                  example: "Phúc Xá",
+                },
+              },
+            },
+          },
+        },
+      },
+      //[Province] Get All Units
+      GetAllUnitsResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all units",
+          },
+          data: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                id: {
+                  type: "integer",
+                  example: 1,
+                },
+                fullName: {
+                  type: "string",
+                  example: "Thành phố trực thuộc trung ương",
+                },
+                fullNameEn: {
+                  type: "string",
+                  example: "Municipality",
+                },
+                shortName: {
+                  type: "string",
+                  example: "Thành phố",
+                },
+                shortNameEn: {
+                  type: "string",
+                  example: "City",
+                },
+                codeName: {
+                  type: "string",
+                  example: "thanh_pho_truc_thuoc_trung_uong",
+                },
+                codeNameEn: {
+                  type: "string",
+                  example: "municipality",
+                },
+              },
+            },
+          },
+        },
+      },
+      //[Province] Get All Regions
+      GetAllRegionsResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all regions",
+          },
+          data: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                id: {
+                  type: "integer",
+                  example: 1,
+                },
+                name: {
+                  type: "string",
+                  example: "Đông Bắc Bộ",
+                },
+                nameEn: {
+                  type: "string",
+                  example: "Northeast",
+                },
+                codeName: {
+                  type: "string",
+                  example: "dong_bac_bo",
+                },
+                codeNameEn: {
+                  type: "string",
+                  example: "northest",
+                },
+              },
+            },
+          },
+        },
+      },
+      //[Province] Get All District By ProvinceCode
+      GetDistrictByProvinceCode: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show districts by province",
+          },
+          data: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                code: {
+                  type: "string",
+                  example: "001",
+                },
+                name: {
+                  type: "string",
+                  example: "Ba Đình",
+                },
+                provinceCode: {
+                  type: "string",
+                  example: "01",
+                },
+              },
+            },
+          },
+        },
+      },
+      //[Province] Get All Ward By DistrictCode
+      GetWardByDistrictCode: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show wards by district",
+          },
+          data: {
+            type: "array",
+            items: {
+              properties: {
+                code: {
+                  type: "string",
+                  example: "00001",
+                },
+                name: {
+                  type: "string",
+                  example: "Phúc Xá",
+                },
+                districtCode: {
+                  type: "string",
+                  example: "001",
+                },
+              },
+            },
+          },
+        },
+      },
+      // =================================================================
+
+      //[Category] Get All Categories
+
+      GetAllCategoriesResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all categories",
+          },
+          data: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                categoryId: {
+                  type: "integer",
+                  example: 1,
+                },
+                categoryName: {
+                  type: "string",
+                  example: "Thời trang nam",
+                },
+                toggle: {
+                  type: "boolean",
+                  example: true,
+                },
+                updatedAt: {
+                  type: "string",
+                  format: "date-time",
+                  example: "2024-10-22T12:23:30Z",
+                },
+                images: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    format: "uri",
+                    example: "https://cf.shopee.sg/file/1002",
+                  },
+                },
+                path: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      categoryId: {
+                        type: "integer",
+                        example: 1,
+                      },
+                      categoryName: {
+                        type: "string",
+                        example: "Thời trang nam",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      CategoryNotFound: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 404,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "CATEGORIES_NOT_FOUND",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Categories not found in the database",
+              },
+            },
+          },
+        },
+      },
+      //[Category] Create Or Update Category
+      CreateOrUpdateCategoryRequest: {
+        type: "object",
+        properties: {
+          categoryName: {
+            type: "string",
+            example: "Thời trang nữ",
+          },
+          parentId: {
+            type: "string",
+            example: "",
+          },
+          toggle: {
+            type: "boolean",
+            example: true,
+          },
+          imageUrls: {
+            type: "array",
+            items: {
+              type: "string",
+              format: "binary",
+            },
+          },
+        },
+        required: ["categoryName", "toggle", "imageUrls"],
+      },
+      CreateOrUpdateCategoryResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Category 'created or updated' successfully",
+          },
+          data: {
+            type: "object",
+            properties: {
+              categoryId: {
+                type: "integer",
+                example: 1,
+              },
+              categoryName: {
+                type: "string",
+                example: "Thời trang nam",
+              },
+              toggle: {
+                type: "boolean",
+                example: true,
+              },
+              updatedAt: {
+                type: "string",
+                format: "date-time",
+                example: "2024-10-22T12:23:30Z",
+              },
+              images: {
+                type: "array",
+                items: {
+                  type: "string",
+                  format: "uri",
+                  example: "https://cf.shopee.sg/file/1002",
+                },
+              },
+              path: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    categoryId: {
+                      type: "integer",
+                      example: 1,
+                    },
+                    categoryName: {
+                      type: "string",
+                      example: "Thời trang nam",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      //[Category] Delete Category
+      DeleteCategoryResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Category deleted successfully",
+          },
+        },
+      },
+      // =================================================================
+
+      //Validation
+      MissingFieldsValidate: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 400,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "MISSING_FIELD",
+              },
+              errorMessage: {
+                type: "string",
+                example:
+                  "The field 'FIELD_NAME' is required and cannot be empty",
+              },
+            },
+          },
+        },
+      },
+      PasswordValidate: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 422,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "INVALID_PASSWORD_FORMAT",
+              },
+              errorMessage: {
+                type: "string",
+                example:
+                  "Password must be between 12 to 23 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character",
+              },
+            },
+          },
+        },
+      },
+      IncorrectFormatValidate: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 422,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "INCORRECT_FORMAT",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Invalid format for field 'FIELD_NAME'",
+              },
+            },
+          },
+        },
+      },
+      ParamsValidate: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 400,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "PARAMS_INCORRECT_FORMAT",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Invalid params format: 'DATA_TYPE'",
+              },
+            },
+          },
+        },
+      },
+      MailExistsValidate: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 409,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "EMAIL_EXISTS",
+              },
+              errorMessage: {
+                type: "string",
+                example:
+                  "This email is already associated with another account",
+              },
+            },
+          },
+        },
+      },
+      MailNotFoundValidate: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 404,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "EMAIL_NOT_FOUND",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Email not found in the database",
+              },
+            },
+          },
+        },
+      },
+      // =================================================================
+
+      //Token verify
+      TokenBlackListVerify: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 401,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "TOKEN_IN_BLACKLIST",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Token in the backlist",
+              },
+            },
+          },
+        },
+      },
+      TokenExpiredVerify: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 401,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "TOKEN_EXPIRED",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Token has expired",
+              },
+            },
+          },
+        },
+      },
+      TokenNotFoundCookieVerify: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 401,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "TOKEN_NOT_FOUND",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Token not found in the cookie",
+              },
+            },
+          },
+        },
+      },
+      TokenNotFoundInDBVerify: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 401,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "TOKEN_NOT_FOUND",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Token not found in the database",
+              },
+            },
+          },
+        },
+      },
+      TokenInvalidVerify: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 401,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "TOKEN_INVALID",
+              },
+              errorMessage: {
+                type: "string",
+                example: "You are not authenticated",
+              },
+            },
+          },
+        },
+      },
+      // =================================================================
+
+      //Permissions Verify
+      PermissionVerify: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 403,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "PERMISSION_DENIED",
+              },
+              errorMessage: {
+                type: "string",
+                example: "User does not have permission",
+              },
+            },
+          },
+        },
+      },
+      // =================================================================
+
+      //Internal server error
+      ErrorServerResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 500,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "INTERNAL_SERVER_ERROR",
+              },
+              errorMessage: {
+                type: "string",
+                example: "error.message",
+              },
+            },
           },
         },
       },

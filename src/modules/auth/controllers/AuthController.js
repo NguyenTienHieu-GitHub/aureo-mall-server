@@ -81,12 +81,11 @@ const refreshToken = async (req, res) => {
   try {
     const refreshKey = req.cookies["XSRF-TOKEN"];
     if (!refreshKey) {
-      res.locals.errorMessage = "You are not authenticated";
       return setResponseLocals({
         res,
         statusCode: 401,
-        errorCode: "TOKEN_INVALID",
-        errorMessage: "You are not authenticated",
+        errorCode: "TOKEN_NOT_FOUND",
+        errorMessage: "Token not found in the cookie",
       });
     }
 
@@ -147,8 +146,8 @@ const logoutUser = async (req, res) => {
       return setResponseLocals({
         res,
         statusCode: 401,
-        errorCode: "TOKEN_INVALID",
-        errorMessage: "You are not authenticated",
+        errorCode: "TOKEN_NOT_FOUND",
+        errorMessage: "Token not found in the cookie",
       });
     }
     await AuthService.logout({
@@ -185,10 +184,7 @@ const forgetPassword = async (req, res) => {
     return setResponseLocals({
       res,
       statusCode: 200,
-      messageSuccess: "Forget Password",
-      data: {
-        message: "Password reset request has been sent to your email!",
-      },
+      messageSuccess: "Password reset request has been sent to your email!",
     });
   } catch (error) {
     console.error(error);
@@ -197,7 +193,7 @@ const forgetPassword = async (req, res) => {
         res,
         statusCode: 404,
         errorCode: "EMAIL_NOT_FOUND",
-        errorMessage: "Email not found",
+        errorMessage: "Email not found in the database",
       });
     } else {
       return setResponseLocals({
@@ -225,7 +221,15 @@ const resetPassword = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    if (error.message.includes("Token has expired")) {
+
+    if (error.message.includes("Password is not confirmed")) {
+      return setResponseLocals({
+        res,
+        statusCode: 400,
+        errorCode: "PASSWORD_NOT_CONFIRMED",
+        errorMessage: "Password is not confirmed",
+      });
+    } else if (error.message.includes("Token has expired")) {
       return setResponseLocals({
         res,
         statusCode: 401,

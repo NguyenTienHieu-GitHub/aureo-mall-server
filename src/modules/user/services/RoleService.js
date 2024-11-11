@@ -18,9 +18,6 @@ const getRoleById = async (roleId) => {
 
 const createRole = async ({ roleName, description }) => {
   const addRoleResult = await Role.create({ roleName, description });
-  if (!addRoleResult) {
-    throw new Error("Role created failed");
-  }
   return addRoleResult;
 };
 

@@ -31,6 +31,14 @@ const getAllAddress = async (req, res) => {
 };
 const getMyAddress = async (req, res) => {
   const userId = req.user.id;
+  if (!userId) {
+    return setResponseLocals({
+      res,
+      statusCode: 401,
+      errorCode: "TOKEN_INVALID",
+      errorMessage: "You are not authenticated",
+    });
+  }
   try {
     const addressData = await AddressService.getMyAddress(userId);
     return setResponseLocals({
@@ -59,12 +67,12 @@ const getMyAddress = async (req, res) => {
 };
 const getAddressById = async (req, res) => {
   const addressId = req.params.id;
-  if (!addressId) {
+  if (!isUUID(addressId)) {
     return setResponseLocals({
       res,
       statusCode: 400,
-      errorCode: "INTERNAL_SERVER_ERROR",
-      errorMessage: "Missing required fields: id",
+      errorCode: "PARAMS_INCORRECT_FORMAT",
+      errorMessage: "Invalid params format: uuid",
     });
   }
   try {
@@ -73,7 +81,7 @@ const getAddressById = async (req, res) => {
     return setResponseLocals({
       res,
       statusCode: 200,
-      messageSuccess: "Show addresses successfully",
+      messageSuccess: "Show address successfully",
       data: {
         addressId: addressesById.id,
         fullName: addressesById.fullName,
@@ -144,7 +152,7 @@ const createAddress = async (req, res) => {
     });
     return setResponseLocals({
       res,
-      statusCode: 200,
+      statusCode: 201,
       messageSuccess: "Address created successfully",
       data: {
         addressId: addressData.id,
@@ -163,32 +171,23 @@ const createAddress = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    if (error.message.includes("Address creation failed")) {
-      return setResponseLocals({
-        res,
-        statusCode: 400,
-        errorCode: "CREATE_ADDRESS_ERROR",
-        errorMessage: "Address creation failed",
-      });
-    } else {
-      return setResponseLocals({
-        res,
-        statusCode: 500,
-        errorCode: "INTERNAL_SERVER_ERROR",
-        errorMessage: error.message,
-      });
-    }
+    return setResponseLocals({
+      res,
+      statusCode: 500,
+      errorCode: "INTERNAL_SERVER_ERROR",
+      errorMessage: error.message,
+    });
   }
 };
 
 const updateAddress = async (req, res) => {
   const addressId = req.params.id;
-  if (!addressId) {
+  if (!isUUID(addressId)) {
     return setResponseLocals({
       res,
       statusCode: 400,
-      errorCode: "INTERNAL_SERVER_ERROR",
-      errorMessage: "Missing required fields: id",
+      errorCode: "PARAMS_INCORRECT_FORMAT",
+      errorMessage: "Invalid params format: uuid",
     });
   }
   const {
@@ -204,7 +203,6 @@ const updateAddress = async (req, res) => {
   try {
     const userId = req.user.id;
     if (!userId) {
-      res.locals.errorMessage = "You are not authenticated";
       return setResponseLocals({
         res,
         statusCode: 401,
@@ -265,12 +263,12 @@ const updateAddress = async (req, res) => {
 
 const deleteAddress = async (req, res) => {
   const addressId = req.params.id;
-  if (!addressId) {
+  if (!isUUID(addressId)) {
     return setResponseLocals({
       res,
       statusCode: 400,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required fields: id",
+      errorCode: "PARAMS_INCORRECT_FORMAT",
+      errorMessage: "Invalid params format: uuid",
     });
   }
   try {
@@ -457,7 +455,7 @@ const getDistrictsByProvinceCode = async (req, res) => {
     return setResponseLocals({
       res,
       statusCode: 200,
-      messageSuccess: "Show district by province successfully",
+      messageSuccess: "Show districts by province",
       data: districtByProvinceCode,
     });
   } catch (error) {
