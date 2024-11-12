@@ -11,7 +11,10 @@ const Inventory = require("../models/InventoryModel");
 const ProductCategory = require("../models/ProductCategoryModel");
 const Warehouse = require("../models/WarehouseModel");
 const Shop = require("../models/ShopModel");
-
+const {
+  uploadProduct,
+  fixFilePath,
+} = require("../../../shared/middleware/multer");
 const models = [
   Product,
   ProductPrice,
@@ -25,6 +28,8 @@ router.post(
   "/create",
   verifyToken,
   validateRequest(models),
+  uploadProduct,
+  fixFilePath,
   productController.createProduct
 );
 router.delete("/delete/:slug", verifyToken, productController.deleteProduct);
@@ -32,6 +37,8 @@ router.put(
   "/update/:slug",
   verifyToken,
   validateRequest(models),
+  uploadProduct,
+  fixFilePath,
   productController.updateProduct
 );
 router.get("/:slug", verifyToken, productController.getProductBySlug);

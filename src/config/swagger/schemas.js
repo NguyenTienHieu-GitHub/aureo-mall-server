@@ -15,6 +15,10 @@ module.exports = {
         type: "integer",
         description: "Nhập Id",
       },
+      slugParams: {
+        type: "string",
+        description: "Nhập slug",
+      },
       // =================================================================================================
 
       //[Auth] Register
@@ -533,9 +537,11 @@ module.exports = {
             description: "Tải lên ảnh đại diện",
           },
           roleId: {
-            type: "integer",
-            example: "2",
-            description: "Nhập vai trò",
+            type: "array",
+            items: {
+              type: "integer",
+            },
+            example: [1, 2, 3],
           },
         },
         required: [
@@ -1447,7 +1453,6 @@ module.exports = {
       // =================================================================
 
       //[Category] Get All Categories
-
       GetAllCategoriesResponse: {
         type: "object",
         properties: {
@@ -1632,6 +1637,425 @@ module.exports = {
         },
       },
       // =================================================================
+
+      //[Shop] Create Shop
+      CreateShopRequest: {
+        type: "object",
+        properties: {
+          shopName: {
+            type: "string",
+            example: "Shop Của Hiệuu",
+          },
+          description: {
+            type: "string",
+            example: "Shop Của Hiệu",
+          },
+          address: {
+            type: "string",
+            example: "",
+          },
+          phone: {
+            type: "string",
+            example: "",
+            pattern: "^[0-9]+$",
+          },
+          email: {
+            type: "string",
+            format: "email",
+            example: "",
+          },
+          logo: {
+            type: "string",
+            example: "",
+          },
+          website: {
+            type: "string",
+            example: "",
+          },
+        },
+        required: ["shopName"],
+      },
+      CreateShopResponse: {},
+      // =================================================================================================
+
+      //[Product] Get All Products
+      GetAllProducts: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            status: {
+              type: "integer",
+              example: 200,
+            },
+            message: {
+              type: "string",
+              example: "Product created successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                shopName: {
+                  type: "string",
+                  example: "Shop Của Hiệuu",
+                },
+                productName: {
+                  type: "string",
+                  example: "Áo thun 100%",
+                },
+                originalPrice: {
+                  type: "integer",
+                  example: 100000,
+                },
+                discountPrice: {
+                  type: "integer",
+                  nullable: true,
+                  example: null,
+                },
+                discountType: {
+                  type: "string",
+                  example: "percent",
+                },
+                discountStartDate: {
+                  type: "string",
+                  example: "00:00:00 12/11/2024",
+                },
+                discountEndDate: {
+                  type: "string",
+                  example: "00:00:00 19/11/2024",
+                },
+                finalPrice: {
+                  type: "integer",
+                  example: 100000,
+                },
+                description: {
+                  type: "string",
+                  example: "Text",
+                },
+                categoryList: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      id: {
+                        type: "integer",
+                        example: 1,
+                      },
+                      categoryName: {
+                        type: "string",
+                        example: "Thời trang nữ",
+                      },
+                    },
+                  },
+                },
+                mediaList: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      mediaUrl: {
+                        type: "string",
+                        example:
+                          "https://res.cloudinary.com/dfkadlnoh/image/upload/v1731434761/f46ut5dkyq7a1iai5wot.jpg",
+                      },
+                      isFeatured: {
+                        type: "boolean",
+                        example: true,
+                      },
+                    },
+                  },
+                },
+                optionList: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      optionName: {
+                        type: "string",
+                        example: "Color",
+                      },
+                      optionValues: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          example: "Red",
+                        },
+                      },
+                    },
+                  },
+                },
+                slug: {
+                  type: "string",
+                  example: "ao-thun-100percent",
+                },
+                createdAt: {
+                  type: "string",
+                  example: "18:05:59 12/11/2024",
+                },
+                updatedAt: {
+                  type: "string",
+                  example: "18:05:59 12/11/2024",
+                },
+              },
+            },
+          },
+        },
+      },
+      //[Product] Create Or Update Product
+      CreateOrUpdateProductRequest: {
+        type: "object",
+        properties: {
+          productName: {
+            type: "string",
+            example: "Áo thun 100% cotton",
+          },
+          originalPrice: {
+            type: "integer",
+            example: 100000,
+          },
+          discountPrice: {
+            type: "integer",
+            example: 10,
+          },
+          discountType: {
+            type: "string",
+            enum: ["amount", "percent"],
+            example: "percent",
+          },
+          discountStartDate: {
+            type: "string",
+            format: "date-time",
+            example: "2024-11-12T00:00:00Z",
+          },
+          discountEndDate: {
+            type: "string",
+            format: "date-time",
+            example: "2024-11-19T00:00:00Z",
+          },
+          description: {
+            type: "text",
+            example: "Text",
+          },
+          categoryId: {
+            type: "integer",
+            example: 1,
+          },
+          mediaList: {
+            type: "array",
+            items: {
+              type: "string",
+              format: "binary",
+            },
+          },
+          optionList: {
+            type: "string",
+            example:
+              '[{"optionName": "Color", "optionValues": ["Red", "Blue", "Green"]}, {"optionName": "Size", "optionValues": ["S", "M", "L"]}]',
+          },
+          quantity: {
+            type: "integer",
+            example: 100,
+          },
+        },
+        required: [
+          "productName",
+          "originalPrice",
+          "discountType",
+          "discountStartDate",
+          "discountEndDate",
+          "categoryId",
+          "mediaList",
+          "optionList",
+          "quantity",
+        ],
+      },
+      CreateOrUpdateProductResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Product created successfully",
+          },
+          data: {
+            type: "object",
+            properties: {
+              shopName: {
+                type: "string",
+                example: "Shop Của Hiệuu",
+              },
+              productName: {
+                type: "string",
+                example: "Áo thun 100%",
+              },
+              originalPrice: {
+                type: "integer",
+                example: 100000,
+              },
+              discountPrice: {
+                type: "integer",
+                nullable: true,
+                example: null,
+              },
+              discountType: {
+                type: "string",
+                example: "percent",
+              },
+              discountStartDate: {
+                type: "string",
+                example: "00:00:00 12/11/2024",
+              },
+              discountEndDate: {
+                type: "string",
+                example: "00:00:00 19/11/2024",
+              },
+              finalPrice: {
+                type: "integer",
+                example: 100000,
+              },
+              description: {
+                type: "string",
+                example: "Text",
+              },
+              categoryList: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "integer",
+                      example: 1,
+                    },
+                    categoryName: {
+                      type: "string",
+                      example: "Thời trang nữ",
+                    },
+                  },
+                },
+              },
+              mediaList: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    mediaUrl: {
+                      type: "string",
+                      example:
+                        "https://res.cloudinary.com/dfkadlnoh/image/upload/v1731434761/f46ut5dkyq7a1iai5wot.jpg",
+                    },
+                    isFeatured: {
+                      type: "boolean",
+                      example: true,
+                    },
+                  },
+                },
+              },
+              optionList: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    optionName: {
+                      type: "string",
+                      example: "Color",
+                    },
+                    optionValues: {
+                      type: "array",
+                      items: {
+                        type: "string",
+                        example: "Red",
+                      },
+                    },
+                  },
+                },
+              },
+              slug: {
+                type: "string",
+                example: "ao-thun-100percent",
+              },
+              createdAt: {
+                type: "string",
+                example: "18:05:59 12/11/2024",
+              },
+              updatedAt: {
+                type: "string",
+                example: "18:05:59 12/11/2024",
+              },
+            },
+          },
+        },
+      },
+      ShopNotFound: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 404,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "CREATE_PRODUCT_NO_ASSOCIATED_SHOP",
+              },
+              errorMessage: {
+                type: "string",
+                example: "You need to create a store before creating products",
+              },
+            },
+          },
+        },
+      },
+      MissingFieldDiscountValidate: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 400,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "CREATE_DISCOUNT_MISSING_REQUIRED_FIELDS",
+              },
+              errorMessage: {
+                type: "string",
+                example:
+                  "You need to create a discount type, a discount start date and a discount end date",
+              },
+            },
+          },
+        },
+      },
+      DiscountInvalidDate: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 400,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "DISCOUNT_INVALID_DATE_RANGE",
+              },
+              errorMessage: {
+                type: "string",
+                example:
+                  "You need to create a discount end date that is less than the discount start date",
+              },
+            },
+          },
+        },
+      },
 
       //Validation
       MissingFieldsValidate: {

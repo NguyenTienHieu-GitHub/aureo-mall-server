@@ -48,10 +48,10 @@ const createProduct = async (req, res) => {
     discountEndDate,
     description,
     categoryId,
-    mediaList,
     optionList,
     quantity,
   } = req.body;
+  const mediaList = req.files.map((file) => file.path);
   try {
     const productData = await ProductService.createProduct({
       userId: userId,
@@ -63,7 +63,7 @@ const createProduct = async (req, res) => {
       discountEndDate,
       description,
       categoryId,
-      mediaList,
+      mediaList: mediaList,
       optionList,
       quantity,
     });
@@ -200,10 +200,11 @@ const updateProduct = async (req, res) => {
     discountEndDate,
     description,
     categoryId,
-    mediaList,
     optionList,
     quantity,
   } = req.body;
+
+  const mediaList = req.files.map((file) => file.path);
   try {
     const productData = await ProductService.updateProduct({
       slug: slug,
@@ -215,7 +216,7 @@ const updateProduct = async (req, res) => {
       discountEndDate,
       description,
       categoryId,
-      mediaList,
+      mediaList: mediaList,
       optionList,
       quantity,
     });

@@ -20,6 +20,8 @@ router.post(
   verifyToken,
   validateRequest(models),
   checkPermission("create", "User"),
+  uploadAvatar,
+  fixFilePath,
   userController.createUser
 );
 router.delete(
@@ -48,6 +50,8 @@ router.put(
   verifyToken,
   validateRequest(models),
   checkPermission("edit_user", "User"),
+  uploadAvatar,
+  fixFilePath,
   userController.updateUser
 );
 router.get(

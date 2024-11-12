@@ -8,8 +8,9 @@ const { Category } = require("../models/CategoryModel");
 const ProductCategory = require("../models/ProductCategoryModel");
 const Warehouse = require("../models/WarehouseModel");
 const Shop = require("../models/ShopModel");
-const { getCategoryPath } = require("../services/CategoryService");
 const slugify = require("slugify");
+const { uploadFilesToCloudinary } = require("../../../shared/utils/upload");
+const fs = require("fs");
 const sequelize = require("../../../config/db/index");
 
 const generateSlug = async (productName, existingSlug = null) => {
@@ -66,7 +67,7 @@ const getAllProducts = async () => {
       },
       {
         model: ProductMedia,
-        attributes: ["mediaType", "mediaUrl"],
+        attributes: ["mediaUrl", "isFeatured"],
       },
       {
         model: ProductOption,
@@ -170,6 +171,10 @@ const createProduct = async ({
       },
       { transaction }
     );
+    const category = await Category.findByPk(categoryId);
+    if (!category) {
+      throw new Error("Category not found");
+    }
     if (categoryId) {
       await ProductCategory.create(
         {
@@ -179,29 +184,37 @@ const createProduct = async ({
         { transaction }
       );
     }
-
-    if (Array.isArray(mediaList) && mediaList.length > 0) {
-      const mediaData = mediaList.map((item) => ({
-        productId: newProduct.id,
-        mediaType: item.mediaType,
-        mediaUrl: item.mediaUrl,
-        isFeatured: item.isFeatured,
-      }));
-      await ProductMedia.bulkCreate(mediaData, { transaction });
+    const uploadedMedia = await uploadFilesToCloudinary(mediaList);
+    if (uploadedMedia && uploadedMedia.length > 0) {
+      await Promise.all(
+        uploadedMedia.map((mediaItem, index) =>
+          ProductMedia.create(
+            {
+              productId: newProduct.id,
+              mediaUrl: mediaItem,
+              isFeatured: index === 0,
+            },
+            { transaction }
+          )
+        )
+      );
     }
-    for (const optionName in optionList) {
-      const option = await ProductOption.create(
+    const optionLists = JSON.parse(optionList);
+    for (const option of optionLists) {
+      if (!option.optionName) {
+        throw new Error("Option name is required.");
+      }
+      const productOption = await ProductOption.create(
         {
           productId: newProduct.id,
-          optionName: optionName,
+          optionName: option.optionName,
         },
         { transaction }
       );
-
-      const values = optionList[optionName];
+      const optionValues = option.optionValues;
       await ProductOptionValue.bulkCreate(
-        values.map((value) => ({
-          optionId: option.id,
+        optionValues.map((value) => ({
+          optionId: productOption.id,
           optionValue: value,
         })),
         { transaction }
@@ -249,7 +262,7 @@ const createProduct = async ({
         },
         {
           model: ProductMedia,
-          attributes: ["mediaType", "mediaUrl", "isFeatured"],
+          attributes: ["mediaUrl", "isFeatured"],
         },
         {
           model: ProductOption,
@@ -308,13 +321,11 @@ const createProduct = async ({
       description: productData.description,
       categoryList: categoryList,
       mediaList: productData.ProductMedia,
-      optionList: productData.ProductOptions
-        ? productData.ProductOptions.map((productOption) => ({
-            optionName: productOption.optionName,
-            optionValues: productOption.ProductOptionValues
-              ? productOption.ProductOptionValues.map(
-                  (optionValue) => optionValue.optionValue
-                )
+      optionList: Array.isArray(productData.ProductOptions)
+        ? productData.ProductOptions.map((option) => ({
+            optionName: option.optionName,
+            optionValues: Array.isArray(option.ProductOptionValues)
+              ? option.ProductOptionValues.map((value) => value.optionValue)
               : [],
           }))
         : [],
@@ -358,7 +369,7 @@ const getProductBySlug = async (slug) => {
       },
       {
         model: ProductMedia,
-        attributes: ["mediaType", "mediaUrl"],
+        attributes: ["mediaUrl"],
       },
       {
         model: ProductOption,
@@ -387,40 +398,30 @@ const updateProduct = async ({
   optionList,
   quantity,
 }) => {
-  const transaction = await sequelize.transaction();
   try {
-    const product = await Product.findOne({ where: { slug }, transaction });
+    const transaction = await sequelize.transaction();
+    const product = await Product.findOne({ where: { slug } });
     if (!product) {
       throw new Error("Product not found");
     }
     if (product.productName !== productName) {
       const newSlug = await generateSlug(productName);
       await Product.update(
-        {
-          productName,
-          description,
-          slug: newSlug,
-        },
-        { where: { slug: slug }, transaction }
-      );
-    } else {
-      await Product.update(
-        {
-          description,
-        },
+        { productName, description, slug: newSlug },
         { where: { slug }, transaction }
       );
+    } else {
+      await Product.update({ description }, { where: { slug }, transaction });
     }
-    if (categoryId) {
-      await ProductCategory.update(
-        {
-          productId: product.id,
-          categoryId: categoryId,
-        },
+    const category = await Category.findByPk(categoryId);
+    if (!category) {
+      throw new Error("Category not found");
+    }
+    await ProductCategory.update(
+      { categoryId },
+      { where: { productId: product.id }, transaction }
+    );
 
-        { where: { productId: product.id }, transaction }
-      );
-    }
     await ProductPrice.update(
       {
         originalPrice,
@@ -431,41 +432,62 @@ const updateProduct = async ({
       },
       { where: { productId: product.id }, transaction }
     );
-    const mediaId = await ProductMedia.findAll({
-      where: { productId: product.id },
-      transaction,
-    });
-    for (const item of mediaList) {
-      await ProductMedia.update(
-        {
-          id: mediaId.id,
-          productId: product.id,
-          mediaUrl: item.mediaUrl,
-          mediaType: item.mediaType,
-          isFeatured: item.isFeatured,
-        },
-        { where: { id: optionId }, transaction }
+
+    await ProductMedia.destroy(
+      {
+        where: { productId: product.id },
+      },
+      { transaction }
+    );
+
+    const uploadedMedia = await uploadFilesToCloudinary(mediaList);
+    if (uploadedMedia && uploadedMedia.length > 0) {
+      await Promise.all(
+        uploadedMedia.map((mediaItem, index) =>
+          ProductMedia.create(
+            {
+              productId: product.id,
+              mediaUrl: mediaItem,
+              isFeatured: index === 0,
+            },
+            { transaction }
+          )
+        )
       );
     }
-    const optionId = await ProductOption.findAll({
-      where: { productId: product.id },
-      transaction,
-    });
-    for (const option of optionList) {
-      await ProductOption.update(
+    await ProductOption.destroy(
+      { where: { productId: product.id } },
+      { transaction }
+    );
+    const optionLists = JSON.parse(optionList);
+    for (const option of optionLists) {
+      if (!option.optionName) {
+        throw new Error("Option name is required.");
+      }
+      const productOption = await ProductOption.create(
         {
           productId: product.id,
           optionName: option.optionName,
-          optionValue: option.optionValue,
         },
-        { where: { id: optionId }, transaction }
+        { transaction }
+      );
+      const optionValue = option.optionValues;
+      await ProductOptionValue.bulkCreate(
+        optionValue.map((value) => ({
+          optionId: productOption.id,
+          optionValue: value,
+        })),
+        { transaction }
       );
     }
+
     await Inventory.update(
       { quantity },
       { where: { productId: product.id }, transaction }
     );
+
     await transaction.commit();
+
     const productData = await Product.findOne({
       where: { id: product.id },
       include: [
@@ -481,40 +503,27 @@ const updateProduct = async ({
             "discountEndDate",
           ],
         },
-        {
-          model: Inventory,
-          as: "Inventory",
-          attributes: ["quantity"],
-        },
-        {
-          model: ProductMedia,
-          attributes: ["mediaType", "mediaUrl"],
-        },
-        {
-          model: ProductOption,
-          attributes: ["optionName", "optionValue"],
-        },
-        {
-          model: Category,
-          attributes: ["categoryName"],
-        },
-        {
-          model: Shop,
-          as: "Shop",
-          attributes: ["shopName"],
-        },
+        { model: Inventory, as: "Inventory", attributes: ["quantity"] },
+        { model: ProductMedia, attributes: ["mediaUrl"] },
+        { model: ProductOption, attributes: ["optionName", "optionValue"] },
+        { model: Category, attributes: ["categoryName"] },
+        { model: Shop, as: "Shop", attributes: ["shopName"] },
       ],
     });
+
     if (!productData) {
       throw new Error("Product not found");
     }
+
     return productData;
   } catch (err) {
-    await transaction.rollback();
-    console.error(err);
+    if (transaction.finished !== "commit") {
+      await transaction.rollback();
+    }
     throw new Error(err.message);
   }
 };
+
 const deleteProduct = async (slug) => {
   const product = await Product.findOne({ where: { slug: slug } });
   if (!product) {

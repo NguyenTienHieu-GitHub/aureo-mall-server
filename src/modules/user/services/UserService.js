@@ -4,7 +4,6 @@ const UserRole = require("../../auth/models/UserRoleModel");
 const bcrypt = require("bcrypt");
 const sequelize = require("../../../config/db/index");
 const { uploadImageToCloudinary } = require("../../../shared/utils/upload");
-const fs = require("fs");
 
 const getMyInfo = async (userId) => {
   const userWithRole = await User.findOne({
@@ -67,8 +66,7 @@ const checkMailExists = async (email) => {
     const existingUser = await User.findOne({ where: { email: email } });
     return existingUser !== null;
   } catch (error) {
-    console.error("Error checking email", error);
-    throw new Error("Internal Server Error");
+    throw new Error(error.message);
   }
 };
 const createUser = async ({
@@ -86,7 +84,7 @@ const createUser = async ({
       throw new Error("Email already exists");
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const avatars = await uploadImageToCloudinary(avatar);
+    const avatars = await uploadImageToCloudinary(avatar, "avatars");
     const addUserResult = await User.create(
       {
         avatar: avatars,
@@ -97,13 +95,19 @@ const createUser = async ({
       },
       { transaction }
     );
-    await UserRole.create(
-      {
-        userId: addUserResult.id,
-        roleId,
-      },
-      { transaction }
-    );
+
+    for (const role of roleId) {
+      if (isNaN(role)) {
+        throw new Error("roleId is not integer");
+      }
+      await UserRole.create(
+        {
+          userId: addUserResult.id,
+          roleId: role,
+        },
+        { transaction }
+      );
+    }
 
     await transaction.commit();
     const userWithRole = await User.findOne({
@@ -147,35 +151,65 @@ const updateUserByAdmin = async ({
   password,
   roleId,
 }) => {
-  const user = await User.findByPk(userId);
-  if (!user) {
-    throw new Error("User not found");
-  }
-  user.avatar = avatar;
-  user.firstName = firstName;
-  user.lastName = lastName;
-  if (email && email !== user.email) {
-    const emailExists = await checkMailExists(user.email);
-    if (emailExists) {
-      throw new Error("Email already exists");
+  const transaction = await sequelize.transaction();
+  try {
+    const avatars = await uploadImageToCloudinary(avatar, "avatars");
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw new Error("User not found");
     }
+    user.avatar = avatars;
+    user.firstName = firstName;
+    user.lastName = lastName;
+    if (email && email !== user.email) {
+      const emailExists = await checkMailExists(email);
+      if (emailExists) {
+        throw new Error("Email already exists");
+      }
+    }
+    user.email = email;
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    await user.save({ transaction });
+    await UserRole.destroy({
+      where: { userId: user.id },
+      transaction,
+    });
+    for (const role of roleId) {
+      if (isNaN(role)) {
+        throw { code: "INVALID_ROLE_ID", message: "roleId is not integer" };
+      }
+      const roleExists = await Role.findByPk(role);
+      if (!roleExists) {
+        throw new Error(`Role with ID ${role} not found`);
+      }
+      const existingRole = await UserRole.findOne({
+        where: { userId: user.id, roleId: role },
+        transaction,
+      });
+      if (!existingRole) {
+        await UserRole.create(
+          { userId: user.id, roleId: role },
+          { transaction }
+        );
+      }
+    }
+    await transaction.commit();
+    const userWithRole = await User.findOne({
+      where: { id: userId },
+      include: {
+        model: Role,
+        attributes: ["roleName"],
+      },
+    });
+    const userData = userWithRole.toJSON();
+    return userData;
+  } catch (error) {
+    await transaction.rollback();
+    throw new Error(error.message);
   }
-  user.email = email;
-  user.password = await bcrypt.hash(password, 10);
-
-  await user.save();
-
-  await UserRole.update({ roleId: roleId }, { where: { userId: user.id } });
-
-  const userWithRole = await User.findOne({
-    where: { id: userId },
-    include: {
-      model: Role,
-      attributes: ["roleName"],
-    },
-  });
-  const userData = userWithRole.toJSON();
-  return userData;
 };
 
 const updateMyInfo = async ({
@@ -198,10 +232,9 @@ const updateMyInfo = async ({
       throw new Error("Email already exists");
     }
   }
-  const avt = await uploadImageToCloudinary(avatar);
-  fs.unlinkSync(avatar);
+  const avatars = await uploadImageToCloudinary(avatar, "avatars");
   await user.update({
-    avatar: avt,
+    avatar: avatars,
     firstName,
     lastName,
     email,

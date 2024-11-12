@@ -1,6 +1,5 @@
 const { Category, ImageCategory } = require("../models/CategoryModel");
 const { uploadFilesToCloudinary } = require("../../../shared/utils/upload");
-const fs = require("fs");
 const sequelize = require("../../../config/db/index");
 const createCategory = async ({
   categoryName,
@@ -8,21 +7,12 @@ const createCategory = async ({
   toggle,
   imageUrls,
 }) => {
+  const transaction = await sequelize.transaction();
   try {
-    const transaction = await sequelize.transaction();
     if (!imageUrls || imageUrls.length === 0) {
       throw new Error("ImageUrls missing");
     }
-    const imageUrl = await uploadFilesToCloudinary(imageUrls);
-    await Promise.all(
-      imageUrls.map(async (path) => {
-        try {
-          await fs.promises.unlink(path);
-        } catch (err) {
-          console.error(`Unable to delete file: ${path}`, err);
-        }
-      })
-    );
+    const imageUrl = await uploadFilesToCloudinary(imageUrls, "categories");
     const category = await Category.create(
       {
         categoryName,
@@ -254,28 +244,23 @@ const updateCategoryById = async ({
     if (!imageUrls || imageUrls.length === 0) {
       throw new Error("ImageUrls missing");
     }
-    const uploadedImageUrls = await uploadFilesToCloudinary(imageUrls);
-    await Promise.all(
-      imageUrls.map(async (path) => {
-        try {
-          await fs.promises.unlink(path);
-        } catch (err) {
-          console.error(`Unable to delete file: ${path}`, err);
-        }
-      })
+    const uploadedImageUrls = await uploadFilesToCloudinary(
+      imageUrls,
+      "categories"
     );
+
     await Category.update(
       { categoryName, parentId, toggle },
       { where: { id: categoryId } },
       { transaction }
     );
+    await ImageCategory.destroy({
+      where: { categoryId },
+      transaction,
+    });
     await Promise.all(
       uploadedImageUrls.map((url) =>
-        ImageCategory.update(
-          { imageUrl: url },
-          { where: { categoryId } },
-          { transaction }
-        )
+        ImageCategory.create({ categoryId, imageUrl: url }, { transaction })
       )
     );
     await transaction.commit();

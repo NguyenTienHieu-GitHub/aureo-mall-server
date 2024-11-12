@@ -129,8 +129,11 @@ const getUsersById = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-  const { path } = req.file.path;
+  const { path } = req.file;
   const { firstName, lastName, email, password, roleId } = req.body;
+  const roleIds = Array.isArray(roleId)
+    ? roleId
+    : roleId.split(",").map((role) => parseInt(role, 10));
   try {
     const userData = await UserService.createUser({
       avatar: path,
@@ -138,7 +141,7 @@ const createUser = async (req, res) => {
       lastName,
       email,
       password,
-      roleId,
+      roleId: roleIds,
     });
     return setResponseLocals({
       res,
@@ -262,6 +265,9 @@ const updateUser = async (req, res) => {
   }
   const { path } = req.file;
   const { firstName, lastName, email, password, roleId } = req.body;
+  const roleIds = Array.isArray(roleId)
+    ? roleId
+    : roleId.split(",").map((role) => parseInt(role, 10));
   try {
     const userData = await UserService.updateUserByAdmin({
       userId: userId,
@@ -270,7 +276,7 @@ const updateUser = async (req, res) => {
       lastName,
       email,
       password,
-      roleId,
+      roleId: roleIds,
     });
     return setResponseLocals({
       res,
@@ -334,12 +340,12 @@ const updateMyInfo = async (req, res) => {
       errorMessage: "You are not authenticated",
     });
   }
-  const { path: avatarPath } = req.file;
+  const { path } = req.file;
   const { firstName, lastName, email, password } = req.body;
   try {
     const userData = await UserService.updateMyInfo({
       userId: userId,
-      avatar: avatarPath,
+      avatar: path,
       firstName,
       lastName,
       email,

@@ -6,7 +6,7 @@ const storage = multer.diskStorage({
 
     if (file.fieldname === "avatar") {
       folder += "avatars";
-    } else if (file.fieldname === "product") {
+    } else if (file.fieldname === "mediaList") {
       folder += "products";
     } else if (file.fieldname === "imageUrls") {
       folder += "categories";
@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
 });
 
 const uploadAvatar = multer({ storage: storage }).single("avatar");
-const uploadProduct = multer({ storage: storage }).single("product");
+const uploadProduct = multer({ storage: storage }).array("mediaList", 5);
 const uploadCategory = multer({ storage: storage }).array("imageUrls", 5);
 const uploadNone = multer({ storage: storage }).none();
 const fixFilePath = (req, res, next) => {
