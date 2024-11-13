@@ -4306,6 +4306,348 @@ module.exports = {
       },
     },
   },
+  "/api/product/{slug}": {
+    get: {
+      summary: "Tìm sản phẩm bằng slug",
+      description: "Tìm sản phẩm bằng slug",
+      tags: ["Product"],
+      operationId: "getProductBySlug",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: "slug",
+          in: "path",
+          require: "true",
+          schema: {
+            $ref: "#/components/schemas/slugParams",
+          },
+        },
+      ],
+      responses: {
+        200: {
+          description: "Hiển thị thông tin tài khoản đã cập nhật thành công",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/GetProductBySlugResponse",
+              },
+            },
+          },
+        },
+        404: {
+          description: "Không tìm thấy sản phẩm",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ProductNotFound",
+              },
+            },
+          },
+        },
+        401: {
+          description: "Lỗi yêu cầu không hợp lệ",
+          content: {
+            "application/json": {
+              oneOf: [
+                {
+                  description: "Token đang nằm trong Black List",
+                  schema: {
+                    $ref: "#/components/schemas/TokenBlackListVerify",
+                  },
+                },
+                {
+                  description: "Token hết hạn",
+                  schema: {
+                    $ref: "#/components/schemas/TokenExpiredVerify",
+                  },
+                },
+                {
+                  description: "Token không hợp lệ",
+                  schema: {
+                    $ref: "#/components/schemas/TokenInvalidVerify",
+                  },
+                },
+              ],
+              examples: {
+                TokenBlackListVerify: {
+                  description: "Token đang nằm trong Black List",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_IN_BLACKLIST",
+                      errorMessage: "Token in the backlist",
+                    },
+                  },
+                },
+                TokenExpiredVerify: {
+                  description: "Token hết hạn",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_EXPIRED",
+                      errorMessage: "Token has expired",
+                    },
+                  },
+                },
+                TokenInvalidVerify: {
+                  description: "Token không hợp lệ",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_INVALID",
+                      errorMessage: "You are not authenticated",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorServerResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/product/id/{productId}": {
+    get: {
+      summary: "Tìm sản phẩm bằng productId",
+      description: "Tìm sản phẩm bằng productId",
+      tags: ["Product"],
+      operationId: "getProductById",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: "productId",
+          in: "path",
+          require: "true",
+          schema: {
+            $ref: "#/components/schemas/IdParams",
+          },
+        },
+      ],
+      responses: {
+        200: {
+          description: "Hiển thị thông tin sản phẩm đã tìm kiếm",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/GetProductBySlugResponse",
+              },
+            },
+          },
+        },
+        404: {
+          description: "Không tìm thấy sản phẩm",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ProductNotFound",
+              },
+            },
+          },
+        },
+        401: {
+          description: "Lỗi yêu cầu không hợp lệ",
+          content: {
+            "application/json": {
+              oneOf: [
+                {
+                  description: "Token đang nằm trong Black List",
+                  schema: {
+                    $ref: "#/components/schemas/TokenBlackListVerify",
+                  },
+                },
+                {
+                  description: "Token hết hạn",
+                  schema: {
+                    $ref: "#/components/schemas/TokenExpiredVerify",
+                  },
+                },
+                {
+                  description: "Token không hợp lệ",
+                  schema: {
+                    $ref: "#/components/schemas/TokenInvalidVerify",
+                  },
+                },
+              ],
+              examples: {
+                TokenBlackListVerify: {
+                  description: "Token đang nằm trong Black List",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_IN_BLACKLIST",
+                      errorMessage: "Token in the backlist",
+                    },
+                  },
+                },
+                TokenExpiredVerify: {
+                  description: "Token hết hạn",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_EXPIRED",
+                      errorMessage: "Token has expired",
+                    },
+                  },
+                },
+                TokenInvalidVerify: {
+                  description: "Token không hợp lệ",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_INVALID",
+                      errorMessage: "You are not authenticated",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorServerResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/product/search-products": {
+    post: {
+      summary: "Tìm tất cả sản phẩm bằng tên",
+      description: "Tìm tất cả sản phẩm bằng tên",
+      tags: ["Product"],
+      operationId: "getByNameProduct",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          "multipart/form-data": {
+            schema: {
+              $ref: "#/components/schemas/SearchProductRequest",
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Hiển thị tất cả sản phẩm có tên",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/GetAllProducts",
+              },
+            },
+          },
+        },
+        404: {
+          description: "Không tìm thấy sản phẩm",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ProductNotFound",
+              },
+            },
+          },
+        },
+        401: {
+          description: "Lỗi yêu cầu không hợp lệ",
+          content: {
+            "application/json": {
+              oneOf: [
+                {
+                  description: "Token đang nằm trong Black List",
+                  schema: {
+                    $ref: "#/components/schemas/TokenBlackListVerify",
+                  },
+                },
+                {
+                  description: "Token hết hạn",
+                  schema: {
+                    $ref: "#/components/schemas/TokenExpiredVerify",
+                  },
+                },
+                {
+                  description: "Token không hợp lệ",
+                  schema: {
+                    $ref: "#/components/schemas/TokenInvalidVerify",
+                  },
+                },
+              ],
+              examples: {
+                TokenBlackListVerify: {
+                  description: "Token đang nằm trong Black List",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_IN_BLACKLIST",
+                      errorMessage: "Token in the backlist",
+                    },
+                  },
+                },
+                TokenExpiredVerify: {
+                  description: "Token hết hạn",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_EXPIRED",
+                      errorMessage: "Token has expired",
+                    },
+                  },
+                },
+                TokenInvalidVerify: {
+                  description: "Token không hợp lệ",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_INVALID",
+                      errorMessage: "You are not authenticated",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorServerResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   "/api/product/create": {
     post: {
       summary: "Tạo sản phẩm",
@@ -4601,6 +4943,120 @@ module.exports = {
             "application/json": {
               schema: {
                 $ref: "#/components/schemas/CategoryNotFound",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorServerResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/product/delete/{slug}": {
+    delete: {
+      summary: "Xóa sản phẩm bằng slug",
+      description: "Xóa sản phẩm bằng slug",
+      tags: ["Product"],
+      operationId: "deleteProductBySlug",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: "slug",
+          in: "path",
+          require: "true",
+          schema: {
+            $ref: "#/components/schemas/slugParams",
+          },
+        },
+      ],
+      responses: {
+        200: {
+          description: "Xóa sản phẩm thành công",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/DeleteProductResponse",
+              },
+            },
+          },
+        },
+        404: {
+          description: "Không tìm thấy sản phẩm",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ProductNotFound",
+              },
+            },
+          },
+        },
+        401: {
+          description: "Lỗi yêu cầu không hợp lệ",
+          content: {
+            "application/json": {
+              oneOf: [
+                {
+                  description: "Token đang nằm trong Black List",
+                  schema: {
+                    $ref: "#/components/schemas/TokenBlackListVerify",
+                  },
+                },
+                {
+                  description: "Token hết hạn",
+                  schema: {
+                    $ref: "#/components/schemas/TokenExpiredVerify",
+                  },
+                },
+                {
+                  description: "Token không hợp lệ",
+                  schema: {
+                    $ref: "#/components/schemas/TokenInvalidVerify",
+                  },
+                },
+              ],
+              examples: {
+                TokenBlackListVerify: {
+                  description: "Token đang nằm trong Black List",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_IN_BLACKLIST",
+                      errorMessage: "Token in the backlist",
+                    },
+                  },
+                },
+                TokenExpiredVerify: {
+                  description: "Token hết hạn",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_EXPIRED",
+                      errorMessage: "Token has expired",
+                    },
+                  },
+                },
+                TokenInvalidVerify: {
+                  description: "Token không hợp lệ",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_INVALID",
+                      errorMessage: "You are not authenticated",
+                    },
+                  },
+                },
               },
             },
           },

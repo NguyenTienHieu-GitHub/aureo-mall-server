@@ -1801,6 +1801,158 @@ module.exports = {
           },
         },
       },
+      //[Product] Get Product By Slug
+      GetProductBySlugResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show product successfully",
+          },
+          data: {
+            type: "object",
+            properties: {
+              shopName: {
+                type: "string",
+                example: "Shop Của Hiệuu",
+              },
+              productName: {
+                type: "string",
+                example: "Áo thun 100%",
+              },
+              originalPrice: {
+                type: "integer",
+                example: 100000,
+              },
+              discountPrice: {
+                type: "integer",
+                nullable: true,
+                example: null,
+              },
+              discountType: {
+                type: "string",
+                example: "percent",
+              },
+              discountStartDate: {
+                type: "string",
+                example: "00:00:00 12/11/2024",
+              },
+              discountEndDate: {
+                type: "string",
+                example: "00:00:00 19/11/2024",
+              },
+              finalPrice: {
+                type: "integer",
+                example: 100000,
+              },
+              description: {
+                type: "string",
+                example: "Text",
+              },
+              categoryList: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "integer",
+                      example: 1,
+                    },
+                    categoryName: {
+                      type: "string",
+                      example: "Thời trang nữ",
+                    },
+                  },
+                },
+              },
+              mediaList: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    mediaUrl: {
+                      type: "string",
+                      example:
+                        "https://res.cloudinary.com/dfkadlnoh/image/upload/v1731434761/f46ut5dkyq7a1iai5wot.jpg",
+                    },
+                    isFeatured: {
+                      type: "boolean",
+                      example: true,
+                    },
+                  },
+                },
+              },
+              optionList: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    optionName: {
+                      type: "string",
+                      example: "Color",
+                    },
+                    optionValues: {
+                      type: "array",
+                      items: {
+                        type: "string",
+                        example: "Red",
+                      },
+                    },
+                  },
+                },
+              },
+              slug: {
+                type: "string",
+                example: "ao-thun-100percent",
+              },
+              createdAt: {
+                type: "string",
+                example: "18:05:59 12/11/2024",
+              },
+              updatedAt: {
+                type: "string",
+                example: "18:05:59 12/11/2024",
+              },
+            },
+          },
+        },
+      },
+      ProductNotFound: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 404,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "PRODUCT_NOT_FOUND",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Product not found in database",
+              },
+            },
+          },
+        },
+      },
+      //[Product] Search Product
+      SearchProductRequest: {
+        type: "object",
+        properties: {
+          searchItems: {
+            type: "string",
+            example: "Áo",
+          },
+        },
+      },
       //[Product] Create Or Update Product
       CreateOrUpdateProductRequest: {
         type: "object",
@@ -2056,6 +2208,22 @@ module.exports = {
           },
         },
       },
+      //[Product] Delete Product By Slug
+      DeleteProductResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Product deleted successfully",
+          },
+        },
+      },
+
+      //================================================
 
       //Validation
       MissingFieldsValidate: {

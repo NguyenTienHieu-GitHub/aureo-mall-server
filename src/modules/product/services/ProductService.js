@@ -10,7 +10,7 @@ const Warehouse = require("../models/WarehouseModel");
 const Shop = require("../models/ShopModel");
 const slugify = require("slugify");
 const { uploadFilesToCloudinary } = require("../../../shared/utils/upload");
-const fs = require("fs");
+const { Op } = require("sequelize");
 const sequelize = require("../../../config/db/index");
 
 const generateSlug = async (productName, existingSlug = null) => {
@@ -107,6 +107,7 @@ const getAllProducts = async () => {
       });
     }
     return {
+      productId: productData.id,
       shopName: productData.Shop.shopName,
       productName: productData.productName,
       originalPrice: productData.ProductPrice[0].originalPrice,
@@ -310,6 +311,7 @@ const createProduct = async ({
       });
     }
     const responseData = {
+      productId: productData.id,
       shopName: productData.Shop.shopName,
       productName: productData.productName,
       originalPrice: productData.ProductPrice[0].originalPrice,
@@ -369,11 +371,27 @@ const getProductBySlug = async (slug) => {
       },
       {
         model: ProductMedia,
-        attributes: ["mediaUrl"],
+        attributes: ["mediaUrl", "isFeatured"],
       },
       {
         model: ProductOption,
-        attributes: ["optionName", "optionValue"],
+        attributes: ["optionName"],
+        include: [
+          {
+            model: ProductOptionValue,
+            attributes: ["optionValue"],
+          },
+        ],
+      },
+      {
+        model: Category,
+        attributes: ["categoryName", "id", "parentId"],
+        through: { attributes: [] },
+        include: {
+          model: Category,
+          as: "parent",
+          attributes: ["categoryName", "id", "parentId"],
+        },
       },
       {
         model: Shop,
@@ -382,7 +400,51 @@ const getProductBySlug = async (slug) => {
       },
     ],
   });
-  return productData;
+  if (!productData) {
+    throw new Error("Product not found");
+  }
+  const categoryList = [];
+  if (productData.Categories && productData.Categories.length > 0) {
+    productData.Categories.forEach((category) => {
+      const buildCategoryList = (cat) => {
+        if (cat) {
+          categoryList.unshift({
+            id: cat.id,
+            categoryName: cat.categoryName,
+          });
+          if (cat.parent) buildCategoryList(cat.parent);
+        }
+      };
+      buildCategoryList(category);
+    });
+  }
+  const responseData = {
+    productId: productData.id,
+    shopName: productData.Shop.shopName,
+    productName: productData.productName,
+    originalPrice: productData.ProductPrice[0].originalPrice,
+    discountPrice: productData.ProductPrice[0].discountPrice,
+    discountType: productData.ProductPrice[0].discountType,
+    discountStartDate: productData.ProductPrice[0].discountStartDate,
+    discountEndDate: productData.ProductPrice[0].discountEndDate,
+    finalPrice: productData.ProductPrice[0].finalPrice,
+    description: productData.description,
+    categoryList: categoryList,
+    mediaList: productData.ProductMedia,
+    optionList: Array.isArray(productData.ProductOptions)
+      ? productData.ProductOptions.map((option) => ({
+          optionName: option.optionName,
+          optionValues: Array.isArray(option.ProductOptionValues)
+            ? option.ProductOptionValues.map((value) => value.optionValue)
+            : [],
+        }))
+      : [],
+    quantity: productData.quantity,
+    slug: productData.slug,
+    createdAt: productData.createdAt,
+    updatedAt: productData.updatedAt,
+  };
+  return responseData;
 };
 const updateProduct = async ({
   slug,
@@ -398,20 +460,20 @@ const updateProduct = async ({
   optionList,
   quantity,
 }) => {
+  const transaction = await sequelize.transaction();
   try {
-    const transaction = await sequelize.transaction();
     const product = await Product.findOne({ where: { slug } });
     if (!product) {
       throw new Error("Product not found");
     }
     if (product.productName !== productName) {
       const newSlug = await generateSlug(productName);
-      await Product.update(
+      await product.update(
         { productName, description, slug: newSlug },
-        { where: { slug }, transaction }
+        { transaction }
       );
     } else {
-      await Product.update({ description }, { where: { slug }, transaction });
+      await product.update({ description }, { transaction });
     }
     const category = await Category.findByPk(categoryId);
     if (!category) {
@@ -503,19 +565,88 @@ const updateProduct = async ({
             "discountEndDate",
           ],
         },
-        { model: Inventory, as: "Inventory", attributes: ["quantity"] },
-        { model: ProductMedia, attributes: ["mediaUrl"] },
-        { model: ProductOption, attributes: ["optionName", "optionValue"] },
-        { model: Category, attributes: ["categoryName"] },
-        { model: Shop, as: "Shop", attributes: ["shopName"] },
+        {
+          model: Inventory,
+          as: "Inventory",
+          attributes: ["quantity"],
+        },
+        {
+          model: ProductMedia,
+          attributes: ["mediaUrl", "isFeatured"],
+        },
+        {
+          model: ProductOption,
+          attributes: ["optionName"],
+          include: [
+            {
+              model: ProductOptionValue,
+              attributes: ["optionValue"],
+            },
+          ],
+        },
+        {
+          model: Category,
+          attributes: ["categoryName", "id", "parentId"],
+          through: { attributes: [] },
+          include: {
+            model: Category,
+            as: "parent",
+            attributes: ["categoryName", "id", "parentId"],
+          },
+        },
+        {
+          model: Shop,
+          as: "Shop",
+          attributes: ["shopName"],
+        },
       ],
     });
 
     if (!productData) {
       throw new Error("Product not found");
     }
-
-    return productData;
+    const categoryList = [];
+    if (productData.Categories && productData.Categories.length > 0) {
+      productData.Categories.forEach((category) => {
+        const buildCategoryList = (cat) => {
+          if (cat) {
+            categoryList.unshift({
+              id: cat.id,
+              categoryName: cat.categoryName,
+            });
+            if (cat.parent) buildCategoryList(cat.parent);
+          }
+        };
+        buildCategoryList(category);
+      });
+    }
+    const responseData = {
+      productId: productData.id,
+      shopName: productData.Shop.shopName,
+      productName: productData.productName,
+      originalPrice: productData.ProductPrice[0].originalPrice,
+      discountPrice: productData.ProductPrice[0].discountPrice,
+      discountType: productData.ProductPrice[0].discountType,
+      discountStartDate: productData.ProductPrice[0].discountStartDate,
+      discountEndDate: productData.ProductPrice[0].discountEndDate,
+      finalPrice: productData.ProductPrice[0].finalPrice,
+      description: productData.description,
+      categoryList: categoryList,
+      mediaList: productData.ProductMedia,
+      optionList: Array.isArray(productData.ProductOptions)
+        ? productData.ProductOptions.map((option) => ({
+            optionName: option.optionName,
+            optionValues: Array.isArray(option.ProductOptionValues)
+              ? option.ProductOptionValues.map((value) => value.optionValue)
+              : [],
+          }))
+        : [],
+      quantity: productData.quantity,
+      slug: productData.slug,
+      createdAt: productData.createdAt,
+      updatedAt: productData.updatedAt,
+    };
+    return responseData;
   } catch (err) {
     if (transaction.finished !== "commit") {
       await transaction.rollback();
@@ -533,6 +664,219 @@ const deleteProduct = async (slug) => {
     where: { slug: product.slug },
   });
 };
+const removeVietnameseTones = (str) => {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D");
+};
+const searchByNameProduct = async ({ searchItems }) => {
+  const normalizedSearchTerm = removeVietnameseTones(searchItems);
+  const newSlug = await generateSlug(normalizedSearchTerm);
+  const productData = await Product.findAll({
+    where: {
+      slug: {
+        [Op.iLike]: `%${newSlug}%`,
+      },
+    },
+    include: [
+      {
+        model: ProductPrice,
+        as: "ProductPrice",
+        attributes: [
+          "finalPrice",
+          "originalPrice",
+          "discountPrice",
+          "discountType",
+          "discountStartDate",
+          "discountEndDate",
+        ],
+      },
+      {
+        model: Inventory,
+        as: "Inventory",
+        attributes: ["quantity"],
+      },
+      {
+        model: ProductMedia,
+        attributes: ["mediaUrl", "isFeatured"],
+      },
+      {
+        model: ProductOption,
+        attributes: ["optionName"],
+        include: [
+          {
+            model: ProductOptionValue,
+            attributes: ["optionValue"],
+          },
+        ],
+      },
+      {
+        model: Category,
+        attributes: ["categoryName", "id", "parentId"],
+        through: { attributes: [] },
+        include: {
+          model: Category,
+          as: "parent",
+          attributes: ["categoryName", "id", "parentId"],
+        },
+      },
+      {
+        model: Shop,
+        as: "Shop",
+        attributes: ["shopName"],
+      },
+    ],
+  });
+  if (productData.length === 0) {
+    throw new Error("Product not found");
+  }
+  const formattedProducts = productData.map((productData) => {
+    const categoryList = [];
+    if (productData.Categories && productData.Categories.length > 0) {
+      productData.Categories.forEach((category) => {
+        const buildCategoryList = (cat) => {
+          if (cat) {
+            categoryList.unshift({
+              id: cat.id,
+              categoryName: cat.categoryName,
+            });
+            if (cat.parent) buildCategoryList(cat.parent);
+          }
+        };
+        buildCategoryList(category);
+      });
+    }
+    return {
+      productId: productData.id,
+      shopName: productData.Shop.shopName,
+      productName: productData.productName,
+      originalPrice: productData.ProductPrice[0].originalPrice,
+      discountPrice: productData.ProductPrice[0].discountPrice,
+      discountType: productData.ProductPrice[0].discountType,
+      discountStartDate: productData.ProductPrice[0].discountStartDate,
+      discountEndDate: productData.ProductPrice[0].discountEndDate,
+      finalPrice: productData.ProductPrice[0].finalPrice,
+      description: productData.description,
+      categoryList: categoryList,
+      mediaList: productData.ProductMedia,
+      optionList: productData.ProductOptions
+        ? productData.ProductOptions.map((productOption) => ({
+            optionName: productOption.optionName,
+            optionValues: productOption.ProductOptionValues
+              ? productOption.ProductOptionValues.map(
+                  (optionValue) => optionValue.optionValue
+                )
+              : [],
+          }))
+        : [],
+      quantity: productData.quantity,
+      slug: productData.slug,
+      createdAt: productData.createdAt,
+      updatedAt: productData.updatedAt,
+    };
+  });
+  return formattedProducts;
+};
+const getProductById = async (productId) => {
+  const productData = await Product.findOne({
+    where: { id: productId },
+    include: [
+      {
+        model: ProductPrice,
+        as: "ProductPrice",
+        attributes: [
+          "finalPrice",
+          "originalPrice",
+          "discountPrice",
+          "discountType",
+          "discountStartDate",
+          "discountEndDate",
+        ],
+      },
+      {
+        model: Inventory,
+        as: "Inventory",
+        attributes: ["quantity"],
+      },
+      {
+        model: ProductMedia,
+        attributes: ["mediaUrl", "isFeatured"],
+      },
+      {
+        model: ProductOption,
+        attributes: ["optionName"],
+        include: [
+          {
+            model: ProductOptionValue,
+            attributes: ["optionValue"],
+          },
+        ],
+      },
+      {
+        model: Category,
+        attributes: ["categoryName", "id", "parentId"],
+        through: { attributes: [] },
+        include: {
+          model: Category,
+          as: "parent",
+          attributes: ["categoryName", "id", "parentId"],
+        },
+      },
+      {
+        model: Shop,
+        as: "Shop",
+        attributes: ["shopName"],
+      },
+    ],
+  });
+  if (!productData) {
+    throw new Error("Product not found");
+  }
+  const categoryList = [];
+  if (productData.Categories && productData.Categories.length > 0) {
+    productData.Categories.forEach((category) => {
+      const buildCategoryList = (cat) => {
+        if (cat) {
+          categoryList.unshift({
+            id: cat.id,
+            categoryName: cat.categoryName,
+          });
+          if (cat.parent) buildCategoryList(cat.parent);
+        }
+      };
+      buildCategoryList(category);
+    });
+  }
+  const responseData = {
+    productId: productData.id,
+    shopName: productData.Shop.shopName,
+    productName: productData.productName,
+    originalPrice: productData.ProductPrice[0].originalPrice,
+    discountPrice: productData.ProductPrice[0].discountPrice,
+    discountType: productData.ProductPrice[0].discountType,
+    discountStartDate: productData.ProductPrice[0].discountStartDate,
+    discountEndDate: productData.ProductPrice[0].discountEndDate,
+    finalPrice: productData.ProductPrice[0].finalPrice,
+    description: productData.description,
+    categoryList: categoryList,
+    mediaList: productData.ProductMedia,
+    optionList: Array.isArray(productData.ProductOptions)
+      ? productData.ProductOptions.map((option) => ({
+          optionName: option.optionName,
+          optionValues: Array.isArray(option.ProductOptionValues)
+            ? option.ProductOptionValues.map((value) => value.optionValue)
+            : [],
+        }))
+      : [],
+    quantity: productData.quantity,
+    slug: productData.slug,
+    createdAt: productData.createdAt,
+    updatedAt: productData.updatedAt,
+  };
+  return responseData;
+};
 module.exports = {
   generateSlug,
   getAllProducts,
@@ -540,4 +884,6 @@ module.exports = {
   getProductBySlug,
   updateProduct,
   deleteProduct,
+  searchByNameProduct,
+  getProductById,
 };

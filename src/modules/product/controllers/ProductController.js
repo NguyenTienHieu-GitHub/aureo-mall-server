@@ -124,44 +124,13 @@ const createProduct = async (req, res) => {
 
 const getProductBySlug = async (req, res) => {
   const slug = req.params.slug;
-  if (!slug) {
-    return setResponseLocals({
-      res,
-      statusCode: 404,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required field: slug",
-    });
-  }
   try {
     const productData = await ProductService.getProductBySlug(slug);
     return setResponseLocals({
       res,
       statusCode: 200,
       messageSuccess: "Show product successfully",
-      data: {
-        shopName: productData.Shop?.shopName,
-        productName: productData.productName,
-        originalPrice: productData.ProductPrice[0]?.originalPrice,
-        discountPrice: productData.ProductPrice[0]?.discountPrice,
-        discountType: productData.ProductPrice[0]?.discountType,
-        discountStartDate: productData.ProductPrice[0]?.discountStartDate,
-        discountEndDate: productData.ProductPrice[0]?.discountEndDate,
-        finalPrice: productData.ProductPrice[0]?.finalPrice,
-        description: productData.description,
-        categoryList:
-          productData.Categories?.map((category) => category.categoryName) ||
-          [],
-        mediaList: {
-          mediaType: productData.ProductMedia[0]?.mediaType,
-          mediaUrl: productData.ProductMedia[0]?.mediaUrl,
-          isFeatured: productData.ProductMedia[0]?.isFeatured,
-        },
-        optionList: productData.ProductOptions,
-        quantity: productData.Inventory[0]?.quantity,
-        slug: productData.slug,
-        createdAt: productData.createdAt,
-        updatedAt: productData.updatedAt,
-      },
+      data: productData,
     });
   } catch (error) {
     if (error.message.includes("Product not found")) {
@@ -224,26 +193,7 @@ const updateProduct = async (req, res) => {
       res,
       statusCode: 200,
       messageSuccess: "Product created successfully",
-      data: {
-        shopName: productData.Shop?.shopName,
-        productName: productData.productName,
-        originalPrice: productData.ProductPrice[0]?.originalPrice,
-        discountPrice: productData.ProductPrice[0]?.discountPrice,
-        discountType: productData.ProductPrice[0]?.discountType,
-        discountStartDate: productData.ProductPrice[0]?.discountStartDate,
-        discountEndDate: productData.ProductPrice[0]?.discountEndDate,
-        finalPrice: productData.ProductPrice[0]?.finalPrice,
-        description: productData.description,
-        categoryList:
-          productData.Categories?.map((category) => category.categoryName) ||
-          [],
-        mediaList: productData.ProductMedia,
-        optionList: productData.ProductOptions,
-        quantity: productData.Inventory[0]?.quantity,
-        slug: productData.slug,
-        createdAt: productData.createdAt,
-        updatedAt: productData.updatedAt,
-      },
+      data: productData,
     });
   } catch (error) {
     if (error.message.includes("Product not found")) {
@@ -265,14 +215,6 @@ const updateProduct = async (req, res) => {
 };
 const deleteProduct = async (req, res) => {
   const slug = req.params.slug;
-  if (!slug) {
-    return setResponseLocals({
-      res,
-      statusCode: 404,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required field: slug",
-    });
-  }
   try {
     await ProductService.deleteProduct(slug);
     return setResponseLocals({
@@ -298,10 +240,70 @@ const deleteProduct = async (req, res) => {
     }
   }
 };
+const searchByNameProduct = async (req, res) => {
+  const { searchItems } = req.body;
+  try {
+    const productData = await ProductService.searchByNameProduct({
+      searchItems,
+    });
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: `Show all product by name: ${searchItems}`,
+      data: productData,
+    });
+  } catch (error) {
+    if (error.message.includes("Product not found")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PRODUCT_NOT_FOUND",
+        errorMessage: "Product not found in database",
+      });
+    } else {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
+    }
+  }
+};
+const getProductById = async (req, res) => {
+  const productId = req.params.productId;
+  try {
+    const productData = await ProductService.getProductById(productId);
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Show product successfully",
+      data: productData,
+    });
+  } catch (error) {
+    if (error.message.includes("Product not found")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PRODUCT_NOT_FOUND",
+        errorMessage: "Product not found in database",
+      });
+    } else {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
+    }
+  }
+};
 module.exports = {
   getAllProducts,
   createProduct,
   getProductBySlug,
   updateProduct,
   deleteProduct,
+  searchByNameProduct,
+  getProductById,
 };
