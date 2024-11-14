@@ -12,7 +12,11 @@ const createCategory = async ({
     if (!imageUrls || imageUrls.length === 0) {
       throw new Error("ImageUrls missing");
     }
-    const imageUrl = await uploadFilesToCloudinary(imageUrls, "categories");
+    const imageUrl = await uploadFilesToCloudinary(
+      imageUrls,
+      categoryName,
+      "categories"
+    );
     const category = await Category.create(
       {
         categoryName,
@@ -246,6 +250,7 @@ const updateCategoryById = async ({
     }
     const uploadedImageUrls = await uploadFilesToCloudinary(
       imageUrls,
+      categoryName,
       "categories"
     );
 

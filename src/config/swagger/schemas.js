@@ -1695,6 +1695,14 @@ module.exports = {
             data: {
               type: "object",
               properties: {
+                sku: {
+                  type: "string",
+                  example: "ABC-241115-4247",
+                },
+                productId: {
+                  type: "integer",
+                  example: 1,
+                },
                 shopName: {
                   type: "string",
                   example: "Shop Của Hiệuu",
@@ -1702,6 +1710,10 @@ module.exports = {
                 productName: {
                   type: "string",
                   example: "Áo thun 100%",
+                },
+                averageRating: {
+                  type: "float",
+                  example: "3.4",
                 },
                 originalPrice: {
                   type: "integer",
@@ -1816,6 +1828,14 @@ module.exports = {
           data: {
             type: "object",
             properties: {
+              sku: {
+                type: "string",
+                example: "ABC-241115-4247",
+              },
+              productId: {
+                type: "integer",
+                example: 1,
+              },
               shopName: {
                 type: "string",
                 example: "Shop Của Hiệuu",
@@ -1823,6 +1843,10 @@ module.exports = {
               productName: {
                 type: "string",
                 example: "Áo thun 100%",
+              },
+              averageRating: {
+                type: "float",
+                example: "3.4",
               },
               originalPrice: {
                 type: "integer",
@@ -1977,12 +2001,12 @@ module.exports = {
           discountStartDate: {
             type: "string",
             format: "date-time",
-            example: "2024-11-12T00:00:00Z",
+            example: "00:00:00 01/01/2024",
           },
           discountEndDate: {
             type: "string",
             format: "date-time",
-            example: "2024-11-19T00:00:00Z",
+            example: "01:00:00 30/12/2025",
           },
           description: {
             type: "text",
@@ -2035,6 +2059,10 @@ module.exports = {
           data: {
             type: "object",
             properties: {
+              sku: {
+                type: "string",
+                example: "ABC-241115-4247",
+              },
               shopName: {
                 type: "string",
                 example: "Shop Của Hiệuu",
@@ -2042,6 +2070,10 @@ module.exports = {
               productName: {
                 type: "string",
                 example: "Áo thun 100%",
+              },
+              averageRating: {
+                type: "float",
+                example: "0",
               },
               originalPrice: {
                 type: "integer",
@@ -2062,7 +2094,7 @@ module.exports = {
               },
               discountEndDate: {
                 type: "string",
-                example: "00:00:00 19/11/2024",
+                example: "00:00:00 19/11/2025",
               },
               finalPrice: {
                 type: "integer",
@@ -2222,7 +2254,153 @@ module.exports = {
           },
         },
       },
+      //[Product] Create Rating
+      CreateRatingRequest: {
+        type: "object",
+        properties: {
+          rating: {
+            type: "integer",
+            example: "5",
+          },
+          comment: {
+            type: "string",
+            example: "đồ đẹp nha ae",
+          },
 
+          mediaUrl: {
+            type: "array",
+            items: {
+              type: "string",
+              format: "binary",
+            },
+          },
+        },
+        required: ["rating", "comment", "mediaUrl"],
+      },
+      CreateRatingResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Created rating successfully",
+          },
+        },
+      },
+      InvalidRating: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 400,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "INVALID_RATING",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Rating must be a number between 1 and 5",
+              },
+            },
+          },
+        },
+      },
+      //[Product] Get All Rating Of Product
+      GetAllRatingOfProductResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all rating of product",
+          },
+          data: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                ratingId: {
+                  type: "integer",
+                  example: 1,
+                },
+                userId: {
+                  type: "string",
+                  example: "f4e8c2f6-3679-425d-99dc-781149905d7d",
+                },
+                avatar: {
+                  type: "string",
+                  example:
+                    "https://res.cloudinary.com/dfkadlnoh/image/upload/v1731588907/avatars/lxo8hzdpiozszpynv55n.jpg",
+                },
+                productId: {
+                  type: "integer",
+                  example: 1,
+                },
+                fullName: {
+                  type: "string",
+                  example: "Admin Promax",
+                },
+                rating: {
+                  type: "integer",
+                  example: 5,
+                },
+                comment: {
+                  type: "string",
+                  example: "đồ đẹp nha ae",
+                },
+                mediaUrls: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    example:
+                      "https://res.cloudinary.com/dfkadlnoh/image/upload/v1731585944/ratings/qwtq1wzzkev6bu9wrl7y.jpg",
+                  },
+                },
+                createdAt: {
+                  type: "string",
+                  example: "18:05:59 12/11/2024",
+                },
+                updatedAt: {
+                  type: "string",
+                  example: "18:05:59 12/11/2024",
+                },
+              },
+            },
+          },
+        },
+      },
+      ProductNotRating: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 404,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "PRODUCT_NOT_RATING",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Product is not rating",
+              },
+            },
+          },
+        },
+      },
       //================================================
 
       //Validation

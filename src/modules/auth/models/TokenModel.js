@@ -28,7 +28,10 @@ const Token = sequelize.define(
       get() {
         const rawValue = this.getDataValue("createdAt");
         return rawValue
-          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          ? moment
+              .utc(rawValue)
+              .tz("Asia/Ho_Chi_Minh")
+              .format("HH:mm:ss DD/MM/YYYY")
           : null;
       },
     },

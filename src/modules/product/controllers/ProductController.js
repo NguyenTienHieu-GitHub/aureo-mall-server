@@ -1,5 +1,6 @@
 const ProductService = require("../../product/services/ProductService");
 const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
+const Product = require("../models/ProductModel");
 
 const getAllProducts = async (req, res) => {
   try {
@@ -152,14 +153,6 @@ const getProductBySlug = async (req, res) => {
 };
 const updateProduct = async (req, res) => {
   const slug = req.params.slug;
-  if (!slug) {
-    return setResponseLocals({
-      res,
-      statusCode: 404,
-      errorCode: "MISSING_FIELD",
-      errorMessage: "Missing required field: slug",
-    });
-  }
   const {
     productName,
     originalPrice,
@@ -298,6 +291,86 @@ const getProductById = async (req, res) => {
     }
   }
 };
+
+const createRatingProduct = async (req, res) => {
+  const productId = req.params.productId;
+  const { rating, comment } = req.body;
+  const userId = req.user.id;
+  const mediaUrl = req.files.map((file) => file.path);
+  if (!rating || rating < 1 || rating > 5) {
+    return setResponseLocals({
+      res,
+      statusCode: 400,
+      errorCode: "INVALID_RATING",
+      errorMessage: "Rating must be a number between 1 and 5",
+    });
+  }
+  try {
+    await ProductService.createRatingProduct({
+      productId: productId,
+      userId: userId,
+      rating,
+      comment,
+      mediaUrl: mediaUrl,
+    });
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Created rating successfully",
+    });
+  } catch (error) {
+    if (error.message.includes("Product not found")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PRODUCT_NOT_FOUND",
+        errorMessage: "Product not found in database",
+      });
+    } else {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
+    }
+  }
+};
+const getAllRatingOfProduct = async (req, res) => {
+  const productId = req.params.productId;
+  try {
+    const rating = await ProductService.getAllRatingOfProduct(productId);
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Show all rating of product",
+      data: rating,
+    });
+  } catch (error) {
+    if (error.message.includes("Product not found")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PRODUCT_NOT_FOUND",
+        errorMessage: "Product not found in database",
+      });
+    } else if (error.message.includes("Product is not rating")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PRODUCT_NOT_RATING",
+        errorMessage: "Product is not rating",
+      });
+    } else {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
+    }
+  }
+};
 module.exports = {
   getAllProducts,
   createProduct,
@@ -306,4 +379,6 @@ module.exports = {
   deleteProduct,
   searchByNameProduct,
   getProductById,
+  createRatingProduct,
+  getAllRatingOfProduct,
 };

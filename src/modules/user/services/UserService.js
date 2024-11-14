@@ -84,7 +84,7 @@ const createUser = async ({
       throw new Error("Email already exists");
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const avatars = await uploadImageToCloudinary(avatar, "avatars");
+    const avatars = await uploadImageToCloudinary(avatar, firstName, "avatars");
     const addUserResult = await User.create(
       {
         avatar: avatars,
@@ -153,7 +153,7 @@ const updateUserByAdmin = async ({
 }) => {
   const transaction = await sequelize.transaction();
   try {
-    const avatars = await uploadImageToCloudinary(avatar, "avatars");
+    const avatars = await uploadImageToCloudinary(avatar, firstName, "avatars");
     const user = await User.findByPk(userId);
     if (!user) {
       throw new Error("User not found");
@@ -232,7 +232,7 @@ const updateMyInfo = async ({
       throw new Error("Email already exists");
     }
   }
-  const avatars = await uploadImageToCloudinary(avatar, "avatars");
+  const avatars = await uploadImageToCloudinary(avatar, firstName, "avatars");
   await user.update({
     avatar: avatars,
     firstName,

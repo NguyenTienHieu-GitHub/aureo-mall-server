@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../../../config/db/index");
+const moment = require("moment-timezone");
 
 const ProductPrice = sequelize.define(
   "ProductPrices",
@@ -32,20 +33,52 @@ const ProductPrice = sequelize.define(
     discountStartDate: {
       type: DataTypes.DATE,
       allowNull: true,
+      set(value) {
+        const [time, date] = value.split(" ");
+        const [hour, minute, second] = time.split(":");
+        const [day, month, year] = date.split("/");
+
+        const dateTime = moment.tz(
+          `${year}-${month}-${day} ${hour}:${minute}:${second}`,
+          "YYYY-MM-DD HH:mm:ss",
+          "Asia/Ho_Chi_Minh"
+        );
+
+        this.setDataValue("discountStartDate", dateTime.utc().toDate());
+      },
       get() {
         const rawValue = this.getDataValue("discountStartDate");
         return rawValue
-          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          ? moment
+              .utc(rawValue)
+              .tz("Asia/Ho_Chi_Minh")
+              .format("HH:mm:ss DD/MM/YYYY")
           : null;
       },
     },
     discountEndDate: {
       type: DataTypes.DATE,
       allowNull: true,
+      set(value) {
+        const [time, date] = value.split(" ");
+        const [hour, minute, second] = time.split(":");
+        const [day, month, year] = date.split("/");
+
+        const dateTime = moment.tz(
+          `${year}-${month}-${day} ${hour}:${minute}:${second}`,
+          "YYYY-MM-DD HH:mm:ss",
+          "Asia/Ho_Chi_Minh"
+        );
+
+        this.setDataValue("discountEndDate", dateTime.utc().toDate());
+      },
       get() {
         const rawValue = this.getDataValue("discountEndDate");
         return rawValue
-          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          ? moment
+              .utc(rawValue)
+              .tz("Asia/Ho_Chi_Minh")
+              .format("HH:mm:ss DD/MM/YYYY")
           : null;
       },
     },
@@ -55,7 +88,10 @@ const ProductPrice = sequelize.define(
       get() {
         const rawValue = this.getDataValue("createdAt");
         return rawValue
-          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          ? moment
+              .utc(rawValue)
+              .tz("Asia/Ho_Chi_Minh")
+              .format("HH:mm:ss DD/MM/YYYY")
           : null;
       },
     },
@@ -65,7 +101,10 @@ const ProductPrice = sequelize.define(
       get() {
         const rawValue = this.getDataValue("updatedAt");
         return rawValue
-          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          ? moment
+              .utc(rawValue)
+              .tz("Asia/Ho_Chi_Minh")
+              .format("HH:mm:ss DD/MM/YYYY")
           : null;
       },
     },
@@ -99,16 +138,16 @@ const ProductPrice = sequelize.define(
     validate: {
       discountDatesCheck() {
         if (this.discountPrice) {
-          if (
-            !this.discountStartDate ||
-            !this.discountEndDate ||
-            !this.discountType
-          ) {
+          if (!this.discountStartDate || !this.discountEndDate) {
             throw new Error(
               "Both the discount type, discount start date and discount end date must be provided when the discount price is set"
             );
           }
-          if (this.discountEndDate <= this.discountStartDate) {
+
+          const startDate = new Date(this.discountStartDate);
+          const endDate = new Date(this.discountEndDate);
+
+          if (endDate > startDate) {
             throw new Error(
               "Discount end date must be greater than the start date"
             );

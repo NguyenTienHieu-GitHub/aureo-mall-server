@@ -13,6 +13,7 @@ const Warehouse = require("../models/WarehouseModel");
 const Shop = require("../models/ShopModel");
 const {
   uploadNone,
+  uploadRating,
   uploadProduct,
   fixFilePath,
 } = require("../../../shared/middleware/multer");
@@ -47,6 +48,18 @@ router.post(
   verifyToken,
   uploadNone,
   productController.searchByNameProduct
+);
+router.post(
+  "/create-rating/:productId",
+  verifyToken,
+  uploadRating,
+  fixFilePath,
+  productController.createRatingProduct
+);
+router.get(
+  "/rating/:productId",
+  verifyToken,
+  productController.getAllRatingOfProduct
 );
 router.get("/id/:productId", verifyToken, productController.getProductById);
 router.get("/:slug", verifyToken, productController.getProductBySlug);

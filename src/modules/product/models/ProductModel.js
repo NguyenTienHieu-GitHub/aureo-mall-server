@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../../../config/db/index");
+const moment = require("moment-timezone");
 
 const Product = sequelize.define(
   "Products",
@@ -15,6 +16,14 @@ const Product = sequelize.define(
       references: {
         model: "Shops",
         key: "id",
+      },
+    },
+    sku: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      set(value) {
+        this.setDataValue("sku", value.toUpperCase());
       },
     },
     productName: {
@@ -36,7 +45,10 @@ const Product = sequelize.define(
       get() {
         const rawValue = this.getDataValue("createdAt");
         return rawValue
-          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          ? moment
+              .utc(rawValue)
+              .tz("Asia/Ho_Chi_Minh")
+              .format("HH:mm:ss DD/MM/YYYY")
           : null;
       },
     },
@@ -46,7 +58,10 @@ const Product = sequelize.define(
       get() {
         const rawValue = this.getDataValue("updatedAt");
         return rawValue
-          ? rawValue.toLocaleString("vi-VN", { timeZone: "UTC" })
+          ? moment
+              .utc(rawValue)
+              .tz("Asia/Ho_Chi_Minh")
+              .format("HH:mm:ss DD/MM/YYYY")
           : null;
       },
     },

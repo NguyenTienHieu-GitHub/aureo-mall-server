@@ -3,6 +3,10 @@ const ProductPrice = require("../models/ProductPriceModel");
 const ProductMedia = require("../models/ProductMediaModel");
 const ProductOption = require("../models/ProductOptionModel");
 const ProductOptionValue = require("../models/ProductOptionValueModel");
+const {
+  ProductRating,
+  ProductRatingMedia,
+} = require("../models/ProductRatingModel");
 const Inventory = require("../models/InventoryModel");
 const { Category } = require("../models/CategoryModel");
 const ProductCategory = require("../models/ProductCategoryModel");
@@ -12,6 +16,7 @@ const slugify = require("slugify");
 const { uploadFilesToCloudinary } = require("../../../shared/utils/upload");
 const { Op } = require("sequelize");
 const sequelize = require("../../../config/db/index");
+const { User } = require("../../models");
 
 const generateSlug = async (productName, existingSlug = null) => {
   const baseSlug = slugify(productName, { lower: true });
@@ -35,6 +40,36 @@ Product.beforeUpdate(async (product) => {
   }
 });
 
+const calculateAverageRating = async (productId) => {
+  const ratings = await ProductRating.findAll({
+    where: { productId: productId },
+  });
+  const totalRatings = ratings.length;
+  let averageRating = 0;
+  if (totalRatings > 0) {
+    const sumRatings = ratings.reduce((sum, rating) => sum + rating.rating, 0);
+    averageRating = sumRatings / totalRatings;
+  }
+  return parseFloat(averageRating.toFixed(1));
+};
+const generateSKU = (productName) => {
+  const nameAbbreviation = productName
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "")
+    .substring(0, 3)
+    .toUpperCase();
+
+  const currentDate = new Date();
+  const year = currentDate.getFullYear().toString().slice(2);
+  const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+  const day = String(currentDate.getDate()).padStart(2, "0");
+  const datePart = `${year}${month}${day}`;
+
+  const randomNumber = Math.floor(1000 + Math.random() * 9000);
+  const sku = `${nameAbbreviation}-${datePart}-${randomNumber}`;
+  return sku;
+};
 const getAllProducts = async () => {
   const products = await Product.findAll({
     include: [
@@ -89,52 +124,56 @@ const getAllProducts = async () => {
   if (products.length === 0) {
     throw new Error("Product not found");
   }
-
-  const formattedProducts = products.map((productData) => {
-    const categoryList = [];
-    if (productData.Categories && productData.Categories.length > 0) {
-      productData.Categories.forEach((category) => {
-        const buildCategoryList = (cat) => {
-          if (cat) {
-            categoryList.unshift({
-              id: cat.id,
-              categoryName: cat.categoryName,
-            });
-            if (cat.parent) buildCategoryList(cat.parent);
-          }
-        };
-        buildCategoryList(category);
-      });
-    }
-    return {
-      productId: productData.id,
-      shopName: productData.Shop.shopName,
-      productName: productData.productName,
-      originalPrice: productData.ProductPrice[0].originalPrice,
-      discountPrice: productData.ProductPrice[0].discountPrice,
-      discountType: productData.ProductPrice[0].discountType,
-      discountStartDate: productData.ProductPrice[0].discountStartDate,
-      discountEndDate: productData.ProductPrice[0].discountEndDate,
-      finalPrice: productData.ProductPrice[0].finalPrice,
-      description: productData.description,
-      categoryList: categoryList,
-      mediaList: productData.ProductMedia,
-      optionList: productData.ProductOptions
-        ? productData.ProductOptions.map((productOption) => ({
-            optionName: productOption.optionName,
-            optionValues: productOption.ProductOptionValues
-              ? productOption.ProductOptionValues.map(
-                  (optionValue) => optionValue.optionValue
-                )
-              : [],
-          }))
-        : [],
-      quantity: productData.quantity,
-      slug: productData.slug,
-      createdAt: productData.createdAt,
-      updatedAt: productData.updatedAt,
-    };
-  });
+  const formattedProducts = await Promise.all(
+    products.map(async (productData) => {
+      const averageRating = await calculateAverageRating(productData.id);
+      const categoryList = [];
+      if (productData.Categories && productData.Categories.length > 0) {
+        productData.Categories.forEach((category) => {
+          const buildCategoryList = (cat) => {
+            if (cat) {
+              categoryList.unshift({
+                id: cat.id,
+                categoryName: cat.categoryName,
+              });
+              if (cat.parent) buildCategoryList(cat.parent);
+            }
+          };
+          buildCategoryList(category);
+        });
+      }
+      return {
+        sku: productData.sku,
+        productId: productData.id,
+        averageRating: averageRating,
+        shopName: productData.Shop.shopName,
+        productName: productData.productName,
+        originalPrice: productData.ProductPrice[0].originalPrice,
+        discountPrice: productData.ProductPrice[0].discountPrice,
+        discountType: productData.ProductPrice[0].discountType,
+        discountStartDate: productData.ProductPrice[0].discountStartDate,
+        discountEndDate: productData.ProductPrice[0].discountEndDate,
+        finalPrice: productData.ProductPrice[0].finalPrice,
+        description: productData.description,
+        categoryList: categoryList,
+        mediaList: productData.ProductMedia,
+        optionList: productData.ProductOptions
+          ? productData.ProductOptions.map((productOption) => ({
+              optionName: productOption.optionName,
+              optionValues: productOption.ProductOptionValues
+                ? productOption.ProductOptionValues.map(
+                    (optionValue) => optionValue.optionValue
+                  )
+                : [],
+            }))
+          : [],
+        quantity: productData.quantity,
+        slug: productData.slug,
+        createdAt: productData.createdAt,
+        updatedAt: productData.updatedAt,
+      };
+    })
+  );
   return formattedProducts;
 };
 const createProduct = async ({
@@ -163,10 +202,12 @@ const createProduct = async ({
   const transaction = await sequelize.transaction();
   try {
     const slug = await generateSlug(productName);
+    const sku = generateSKU(productName);
     const newProduct = await Product.create(
       {
         shopId: shop.id,
         productName,
+        sku: sku,
         description,
         slug: slug,
       },
@@ -185,7 +226,11 @@ const createProduct = async ({
         { transaction }
       );
     }
-    const uploadedMedia = await uploadFilesToCloudinary(mediaList);
+    const uploadedMedia = await uploadFilesToCloudinary(
+      mediaList,
+      productName,
+      "products"
+    );
     if (uploadedMedia && uploadedMedia.length > 0) {
       await Promise.all(
         uploadedMedia.map((mediaItem, index) =>
@@ -310,10 +355,13 @@ const createProduct = async ({
         buildCategoryList(category);
       });
     }
+    const averageRating = await calculateAverageRating(productData.id);
     const responseData = {
+      sku: productData.sku,
       productId: productData.id,
       shopName: productData.Shop.shopName,
       productName: productData.productName,
+      averageRating: averageRating,
       originalPrice: productData.ProductPrice[0].originalPrice,
       discountPrice: productData.ProductPrice[0].discountPrice,
       discountType: productData.ProductPrice[0].discountType,
@@ -418,10 +466,14 @@ const getProductBySlug = async (slug) => {
       buildCategoryList(category);
     });
   }
+  const averageRating = await calculateAverageRating(productData.id);
+
   const responseData = {
+    sku: productData.sku,
     productId: productData.id,
     shopName: productData.Shop.shopName,
     productName: productData.productName,
+    averageRating: averageRating,
     originalPrice: productData.ProductPrice[0].originalPrice,
     discountPrice: productData.ProductPrice[0].discountPrice,
     discountType: productData.ProductPrice[0].discountType,
@@ -466,10 +518,11 @@ const updateProduct = async ({
     if (!product) {
       throw new Error("Product not found");
     }
+    const skuToUpdate = product.sku;
     if (product.productName !== productName) {
       const newSlug = await generateSlug(productName);
       await product.update(
-        { productName, description, slug: newSlug },
+        { productName, sku: skuToUpdate, description, slug: newSlug },
         { transaction }
       );
     } else {
@@ -502,7 +555,11 @@ const updateProduct = async ({
       { transaction }
     );
 
-    const uploadedMedia = await uploadFilesToCloudinary(mediaList);
+    const uploadedMedia = await uploadFilesToCloudinary(
+      mediaList,
+      productName,
+      "products"
+    );
     if (uploadedMedia && uploadedMedia.length > 0) {
       await Promise.all(
         uploadedMedia.map((mediaItem, index) =>
@@ -620,10 +677,14 @@ const updateProduct = async ({
         buildCategoryList(category);
       });
     }
+    const averageRating = await calculateAverageRating(productData.id);
+
     const responseData = {
+      sku: productData.sku,
       productId: productData.id,
       shopName: productData.Shop.shopName,
       productName: productData.productName,
+      averageRating: averageRating,
       originalPrice: productData.ProductPrice[0].originalPrice,
       discountPrice: productData.ProductPrice[0].discountPrice,
       discountType: productData.ProductPrice[0].discountType,
@@ -732,51 +793,56 @@ const searchByNameProduct = async ({ searchItems }) => {
   if (productData.length === 0) {
     throw new Error("Product not found");
   }
-  const formattedProducts = productData.map((productData) => {
-    const categoryList = [];
-    if (productData.Categories && productData.Categories.length > 0) {
-      productData.Categories.forEach((category) => {
-        const buildCategoryList = (cat) => {
-          if (cat) {
-            categoryList.unshift({
-              id: cat.id,
-              categoryName: cat.categoryName,
-            });
-            if (cat.parent) buildCategoryList(cat.parent);
-          }
-        };
-        buildCategoryList(category);
-      });
-    }
-    return {
-      productId: productData.id,
-      shopName: productData.Shop.shopName,
-      productName: productData.productName,
-      originalPrice: productData.ProductPrice[0].originalPrice,
-      discountPrice: productData.ProductPrice[0].discountPrice,
-      discountType: productData.ProductPrice[0].discountType,
-      discountStartDate: productData.ProductPrice[0].discountStartDate,
-      discountEndDate: productData.ProductPrice[0].discountEndDate,
-      finalPrice: productData.ProductPrice[0].finalPrice,
-      description: productData.description,
-      categoryList: categoryList,
-      mediaList: productData.ProductMedia,
-      optionList: productData.ProductOptions
-        ? productData.ProductOptions.map((productOption) => ({
-            optionName: productOption.optionName,
-            optionValues: productOption.ProductOptionValues
-              ? productOption.ProductOptionValues.map(
-                  (optionValue) => optionValue.optionValue
-                )
-              : [],
-          }))
-        : [],
-      quantity: productData.quantity,
-      slug: productData.slug,
-      createdAt: productData.createdAt,
-      updatedAt: productData.updatedAt,
-    };
-  });
+  const formattedProducts = Promise.all(
+    productData.map(async (productData) => {
+      const averageRating = await calculateAverageRating(productData.id);
+      const categoryList = [];
+      if (productData.Categories && productData.Categories.length > 0) {
+        productData.Categories.forEach((category) => {
+          const buildCategoryList = (cat) => {
+            if (cat) {
+              categoryList.unshift({
+                id: cat.id,
+                categoryName: cat.categoryName,
+              });
+              if (cat.parent) buildCategoryList(cat.parent);
+            }
+          };
+          buildCategoryList(category);
+        });
+      }
+      return {
+        sku: productData.sku,
+        productId: productData.id,
+        shopName: productData.Shop.shopName,
+        productName: productData.productName,
+        averageRating: averageRating,
+        originalPrice: productData.ProductPrice[0].originalPrice,
+        discountPrice: productData.ProductPrice[0].discountPrice,
+        discountType: productData.ProductPrice[0].discountType,
+        discountStartDate: productData.ProductPrice[0].discountStartDate,
+        discountEndDate: productData.ProductPrice[0].discountEndDate,
+        finalPrice: productData.ProductPrice[0].finalPrice,
+        description: productData.description,
+        categoryList: categoryList,
+        mediaList: productData.ProductMedia,
+        optionList: productData.ProductOptions
+          ? productData.ProductOptions.map((productOption) => ({
+              optionName: productOption.optionName,
+              optionValues: productOption.ProductOptionValues
+                ? productOption.ProductOptionValues.map(
+                    (optionValue) => optionValue.optionValue
+                  )
+                : [],
+            }))
+          : [],
+        quantity: productData.quantity,
+        slug: productData.slug,
+        createdAt: productData.createdAt,
+        updatedAt: productData.updatedAt,
+      };
+    })
+  );
   return formattedProducts;
 };
 const getProductById = async (productId) => {
@@ -849,10 +915,13 @@ const getProductById = async (productId) => {
       buildCategoryList(category);
     });
   }
+  const averageRating = await calculateAverageRating(productData.id);
   const responseData = {
+    sku: productData.sku,
     productId: productData.id,
     shopName: productData.Shop.shopName,
     productName: productData.productName,
+    averageRating: averageRating,
     originalPrice: productData.ProductPrice[0].originalPrice,
     discountPrice: productData.ProductPrice[0].discountPrice,
     discountType: productData.ProductPrice[0].discountType,
@@ -877,6 +946,104 @@ const getProductById = async (productId) => {
   };
   return responseData;
 };
+
+const createRatingProduct = async ({
+  productId,
+  userId,
+  rating,
+  comment,
+  mediaUrl,
+}) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const findProduct = await Product.findByPk(productId);
+    if (!findProduct) {
+      throw new Error("Product not found");
+    }
+    if (rating < 1 || rating > 5) {
+      throw new Error("Rating must be between 1 and 5");
+    }
+    const createRating = await ProductRating.create(
+      {
+        productId: findProduct.id,
+        userId: userId,
+        rating,
+        comment,
+      },
+      { transaction }
+    );
+    const uploadedMedia = await uploadFilesToCloudinary(
+      mediaUrl,
+      findProduct.productName,
+      "ratings"
+    );
+    if (uploadedMedia && uploadedMedia.length > 0) {
+      await Promise.all(
+        uploadedMedia.map((mediaItem) =>
+          ProductRatingMedia.create(
+            {
+              ratingId: createRating.id,
+              mediaUrl: mediaItem,
+            },
+            { transaction }
+          )
+        )
+      );
+    }
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    throw new Error(error.message);
+  }
+};
+const getAllRatingOfProduct = async (productId) => {
+  try {
+    const findProduct = await Product.findByPk(productId);
+    if (!findProduct) {
+      throw new Error("Product not found");
+    }
+    const rating = await ProductRating.findAll({
+      where: { productId: findProduct.id },
+      include: [
+        {
+          model: Product,
+          as: "Product",
+          attributes: ["id"],
+        },
+        {
+          model: User,
+          as: "User",
+          attributes: ["id", "avatar", "firstName", "lastName"],
+        },
+        {
+          model: ProductRatingMedia,
+          as: "Media",
+          attributes: ["mediaUrl"],
+        },
+      ],
+    });
+    if (rating.length === 0) {
+      throw new Error("Product is not rating");
+    }
+    const formattedRatingData = rating.map((ratingData) => {
+      return {
+        ratingId: ratingData.id,
+        userId: ratingData.User.id,
+        avatar: ratingData.User.avatar,
+        productId: ratingData.Product.id,
+        fullName: `${ratingData.User.firstName} ${ratingData.User.lastName}`,
+        rating: ratingData.rating,
+        comment: ratingData.comment,
+        mediaUrls: ratingData.Media?.map((media) => media.mediaUrl) || [],
+        createdAt: ratingData.createdAt,
+        updatedAt: ratingData.updatedAt,
+      };
+    });
+    return formattedRatingData;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 module.exports = {
   generateSlug,
   getAllProducts,
@@ -886,4 +1053,6 @@ module.exports = {
   deleteProduct,
   searchByNameProduct,
   getProductById,
+  createRatingProduct,
+  getAllRatingOfProduct,
 };

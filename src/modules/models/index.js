@@ -27,6 +27,10 @@ const Warehouse = require("../product/models/WarehouseModel");
 const ProductMedia = require("../product/models/ProductMediaModel");
 const ProductOption = require("../product/models/ProductOptionModel");
 const ProductOptionValue = require("../product/models/ProductOptionValueModel");
+const {
+  ProductRating,
+  ProductRatingMedia,
+} = require("../product/models/ProductRatingModel");
 
 const {
   Address,
@@ -136,6 +140,21 @@ Shop.belongsTo(User, { foreignKey: "userId", as: "User" });
 
 Shop.hasMany(Product, { foreignKey: "shopId" });
 Product.belongsTo(Shop, { foreignKey: "shopId", as: "Shop" });
+
+User.hasMany(ProductRating, { foreignKey: "userId" });
+ProductRating.belongsTo(User, { foreignKey: "userId", as: "User" });
+
+Product.hasMany(ProductRating, { foreignKey: "productId" });
+ProductRating.belongsTo(Product, { foreignKey: "productId", as: "Product" });
+
+ProductRating.hasMany(ProductRatingMedia, {
+  foreignKey: "ratingId",
+  as: "Media",
+});
+ProductRatingMedia.belongsTo(ProductRating, {
+  foreignKey: "ratingId",
+  as: "Rating",
+});
 
 Product.hasMany(ProductPrice, { foreignKey: "productId", as: "ProductPrice" });
 ProductPrice.belongsTo(Product, { foreignKey: "productId", as: "Product" });

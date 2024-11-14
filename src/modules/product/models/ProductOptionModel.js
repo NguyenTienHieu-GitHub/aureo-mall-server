@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../../../config/db/index");
+const moment = require("moment-timezone");
 
 const ProductOption = sequelize.define(
   "ProductOptions",
