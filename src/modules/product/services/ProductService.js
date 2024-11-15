@@ -50,7 +50,7 @@ const calculateAverageRating = async (productId) => {
     const sumRatings = ratings.reduce((sum, rating) => sum + rating.rating, 0);
     averageRating = sumRatings / totalRatings;
   }
-  return parseFloat(averageRating.toFixed(1));
+  return averageRating.toFixed(1);
 };
 const generateSKU = (productName) => {
   const nameAbbreviation = productName

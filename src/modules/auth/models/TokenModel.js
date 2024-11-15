@@ -1,5 +1,6 @@
-const sequelize = require("../../../config/db/index");
 const { DataTypes } = require("sequelize");
+const sequelize = require("../../../config/db/index");
+const moment = require("moment-timezone");
 
 const Token = sequelize.define(
   "Tokens",
@@ -26,7 +27,7 @@ const Token = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
       get() {
-        const rawValue = this.getDataValue("createdAt");
+        const rawValue = this.getDataValue("expiresAt");
         return rawValue
           ? moment
               .utc(rawValue)
@@ -38,7 +39,6 @@ const Token = sequelize.define(
   },
   {
     tableName: "Tokens",
-    modelName: "Token",
     timestamps: false,
   }
 );

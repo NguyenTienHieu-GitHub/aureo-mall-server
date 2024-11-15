@@ -1712,8 +1712,8 @@ module.exports = {
                   example: "Áo thun 100%",
                 },
                 averageRating: {
-                  type: "float",
-                  example: "3.4",
+                  type: "string",
+                  example: "5.0",
                 },
                 originalPrice: {
                   type: "integer",
@@ -1845,8 +1845,8 @@ module.exports = {
                 example: "Áo thun 100%",
               },
               averageRating: {
-                type: "float",
-                example: "3.4",
+                type: "string",
+                example: "5.0",
               },
               originalPrice: {
                 type: "integer",
@@ -2072,8 +2072,8 @@ module.exports = {
                 example: "Áo thun 100%",
               },
               averageRating: {
-                type: "float",
-                example: "0",
+                type: "string",
+                example: "5.0",
               },
               originalPrice: {
                 type: "integer",
@@ -2401,8 +2401,114 @@ module.exports = {
           },
         },
       },
-      //================================================
 
+      //================================================
+      //[Cart] Get All Product In Cart
+      GetAllProductInCartResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all products in cart",
+          },
+          data: {
+            type: "object",
+            properties: {
+              cartId: {
+                type: "integer",
+                example: 1,
+              },
+              userId: {
+                type: "string",
+                example: "e5536e07-0c5d-4ba9-8547-925ff2b162e8",
+              },
+              totalQuantity: {
+                type: "integer",
+                example: 3,
+              },
+              totalPrice: {
+                type: "integer",
+                example: 270000,
+              },
+              items: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    productId: {
+                      type: "integer",
+                      example: 1,
+                    },
+                    productName: {
+                      type: "string",
+                      example: "Áo thun 100% cotton",
+                    },
+                    sku: {
+                      type: "string",
+                      example: "AOT-241116-4089",
+                    },
+                    quantity: {
+                      type: "integer",
+                      example: 2,
+                    },
+                    productPrice: {
+                      type: "integer",
+                      example: 90000,
+                    },
+                    totalPrice: {
+                      type: "integer",
+                      example: 180000,
+                    },
+                    options: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          optionName: {
+                            type: "string",
+                            example: "Size",
+                          },
+                          optionValue: {
+                            type: "string",
+                            example: "L",
+                          },
+                          optionQuantity: {
+                            type: "integer",
+                            example: 1,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      //[Cart] Add Products To Cart
+      AddProductsToCartRequest: {
+        type: "object",
+        properties: {
+          quantity: {
+            type: "integer",
+            example: 2,
+          },
+          optionName: {
+            type: "string",
+            example: "Size",
+          },
+          optionValue: {
+            type: "string",
+            example: "S",
+          },
+        },
+      },
+      //=======================================================
       //Validation
       MissingFieldsValidate: {
         type: "object",

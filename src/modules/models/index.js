@@ -32,6 +32,10 @@ const {
   ProductRatingMedia,
 } = require("../product/models/ProductRatingModel");
 
+const Cart = require("../order/models/CartModel");
+const CartItem = require("../order/models/CartItemModel");
+const CartItemOption = require("../order/models/CartItemOptionModel");
+
 const {
   Address,
   Province,
@@ -154,6 +158,23 @@ ProductRating.hasMany(ProductRatingMedia, {
 ProductRatingMedia.belongsTo(ProductRating, {
   foreignKey: "ratingId",
   as: "Rating",
+});
+
+User.hasOne(Cart, { foreignKey: "userId" });
+Cart.belongsTo(User, { foreignKey: "userId", as: "User" });
+
+Cart.hasMany(CartItem, { foreignKey: "cartId" });
+CartItem.belongsTo(Cart, { foreignKey: "cartId", as: "Cart" });
+
+Product.hasMany(CartItem, { foreignKey: "productId" });
+CartItem.belongsTo(Product, { foreignKey: "productId", as: "Product" });
+
+CartItem.hasMany(CartItemOption, {
+  foreignKey: "cartItemId",
+});
+CartItemOption.belongsTo(CartItem, {
+  foreignKey: "cartItemId",
+  as: "CartItem",
 });
 
 Product.hasMany(ProductPrice, { foreignKey: "productId", as: "ProductPrice" });

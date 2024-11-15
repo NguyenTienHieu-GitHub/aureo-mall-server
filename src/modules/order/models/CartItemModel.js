@@ -2,20 +2,19 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../../../config/db/index");
 const moment = require("moment-timezone");
 
-const ProductRating = sequelize.define(
-  "ProductRatings",
+const CartItem = sequelize.define(
+  "CartItems",
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    userId: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+    cartId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "Users",
+        model: "Carts",
         key: "id",
       },
     },
@@ -27,16 +26,13 @@ const ProductRating = sequelize.define(
         key: "id",
       },
     },
-    rating: {
-      type: DataTypes.DECIMAL(2, 1),
+    quantity: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        min: 1.0,
-        max: 5.0,
-      },
+      defaultValue: 1,
     },
-    comment: {
-      type: DataTypes.TEXT,
+    totalPrice: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     createdAt: {
@@ -67,48 +63,9 @@ const ProductRating = sequelize.define(
     },
   },
   {
-    tableName: "ProductRatings",
-    timestamps: true,
-  }
-);
-const ProductRatingMedia = sequelize.define(
-  "ProductRatingMedias",
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    ratingId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "ProductRatings",
-        key: "id",
-      },
-    },
-    mediaUrl: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      get() {
-        const rawValue = this.getDataValue("createdAt");
-        return rawValue
-          ? moment
-              .utc(rawValue)
-              .tz("Asia/Ho_Chi_Minh")
-              .format("HH:mm:ss DD/MM/YYYY")
-          : null;
-      },
-    },
-  },
-  {
-    tableName: "ProductRatingMedias",
+    tableName: "CartItems",
     timestamps: true,
   }
 );
 
-module.exports = { ProductRating, ProductRatingMedia };
+module.exports = CartItem;
