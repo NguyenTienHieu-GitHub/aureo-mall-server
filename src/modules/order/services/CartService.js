@@ -5,8 +5,43 @@ const Product = require("../../product/models/ProductModel");
 const ProductPrice = require("../../product/models/ProductPriceModel");
 const sequelize = require("../../../config/db/index");
 
+const updateCartTotalPrice = async ({ cart }) => {
+  if (!cart) {
+    console.error("Cart not found.");
+    return;
+  }
+  const cartItems = cart.CartItems;
+  if (!cartItems || cartItems.length === 0) {
+    return;
+  }
+  let totalCartPrice = 0;
+  for (let cartItem of cartItems) {
+    const finalPrice =
+      cartItem.Product?.ProductPrice?.finalPrice ||
+      cartItem.Product?.originalPrice;
+    if (finalPrice === undefined || finalPrice === null) {
+      console.error(
+        `Final price is missing for Product ID: ${cartItem.Product?.id}`
+      );
+      continue;
+    }
+    cartItem.totalPrice = finalPrice * cartItem.quantity;
+    await cartItem.save();
+    totalCartPrice += cartItem.totalPrice;
+  }
+  const cartId = cart.id;
+  const cartData = await Cart.findByPk(cartId);
+  if (!cartData) {
+    console.error("Cart not found for the provided cartId.");
+    return;
+  }
+  cartData.totalPrice = totalCartPrice;
+  await cartData.save();
+};
+
 const getAllProductInCart = async (userId) => {
   try {
+    await createCartIfNotExist({ userId });
     const cart = await Cart.findOne({
       where: { userId },
       include: [
@@ -26,7 +61,14 @@ const getAllProductInCart = async (userId) => {
                 {
                   model: ProductPrice,
                   as: "ProductPrice",
-                  attributes: ["finalPrice"],
+                  attributes: [
+                    "originalPrice",
+                    "discountPrice",
+                    "discountType",
+                    "discountStartDate",
+                    "discountEndDate",
+                    "finalPrice",
+                  ],
                 },
               ],
             },
@@ -36,42 +78,37 @@ const getAllProductInCart = async (userId) => {
     });
 
     if (!cart) {
-      throw new Error("Cart not found for the given user.");
+      throw new Error("Cart not found for the given user");
     }
-
-    const totalQuantity = cart.CartItems.reduce(
-      (sum, item) => sum + item.quantity,
-      0
-    );
-    const totalPrice = cart.CartItems.reduce(
-      (sum, item) => sum + item.totalPrice,
-      0
-    );
-
+    await updateCartTotalPrice({ cart });
+    const total = await Cart.findByPk(cart.id);
     const response = {
       cartId: cart.id,
       userId: cart.userId,
-      totalQuantity,
-      totalPrice,
-      items: (cart.CartItems || []).map((item) => ({
-        productId: item.Product?.id || null,
-        productName: item.Product?.productName || "Unknown",
-        sku: item.Product?.sku || "Unknown",
-        quantity: item.quantity,
-        productPrice: item.Product?.ProductPrice?.finalPrice || 0,
-        totalPrice: item.totalPrice,
-        options: (item.CartItemOptions || []).map((option) => ({
-          optionName: option.optionName || "Unknown",
-          optionValue: option.optionValue || "Unknown",
-          optionQuantity: option.optionQuantity || 0,
-        })),
-      })),
+      totalQuantity: total.totalQuantity,
+      totalPrice: total.totalPrice,
+      items:
+        cart.CartItems && cart.CartItems.length > 0
+          ? cart.CartItems.map((item) => ({
+              productId: item.Product?.id || null,
+              productName: item.Product?.productName || "Unknown",
+              sku: item.Product?.sku || "Unknown",
+              totalQuantity: item.quantity,
+              productPrice: item.Product?.ProductPrice?.finalPrice,
+              totalPrice: item.totalPrice,
+              options: (item.CartItemOptions || []).map((option) => ({
+                optionName: option.optionName || "Unknown",
+                optionValue: option.optionValue || "Unknown",
+                optionQuantity: option.optionQuantity || 0,
+              })),
+            }))
+          : "Cart is empty",
     };
 
     return response;
   } catch (error) {
     console.error("Error fetching products in cart:", error.message);
-    throw new Error("Unable to fetch products in cart.");
+    throw new Error(error.message);
   }
 };
 
@@ -106,47 +143,46 @@ const addProductToCart = async ({
   try {
     const cart = await createCartIfNotExist({ userId });
     let cartItem = await CartItem.findOne({
-      where: { cartId: cart.id, productId: productId },
+      where: { cartId: cart.id, productId },
+      include: [
+        {
+          model: CartItemOption,
+          where: { optionName, optionValue },
+          required: false,
+        },
+      ],
     });
     const priceProduct = await ProductPrice.findOne({
-      where: { productId: productId },
+      where: { productId },
+      attributes: [
+        "originalPrice",
+        "discountPrice",
+        "discountType",
+        "discountStartDate",
+        "discountEndDate",
+      ],
     });
+    if (!priceProduct) throw new Error("Product price not found");
     if (cartItem) {
       cartItem.quantity += quantity;
       cartItem.totalPrice = cartItem.quantity * priceProduct.finalPrice;
       await cartItem.save({ transaction });
-
-      const existingOption = await CartItemOption.findOne({
-        where: {
-          cartItemId: cartItem.id,
-          optionName: optionName,
-          optionValue: optionValue,
-        },
-      });
-      if (!existingOption) {
-        await CartItemOption.create(
-          {
-            cartItemId: cartItem.id,
-            optionQuantity: quantity,
-            optionName,
-            optionValue,
-          },
-          { transaction }
-        );
-      } else {
-        await CartItemOption.update(
-          {
-            optionQuantity: quantity + existingOption.optionQuantity,
-          },
-          {
-            where: {
+      if (optionName && optionValue) {
+        const existingOption = cartItem.CartItemOptions?.[0];
+        if (existingOption) {
+          existingOption.optionQuantity += quantity;
+          await existingOption.save({ transaction });
+        } else {
+          await CartItemOption.create(
+            {
               cartItemId: cartItem.id,
-              optionName: optionName,
-              optionValue: optionValue,
+              optionQuantity: quantity,
+              optionName,
+              optionValue,
             },
-            transaction,
-          }
-        );
+            { transaction }
+          );
+        }
       }
     } else {
       cartItem = await CartItem.create(
@@ -158,30 +194,34 @@ const addProductToCart = async ({
         },
         { transaction }
       );
-      await CartItemOption.create(
-        {
-          cartItemId: cartItem.id,
-          optionQuantity: quantity,
-          optionName,
-          optionValue,
-        },
-        { transaction }
-      );
+      if (optionName && optionValue) {
+        await CartItemOption.create(
+          {
+            cartItemId: cartItem.id,
+            optionQuantity: quantity,
+            optionName,
+            optionValue,
+          },
+          { transaction }
+        );
+      }
     }
-    const cartItems = await CartItem.findAll({
+    let totalPrice = 0;
+    let totalQuantity = 0;
+    const total = await CartItem.findAll({
       where: { cartId: cart.id },
       attributes: ["quantity", "totalPrice"],
+      transaction,
     });
-    const totalQuantity = cartItems.reduce(
-      (sum, item) => sum + (item.quantity || 0),
-      0
-    );
-    const totalPrice = cartItems.reduce(
-      (sum, item) => sum + (item.totalPrice || 0),
-      0
-    );
+    if (total.length === 0) {
+      console.log("No CartItem found for this cart.");
+    }
+    for (const item of total) {
+      totalQuantity += item.quantity || 0;
+      totalPrice += item.totalPrice || 0;
+    }
     await Cart.update(
-      { totalQuantity: totalQuantity, totalPrice: totalPrice },
+      { totalQuantity, totalPrice },
       { where: { id: cart.id }, transaction }
     );
     await transaction.commit();

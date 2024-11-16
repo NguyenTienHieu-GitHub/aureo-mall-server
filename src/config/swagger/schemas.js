@@ -2451,7 +2451,7 @@ module.exports = {
                       type: "string",
                       example: "AOT-241116-4089",
                     },
-                    quantity: {
+                    totalQuantity: {
                       type: "integer",
                       example: 2,
                     },
@@ -2491,7 +2491,7 @@ module.exports = {
         },
       },
       //[Cart] Add Products To Cart
-      AddProductsToCartRequest: {
+      AddProductToCartRequest: {
         type: "object",
         properties: {
           quantity: {
@@ -2505,6 +2505,41 @@ module.exports = {
           optionValue: {
             type: "string",
             example: "S",
+          },
+        },
+      },
+      AddProductToCartResponse: {
+        type: "object",
+        properties: {
+          statusCode: {
+            type: "integer",
+            example: 200,
+          },
+          messageSuccess: {
+            type: "string",
+            example: "Add product to cart successfully",
+          },
+        },
+      },
+      CartNotFound: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 404,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "CART_NOT_FOUND",
+              },
+              errorMessage: {
+                type: "string",
+                example: "Cart not found for the given user",
+              },
+            },
           },
         },
       },

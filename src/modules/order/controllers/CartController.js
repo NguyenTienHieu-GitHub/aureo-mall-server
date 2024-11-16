@@ -11,12 +11,21 @@ const getAllProductInCart = async (req, res) => {
       data: cartData,
     });
   } catch (error) {
-    return setResponseLocals({
-      res,
-      statusCode: 500,
-      errorCode: "INTERNAL_SERVER_ERROR",
-      errorMessage: error.message,
-    });
+    if (error.message.includes("Cart not found for the given user")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "CART_NOT_FOUND",
+        errorMessage: "Cart not found for the given user",
+      });
+    } else {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
+    }
   }
 };
 

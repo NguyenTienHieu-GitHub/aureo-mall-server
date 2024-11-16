@@ -5405,7 +5405,7 @@ module.exports = {
           },
         },
         404: {
-          description: "Product không tồn tại trong giỏ hàng",
+          description: "Thêm sản phẩm để tạo giỏ hàng",
           content: {
             "application/json": {
               schema: {
@@ -5429,8 +5429,8 @@ module.exports = {
   },
   "/api/cart/add-to-cart/{productId}": {
     post: {
-      summary: "Hiển thị tất cả đánh giá của sản phẩm",
-      description: "Hiển thị tât cả đánh giá sản phẩm",
+      summary: "Thêm sản phẩm vào giỏ hàng",
+      description: "Thêm sản phẩm vào giỏ hàng",
       tags: ["Cart"],
       operationId: "addProductToCart",
       security: [
@@ -5453,18 +5453,18 @@ module.exports = {
         content: {
           "application/json": {
             schema: {
-              $ref: "#/components/schemas/AddProductsToCartRequest",
+              $ref: "#/components/schemas/AddProductToCartRequest",
             },
           },
         },
       },
       responses: {
         200: {
-          description: "Hiển thị tất cả đánh giá của sản phẩm",
+          description: "Thêm sản phẩm vào giỏ hàng thành công",
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/GetAllRatingOfProductResponse",
+                $ref: "#/components/schemas/AddProductToCartResponse",
               },
             },
           },

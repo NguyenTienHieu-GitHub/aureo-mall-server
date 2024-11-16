@@ -177,7 +177,7 @@ CartItemOption.belongsTo(CartItem, {
   as: "CartItem",
 });
 
-Product.hasMany(ProductPrice, { foreignKey: "productId", as: "ProductPrice" });
+Product.hasOne(ProductPrice, { foreignKey: "productId", as: "ProductPrice" });
 ProductPrice.belongsTo(Product, { foreignKey: "productId", as: "Product" });
 
 Product.hasMany(Inventory, { foreignKey: "productId", as: "Inventory" });
