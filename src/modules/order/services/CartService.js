@@ -51,7 +51,7 @@ const getAllProductInCart = async (userId) => {
           include: [
             {
               model: CartItemOption,
-              attributes: ["optionQuantity", "optionName", "optionValue"],
+              attributes: ["id", "optionQuantity", "optionName", "optionValue"],
             },
             {
               model: Product,
@@ -97,6 +97,7 @@ const getAllProductInCart = async (userId) => {
               productPrice: item.Product?.ProductPrice?.finalPrice,
               totalPrice: item.totalPrice,
               options: (item.CartItemOptions || []).map((option) => ({
+                cartItemOptionId: option.id,
                 optionName: option.optionName || "Unknown",
                 optionValue: option.optionValue || "Unknown",
                 optionQuantity: option.optionQuantity || 0,
@@ -231,7 +232,68 @@ const addProductToCart = async ({
     throw new Error(error.message);
   }
 };
+const updateItemInCart = async ({
+  cartId,
+  productId,
+  cartItemOptionId,
+  quantity,
+  optionName,
+  optionValue,
+}) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const cartItemOption = await CartItemOption.findByPk(cartItemOptionId, {
+      transaction,
+    });
+    if (!cartItemOption) {
+      throw new Error("CartItemOption not found");
+    }
+    cartItemOption.optionQuantity = quantity;
+    cartItemOption.optionName = optionName;
+    cartItemOption.optionValue = optionValue;
+    await cartItemOption.save({ transaction });
+    const cartItem = await CartItem.findOne({
+      where: { cartId, productId },
+      transaction,
+    });
+    const cartOptions = await CartItemOption.findAll({
+      where: { cartItemId: cartItem.id },
+      transaction,
+    });
+
+    let optionQuantity = cartOptions.reduce(
+      (sum, item) => sum + item.optionQuantity,
+      0
+    );
+    cartItem.quantity = optionQuantity;
+
+    const priceProduct = await ProductPrice.findOne({
+      where: { productId },
+      transaction,
+    });
+    cartItem.totalPrice = cartItem.quantity * priceProduct.finalPrice;
+    await cartItem.save({ transaction });
+
+    const cartItems = await CartItem.findAll({
+      where: { cartId },
+      attributes: ["quantity", "totalPrice"],
+      transaction,
+    });
+    let totalPrice = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    let totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+    await Cart.update(
+      { totalQuantity, totalPrice },
+      { where: { id: cartId }, transaction }
+    );
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    throw new Error(error.message);
+  }
+};
 module.exports = {
   getAllProductInCart,
   addProductToCart,
+  updateItemInCart,
 };

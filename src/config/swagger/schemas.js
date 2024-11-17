@@ -2468,6 +2468,10 @@ module.exports = {
                       items: {
                         type: "object",
                         properties: {
+                          cartItemOptionId: {
+                            type: "integer",
+                            example: 1,
+                          },
                           optionName: {
                             type: "string",
                             example: "Size",
@@ -2490,7 +2494,7 @@ module.exports = {
           },
         },
       },
-      //[Cart] Add Products To Cart
+      //[Cart] Add And Update Products To Cart
       AddProductToCartRequest: {
         type: "object",
         properties: {
@@ -2508,7 +2512,28 @@ module.exports = {
           },
         },
       },
-      AddProductToCartResponse: {
+      UpdateCartItemOptionRequest: {
+        type: "object",
+        properties: {
+          cartItemOptionId: {
+            type: "integer",
+            example: 2,
+          },
+          quantity: {
+            type: "integer",
+            example: 2,
+          },
+          optionName: {
+            type: "string",
+            example: "Size",
+          },
+          optionValue: {
+            type: "string",
+            example: "S",
+          },
+        },
+      },
+      AddAndUpdateProductToCartResponse: {
         type: "object",
         properties: {
           statusCode: {
@@ -2538,6 +2563,28 @@ module.exports = {
               errorMessage: {
                 type: "string",
                 example: "Cart not found for the given user",
+              },
+            },
+          },
+        },
+      },
+      CartOptionNotFound: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 404,
+          },
+          error: {
+            type: "object",
+            properties: {
+              errorCode: {
+                type: "string",
+                example: "CART_OPTION_NOT_FOUND",
+              },
+              errorMessage: {
+                type: "string",
+                example: "CartItemOption not found",
               },
             },
           },

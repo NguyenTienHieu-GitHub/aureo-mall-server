@@ -1,5 +1,6 @@
 const CartService = require("../services/CartService");
 const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
+
 const getAllProductInCart = async (req, res) => {
   const userId = req.user.id;
   try {
@@ -55,7 +56,44 @@ const addProductToCart = async (req, res) => {
     });
   }
 };
+const updateItemInCart = async (req, res) => {
+  const { cartId, productId } = req.params;
+  const { cartItemOptionId, quantity, optionName, optionValue } = req.body;
+  try {
+    const cartData = await CartService.updateItemInCart({
+      cartId: cartId,
+      productId: productId,
+      cartItemOptionId,
+      quantity,
+      optionName,
+      optionValue,
+    });
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Updated cart item successfully",
+      data: cartData,
+    });
+  } catch (error) {
+    if (error.message.includes("CartItemOption not found")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "CART_OPTION_NOT_FOUND",
+        errorMessage: "CartItemOption not found",
+      });
+    } else {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
+    }
+  }
+};
 module.exports = {
   getAllProductInCart,
   addProductToCart,
+  updateItemInCart,
 };
