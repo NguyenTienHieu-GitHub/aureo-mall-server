@@ -2590,6 +2590,20 @@ module.exports = {
           },
         },
       },
+      //[Cart] Delete cart item option
+      DeleteCartOptionResponse: {
+        type: "object",
+        properties: {
+          statusCode: {
+            type: "integer",
+            example: 200,
+          },
+          messageSuccess: {
+            type: "string",
+            example: "Deleted cart item successfully",
+          },
+        },
+      },
       //=======================================================
       //Validation
       MissingFieldsValidate: {

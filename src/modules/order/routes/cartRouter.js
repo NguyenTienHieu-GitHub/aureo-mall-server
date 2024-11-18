@@ -11,8 +11,14 @@ const CartItemOption = require("../models/CartItemOptionModel");
 
 const models = [Cart, CartItem, CartItemOption];
 
-router.post(
-  "/:cartId/product/:productId",
+router.delete(
+  "/delete/product/:cartItemOptionId",
+  verifyToken,
+  validateRequest(models),
+  cartController.deleteItemInCart
+);
+router.put(
+  "/update/:cartId/product/:productId",
   verifyToken,
   validateRequest(models),
   cartController.updateItemInCart

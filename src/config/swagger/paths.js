@@ -5551,10 +5551,10 @@ module.exports = {
       },
     },
   },
-  "/api/cart/{cartId}/product/{productId}": {
-    post: {
-      summary: "Thêm sản phẩm vào giỏ hàng",
-      description: "Thêm sản phẩm vào giỏ hàng",
+  "/api/cart/update/{cartId}/product/{productId}": {
+    put: {
+      summary: "Cập nhật sản phẩm trong giỏ hàng",
+      description: "Cập nhật sản phẩm trong giỏ hàng",
       tags: ["Cart"],
       operationId: "updateProductInCart",
       security: [
@@ -5661,11 +5661,125 @@ module.exports = {
           },
         },
         404: {
-          description: "Không có đánh giá sản phẩm",
+          description: "Không tìm được sản phẩm cần xóa",
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/ProductNotRating",
+                $ref: "#/components/schemas/CartOptionNotFound",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorServerResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/cart/delete/product/{cartItemOptionId}": {
+    delete: {
+      summary: "Xóa sản phẩm trong giỏ hàng",
+      description: "Xóa sản phẩm trong giỏ hàng",
+      tags: ["Cart"],
+      operationId: "deleteProductInCart",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: "cartItemOptionId",
+          in: "path",
+          require: "true",
+          schema: {
+            $ref: "#/components/schemas/IdParams",
+          },
+        },
+      ],
+      responses: {
+        200: {
+          description: "Xóa sản phẩm trong giỏ hàng thành công",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/DeleteCartOptionResponse",
+              },
+            },
+          },
+        },
+        401: {
+          description: "Lỗi yêu cầu không hợp lệ",
+          content: {
+            "application/json": {
+              oneOf: [
+                {
+                  description: "Token đang nằm trong Black List",
+                  schema: {
+                    $ref: "#/components/schemas/TokenBlackListVerify",
+                  },
+                },
+                {
+                  description: "Token hết hạn",
+                  schema: {
+                    $ref: "#/components/schemas/TokenExpiredVerify",
+                  },
+                },
+                {
+                  description: "Token không hợp lệ",
+                  schema: {
+                    $ref: "#/components/schemas/TokenInvalidVerify",
+                  },
+                },
+              ],
+              examples: {
+                TokenBlackListVerify: {
+                  description: "Token đang nằm trong Black List",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_IN_BLACKLIST",
+                      errorMessage: "Token in the backlist",
+                    },
+                  },
+                },
+                TokenExpiredVerify: {
+                  description: "Token hết hạn",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_EXPIRED",
+                      errorMessage: "Token has expired",
+                    },
+                  },
+                },
+                TokenInvalidVerify: {
+                  description: "Token không hợp lệ",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_INVALID",
+                      errorMessage: "You are not authenticated",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: "Không tìm được sản phẩm cần xóa",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/CartOptionNotFound",
               },
             },
           },

@@ -1,5 +1,6 @@
 const CartService = require("../services/CartService");
 const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
+const CartItem = require("../models/CartItemModel");
 
 const getAllProductInCart = async (req, res) => {
   const userId = req.user.id;
@@ -92,8 +93,49 @@ const updateItemInCart = async (req, res) => {
     }
   }
 };
+const deleteItemInCart = async (req, res) => {
+  const { cartItemOptionId } = req.params;
+  try {
+    await CartService.deleteItemInCart(cartItemOptionId);
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Deleted cart item successfully",
+    });
+  } catch (error) {
+    if (error.message === "CartItemOption not found") {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "CART_ITEM_OPTION_NOT_FOUND",
+        errorMessage: "The cart item option does not exist",
+      });
+    } else if (error.message === "CartItem not found") {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "CART_ITEM_NOT_FOUND",
+        errorMessage: "The cart item does not exist",
+      });
+    } else if (error.message === "Product price not found") {
+      return setResponseLocals({
+        res,
+        statusCode: 400,
+        errorCode: "PRODUCT_PRICE_NOT_FOUND",
+        errorMessage: "The price for the product could not be found",
+      });
+    }
+    return setResponseLocals({
+      res,
+      statusCode: 500,
+      errorCode: "INTERNAL_SERVER_ERROR",
+      errorMessage: error.message,
+    });
+  }
+};
 module.exports = {
   getAllProductInCart,
   addProductToCart,
   updateItemInCart,
+  deleteItemInCart,
 };
