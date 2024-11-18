@@ -33,12 +33,11 @@ const getAllProductInCart = async (req, res) => {
 
 const addProductToCart = async (req, res) => {
   const userId = req.user.id;
-  const productId = req.params.productId;
-  const { quantity, optionName, optionValue } = req.body;
+  const { productId, quantity, optionName, optionValue } = req.body;
   try {
     await CartService.addProductToCart({
       userId: userId,
-      productId: productId,
+      productId,
       quantity,
       optionName,
       optionValue,
@@ -133,9 +132,28 @@ const deleteItemInCart = async (req, res) => {
     });
   }
 };
+const deleteAllSelected = async (req, res) => {
+  const { cartItemOptionIds } = req.body;
+  try {
+    await CartService.deleteAllSelected(cartItemOptionIds);
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Deleted item selected successfully",
+    });
+  } catch (error) {
+    return setResponseLocals({
+      res,
+      statusCode: 500,
+      errorCode: "INTERNAL_SERVER_ERROR",
+      errorMessage: error.message,
+    });
+  }
+};
 module.exports = {
   getAllProductInCart,
   addProductToCart,
   updateItemInCart,
   deleteItemInCart,
+  deleteAllSelected,
 };

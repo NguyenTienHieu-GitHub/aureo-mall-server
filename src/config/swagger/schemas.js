@@ -2498,6 +2498,10 @@ module.exports = {
       AddProductToCartRequest: {
         type: "object",
         properties: {
+          productId: {
+            type: "integer",
+            example: 1,
+          },
           quantity: {
             type: "integer",
             example: 2,
@@ -2601,6 +2605,15 @@ module.exports = {
           messageSuccess: {
             type: "string",
             example: "Deleted cart item successfully",
+          },
+        },
+      },
+      DeleteAllSelectedRequest: {
+        type: "object",
+        properties: {
+          cartItemOptionIds: {
+            type: "array",
+            example: [1, 2, 3],
           },
         },
       },

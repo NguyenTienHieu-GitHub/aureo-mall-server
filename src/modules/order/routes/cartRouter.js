@@ -12,23 +12,31 @@ const CartItemOption = require("../models/CartItemOptionModel");
 const models = [Cart, CartItem, CartItemOption];
 
 router.delete(
-  "/delete/product/:cartItemOptionId",
+  "/items",
+  verifyToken,
+  validateRequest(models),
+  cartController.deleteAllSelected
+);
+
+router.delete(
+  "/items/:cartItemOptionId",
   verifyToken,
   validateRequest(models),
   cartController.deleteItemInCart
 );
+
 router.put(
-  "/update/:cartId/product/:productId",
+  "/:cartId/items/:productId",
   verifyToken,
   validateRequest(models),
   cartController.updateItemInCart
 );
+
 router.post(
-  "/add-to-cart/:productId",
+  "/item",
   verifyToken,
   validateRequest(models),
   cartController.addProductToCart
 );
-
 router.get("/", verifyToken, cartController.getAllProductInCart);
 module.exports = router;

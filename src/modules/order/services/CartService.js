@@ -38,7 +38,25 @@ const updateCartTotalPrice = async ({ cart }) => {
   cartData.totalPrice = totalCartPrice;
   await cartData.save();
 };
+const updateCartTotal = async (cartId, transaction) => {
+  const cartItems = await CartItem.findAll({
+    where: { cartId },
+    attributes: ["quantity", "totalPrice"],
+    transaction,
+  });
 
+  let totalQuantity = 0;
+  let totalPrice = 0;
+
+  if (cartItems.length > 0) {
+    totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    totalPrice = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
+  }
+  await Cart.update(
+    { totalQuantity, totalPrice },
+    { where: { id: cartId }, transaction }
+  );
+};
 const getAllProductInCart = async (userId) => {
   try {
     await createCartIfNotExist({ userId });
@@ -275,18 +293,7 @@ const updateItemInCart = async ({
     cartItem.totalPrice = cartItem.quantity * priceProduct.finalPrice;
     await cartItem.save({ transaction });
 
-    const cartItems = await CartItem.findAll({
-      where: { cartId },
-      attributes: ["quantity", "totalPrice"],
-      transaction,
-    });
-    let totalPrice = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
-    let totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-
-    await Cart.update(
-      { totalQuantity, totalPrice },
-      { where: { id: cartId }, transaction }
-    );
+    await updateCartTotal(cartId, transaction);
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();
@@ -315,21 +322,7 @@ const deleteItemInCart = async (cartItemOptionId) => {
     const cartId = cartItem.cartId;
     if (cartItemOptions.length === 0) {
       await cartItem.destroy({ transaction });
-      const cartItems = await CartItem.findAll({
-        where: { cartId },
-        transaction,
-      });
-      let totalQuantity = 0;
-      let totalPrice = 0;
-
-      if (cartItems.length > 0) {
-        totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-        totalPrice = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
-      }
-      await Cart.update(
-        { totalQuantity, totalPrice },
-        { where: { id: cartId }, transaction }
-      );
+      await updateCartTotal(cartId, transaction);
     } else {
       const productId = cartItem.productId;
       let optionQuantity = cartItemOptions.reduce(
@@ -348,26 +341,75 @@ const deleteItemInCart = async (cartItemOptionId) => {
       cartItem.totalPrice = cartItem.quantity * priceProduct.finalPrice;
       await cartItem.save({ transaction });
 
-      const cartItems = await CartItem.findAll({
-        where: { cartId },
-        attributes: ["quantity", "totalPrice"],
-        transaction,
-      });
-      let totalPrice = cartItems.reduce(
-        (sum, item) => sum + item.totalPrice,
-        0
-      );
-      let totalQuantity = cartItems.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      );
-
-      await Cart.update(
-        { totalQuantity, totalPrice },
-        { where: { id: cartId }, transaction }
-      );
+      await updateCartTotal(cartId, transaction);
     }
 
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    throw new Error(error.message);
+  }
+};
+const deleteAllSelected = async (cartItemOptionIds) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const cartItemOptions = await CartItemOption.findAll({
+      where: {
+        id: cartItemOptionIds,
+      },
+      transaction,
+    });
+    if (cartItemOptions.length === 0) {
+      throw new Error("No CartItemOptions found");
+    }
+    const cartItemIdsToDelete = cartItemOptions.map((item) => item.cartItemId);
+    await CartItemOption.destroy({
+      where: {
+        id: cartItemOptionIds,
+      },
+      transaction,
+    });
+    const promises = cartItemIdsToDelete.map(async (cartItemId) => {
+      console.log(cartItemId);
+      const cartItemOptions = await CartItemOption.findAll({
+        where: { cartItemId },
+        transaction,
+      });
+      console.log(cartItemOptions);
+      const cartItem = await CartItem.findOne({
+        where: { id: cartItemId },
+        transaction,
+      });
+      if (!cartItem) {
+        throw new Error("CartItem not found");
+      }
+
+      const cartId = cartItem.cartId;
+
+      if (cartItemOptions.length === 0) {
+        await cartItem.destroy({ transaction });
+        await updateCartTotal(cartId, transaction);
+      } else {
+        const productId = cartItem.productId;
+        let optionQuantity = cartItemOptions.reduce(
+          (sum, item) => sum + item.optionQuantity,
+          0
+        );
+        cartItem.quantity = optionQuantity;
+
+        const priceProduct = await ProductPrice.findOne({
+          where: { productId },
+          transaction,
+        });
+        if (!priceProduct) {
+          throw new Error("Product price not found");
+        }
+        cartItem.totalPrice = cartItem.quantity * priceProduct.finalPrice;
+        await cartItem.save({ transaction });
+        await updateCartTotal(cartId, transaction);
+      }
+    });
+    await Promise.all(promises, { transaction });
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();
@@ -379,4 +421,5 @@ module.exports = {
   addProductToCart,
   updateItemInCart,
   deleteItemInCart,
+  deleteAllSelected,
 };

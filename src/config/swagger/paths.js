@@ -5427,7 +5427,7 @@ module.exports = {
       },
     },
   },
-  "/api/cart/add-to-cart/{productId}": {
+  "/api/cart/item": {
     post: {
       summary: "Thêm sản phẩm vào giỏ hàng",
       description: "Thêm sản phẩm vào giỏ hàng",
@@ -5436,16 +5436,6 @@ module.exports = {
       security: [
         {
           BearerAuth: [],
-        },
-      ],
-      parameters: [
-        {
-          name: "productId",
-          in: "path",
-          require: "true",
-          schema: {
-            $ref: "#/components/schemas/IdParams",
-          },
         },
       ],
       requestBody: {
@@ -5551,7 +5541,121 @@ module.exports = {
       },
     },
   },
-  "/api/cart/update/{cartId}/product/{productId}": {
+  "/api/cart/items": {
+    delete: {
+      summary: "Xóa nhiều sản phẩm trong giỏ hàng",
+      description: "Xóa nhiều sản phẩm trong giỏ hàng",
+      tags: ["Cart"],
+      operationId: "deleteAllSelected",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/DeleteAllSelectedRequest",
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Xóa nhiều sản phẩm trong giỏ hàng thành công",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/DeleteCartOptionResponse",
+              },
+            },
+          },
+        },
+        401: {
+          description: "Lỗi yêu cầu không hợp lệ",
+          content: {
+            "application/json": {
+              oneOf: [
+                {
+                  description: "Token đang nằm trong Black List",
+                  schema: {
+                    $ref: "#/components/schemas/TokenBlackListVerify",
+                  },
+                },
+                {
+                  description: "Token hết hạn",
+                  schema: {
+                    $ref: "#/components/schemas/TokenExpiredVerify",
+                  },
+                },
+                {
+                  description: "Token không hợp lệ",
+                  schema: {
+                    $ref: "#/components/schemas/TokenInvalidVerify",
+                  },
+                },
+              ],
+              examples: {
+                TokenBlackListVerify: {
+                  description: "Token đang nằm trong Black List",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_IN_BLACKLIST",
+                      errorMessage: "Token in the backlist",
+                    },
+                  },
+                },
+                TokenExpiredVerify: {
+                  description: "Token hết hạn",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_EXPIRED",
+                      errorMessage: "Token has expired",
+                    },
+                  },
+                },
+                TokenInvalidVerify: {
+                  description: "Token không hợp lệ",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_INVALID",
+                      errorMessage: "You are not authenticated",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: "Không tìm được sản phẩm cần xóa",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/CartOptionNotFound",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorServerResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/cart/{cartId}/items/{productId}": {
     put: {
       summary: "Cập nhật sản phẩm trong giỏ hàng",
       description: "Cập nhật sản phẩm trong giỏ hàng",
@@ -5683,7 +5787,7 @@ module.exports = {
       },
     },
   },
-  "/api/cart/delete/product/{cartItemOptionId}": {
+  "/api/cart/items/{cartItemOptionId}": {
     delete: {
       summary: "Xóa sản phẩm trong giỏ hàng",
       description: "Xóa sản phẩm trong giỏ hàng",
