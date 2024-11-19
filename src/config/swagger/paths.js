@@ -4863,7 +4863,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/CreateOrUpdateCategoryResponse",
+                $ref: "#/components/schemas/UpdateProductBySlugResponse",
               },
             },
           },
@@ -4938,11 +4938,11 @@ module.exports = {
           },
         },
         404: {
-          description: "Danh mục không tồn tại",
+          description: "Không tìm thấy sản phẩm",
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/CategoryNotFound",
+                $ref: "#/components/schemas/ProductNotFound",
               },
             },
           },

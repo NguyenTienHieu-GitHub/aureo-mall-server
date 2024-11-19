@@ -185,7 +185,7 @@ const updateProduct = async (req, res) => {
     return setResponseLocals({
       res,
       statusCode: 200,
-      messageSuccess: "Product created successfully",
+      messageSuccess: "Product updated successfully",
       data: productData,
     });
   } catch (error) {

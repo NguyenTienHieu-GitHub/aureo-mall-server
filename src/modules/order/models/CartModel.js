@@ -19,16 +19,6 @@ const Cart = sequelize.define(
         key: "id",
       },
     },
-    totalQuantity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    totalPrice: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
   },
   {
     tableName: "Carts",

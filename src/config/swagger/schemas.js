@@ -1690,123 +1690,125 @@ module.exports = {
             },
             message: {
               type: "string",
-              example: "Product created successfully",
+              example: "Show all products",
             },
             data: {
-              type: "object",
-              properties: {
-                sku: {
-                  type: "string",
-                  example: "ABC-241115-4247",
-                },
-                productId: {
-                  type: "integer",
-                  example: 1,
-                },
-                shopName: {
-                  type: "string",
-                  example: "Shop Của Hiệuu",
-                },
-                productName: {
-                  type: "string",
-                  example: "Áo thun 100%",
-                },
-                averageRating: {
-                  type: "string",
-                  example: "5.0",
-                },
-                originalPrice: {
-                  type: "integer",
-                  example: 100000,
-                },
-                discountPrice: {
-                  type: "integer",
-                  nullable: true,
-                  example: null,
-                },
-                discountType: {
-                  type: "string",
-                  example: "percent",
-                },
-                discountStartDate: {
-                  type: "string",
-                  example: "00:00:00 12/11/2024",
-                },
-                discountEndDate: {
-                  type: "string",
-                  example: "00:00:00 19/11/2024",
-                },
-                finalPrice: {
-                  type: "integer",
-                  example: 100000,
-                },
-                description: {
-                  type: "string",
-                  example: "Text",
-                },
-                categoryList: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      id: {
-                        type: "integer",
-                        example: 1,
-                      },
-                      categoryName: {
-                        type: "string",
-                        example: "Thời trang nữ",
-                      },
-                    },
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  sku: {
+                    type: "string",
+                    example: "AOT-241116-4089",
                   },
-                },
-                mediaList: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      mediaUrl: {
-                        type: "string",
-                        example:
-                          "https://res.cloudinary.com/dfkadlnoh/image/upload/v1731434761/f46ut5dkyq7a1iai5wot.jpg",
-                      },
-                      isFeatured: {
-                        type: "boolean",
-                        example: true,
-                      },
-                    },
+                  productId: {
+                    type: "integer",
+                    example: 1,
                   },
-                },
-                optionList: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      optionName: {
-                        type: "string",
-                        example: "Color",
-                      },
-                      optionValues: {
-                        type: "array",
-                        items: {
+                  averageRating: {
+                    type: "string",
+                    example: "0.0",
+                  },
+                  shopName: {
+                    type: "string",
+                    example: "Shop Của Hiệuu",
+                  },
+                  productName: {
+                    type: "string",
+                    example: "Áo thun 100% cotton",
+                  },
+                  originalPrice: {
+                    type: "integer",
+                    example: 808080,
+                  },
+                  discountPrice: {
+                    type: "integer",
+                    example: 10,
+                  },
+                  discountType: {
+                    type: "string",
+                    example: "percent",
+                  },
+                  discountStartDate: {
+                    type: "string",
+                    example: "00:00:00 01/01/2024",
+                  },
+                  discountEndDate: {
+                    type: "string",
+                    example: "01:00:00 30/12/2025",
+                  },
+                  finalPrice: {
+                    type: "integer",
+                    example: 727272,
+                  },
+                  description: {
+                    type: "string",
+                    example: "Text",
+                  },
+                  categoryList: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        id: {
+                          type: "integer",
+                          example: 1,
+                        },
+                        categoryName: {
                           type: "string",
-                          example: "Red",
+                          example: "Thời trang nữ",
                         },
                       },
                     },
                   },
-                },
-                slug: {
-                  type: "string",
-                  example: "ao-thun-100percent",
-                },
-                createdAt: {
-                  type: "string",
-                  example: "18:05:59 12/11/2024",
-                },
-                updatedAt: {
-                  type: "string",
-                  example: "18:05:59 12/11/2024",
+                  mediaList: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        mediaUrl: {
+                          type: "string",
+                          example:
+                            "https://res.cloudinary.com/dfkadlnoh/image/upload/v1732033952/products/products-vay-ngan-1732033925584-973529378.jpg",
+                        },
+                        isFeatured: {
+                          type: "boolean",
+                          example: true,
+                        },
+                      },
+                    },
+                  },
+                  optionList: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        optionName: {
+                          type: "string",
+                          example: "Size",
+                        },
+                        optionValues: {
+                          type: "array",
+                          items: {
+                            type: "string",
+                            example: "L",
+                          },
+                        },
+                      },
+                    },
+                  },
+                  slug: {
+                    type: "string",
+                    example: "ao-thun-100percent-cotton-1",
+                  },
+                  createdAt: {
+                    type: "string",
+                    example: "02:17:16 16/11/2024",
+                  },
+                  updatedAt: {
+                    type: "string",
+                    example: "02:17:16 16/11/2024",
+                  },
                 },
               },
             },
@@ -2254,6 +2256,138 @@ module.exports = {
           },
         },
       },
+      //[Product] Update Product By Slug
+      UpdateProductBySlugResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Product updated successfully",
+          },
+          data: {
+            type: "object",
+            properties: {
+              sku: {
+                type: "string",
+                example: "ABC-241115-4247",
+              },
+              productId: {
+                type: "integer",
+                example: 1,
+              },
+              shopName: {
+                type: "string",
+                example: "Shop Của Hiệuu",
+              },
+              productName: {
+                type: "string",
+                example: "Áo thun 100%",
+              },
+              averageRating: {
+                type: "string",
+                example: "5.0",
+              },
+              originalPrice: {
+                type: "integer",
+                example: 100000,
+              },
+              discountPrice: {
+                type: "integer",
+                nullable: true,
+                example: null,
+              },
+              discountType: {
+                type: "string",
+                example: "percent",
+              },
+              discountStartDate: {
+                type: "string",
+                example: "00:00:00 12/11/2024",
+              },
+              discountEndDate: {
+                type: "string",
+                example: "00:00:00 19/11/2024",
+              },
+              finalPrice: {
+                type: "integer",
+                example: 100000,
+              },
+              description: {
+                type: "string",
+                example: "Text",
+              },
+              categoryList: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "integer",
+                      example: 1,
+                    },
+                    categoryName: {
+                      type: "string",
+                      example: "Thời trang nữ",
+                    },
+                  },
+                },
+              },
+              mediaList: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    mediaUrl: {
+                      type: "string",
+                      example:
+                        "https://res.cloudinary.com/dfkadlnoh/image/upload/v1731434761/f46ut5dkyq7a1iai5wot.jpg",
+                    },
+                    isFeatured: {
+                      type: "boolean",
+                      example: true,
+                    },
+                  },
+                },
+              },
+              optionList: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    optionName: {
+                      type: "string",
+                      example: "Color",
+                    },
+                    optionValues: {
+                      type: "array",
+                      items: {
+                        type: "string",
+                        example: "Red",
+                      },
+                    },
+                  },
+                },
+              },
+              slug: {
+                type: "string",
+                example: "ao-thun-100percent",
+              },
+              createdAt: {
+                type: "string",
+                example: "18:05:59 12/11/2024",
+              },
+              updatedAt: {
+                type: "string",
+                example: "18:05:59 12/11/2024",
+              },
+            },
+          },
+        },
+      },
       //[Product] Create Rating
       CreateRatingRequest: {
         type: "object",
@@ -2426,63 +2560,75 @@ module.exports = {
                 type: "string",
                 example: "e5536e07-0c5d-4ba9-8547-925ff2b162e8",
               },
-              totalQuantity: {
-                type: "integer",
-                example: 3,
-              },
-              totalPrice: {
-                type: "integer",
-                example: 270000,
-              },
-              items: {
+              shops: {
                 type: "array",
                 items: {
                   type: "object",
                   properties: {
-                    productId: {
+                    shopId: {
                       type: "integer",
                       example: 1,
                     },
-                    productName: {
+                    shopName: {
                       type: "string",
-                      example: "Áo thun 100% cotton",
+                      example: "Shop Của Hiệuu",
                     },
-                    sku: {
-                      type: "string",
-                      example: "AOT-241116-4089",
-                    },
-                    totalQuantity: {
-                      type: "integer",
-                      example: 2,
-                    },
-                    productPrice: {
-                      type: "integer",
-                      example: 90000,
-                    },
-                    totalPrice: {
-                      type: "integer",
-                      example: 180000,
-                    },
-                    options: {
+                    products: {
                       type: "array",
                       items: {
                         type: "object",
                         properties: {
-                          cartItemOptionId: {
+                          cartItemId: {
                             type: "integer",
-                            example: 1,
+                            example: 2,
                           },
-                          optionName: {
-                            type: "string",
-                            example: "Size",
-                          },
-                          optionValue: {
-                            type: "string",
-                            example: "L",
-                          },
-                          optionQuantity: {
+                          productId: {
                             type: "integer",
-                            example: 1,
+                            example: 2,
+                          },
+                          productName: {
+                            type: "string",
+                            example: "Áo thun 100% cotton",
+                          },
+                          options: {
+                            type: "array",
+                            items: {
+                              type: "object",
+                              properties: {
+                                cartItemOptionId: {
+                                  type: "integer",
+                                  example: 3,
+                                },
+                                optionName: {
+                                  type: "string",
+                                  example: "Size",
+                                },
+                                optionValue: {
+                                  type: "string",
+                                  example: "L",
+                                },
+                                optionQuantity: {
+                                  type: "integer",
+                                  example: 2,
+                                },
+                              },
+                            },
+                          },
+                          originalPrice: {
+                            type: "integer",
+                            example: 45000,
+                          },
+                          productPrice: {
+                            type: "integer",
+                            example: 45000,
+                          },
+                          totalQuantity: {
+                            type: "integer",
+                            example: 4,
+                          },
+                          totalPrice: {
+                            type: "integer",
+                            example: 180000,
                           },
                         },
                       },

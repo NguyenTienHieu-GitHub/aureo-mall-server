@@ -1,6 +1,5 @@
 const CartService = require("../services/CartService");
 const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
-const CartItem = require("../models/CartItemModel");
 
 const getAllProductInCart = async (req, res) => {
   const userId = req.user.id;
