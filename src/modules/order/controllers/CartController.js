@@ -56,13 +56,12 @@ const addProductToCart = async (req, res) => {
   }
 };
 const updateItemInCart = async (req, res) => {
-  const { cartId, productId } = req.params;
-  const { cartItemOptionId, quantity, optionName, optionValue } = req.body;
+  const { cartItemId } = req.params;
+  const { productId, quantity, optionName, optionValue } = req.body;
   try {
     const cartData = await CartService.updateItemInCart({
-      cartId: cartId,
-      productId: productId,
-      cartItemOptionId,
+      cartItemId,
+      productId,
       quantity,
       optionName,
       optionValue,
@@ -92,9 +91,9 @@ const updateItemInCart = async (req, res) => {
   }
 };
 const deleteItemInCart = async (req, res) => {
-  const { cartItemOptionId } = req.params;
+  const { cartItemId } = req.params;
   try {
-    await CartService.deleteItemInCart(cartItemOptionId);
+    await CartService.deleteItemInCart({ cartItemId });
     return setResponseLocals({
       res,
       statusCode: 200,
@@ -132,9 +131,9 @@ const deleteItemInCart = async (req, res) => {
   }
 };
 const deleteAllSelected = async (req, res) => {
-  const { cartItemOptionIds } = req.body;
+  const { cartItemIds } = req.body;
   try {
-    await CartService.deleteAllSelected(cartItemOptionIds);
+    await CartService.deleteAllSelected(cartItemIds);
     return setResponseLocals({
       res,
       statusCode: 200,

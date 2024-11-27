@@ -2558,6 +2558,7 @@ module.exports = {
               },
               userId: {
                 type: "string",
+                format: "uuid",
                 example: "e5536e07-0c5d-4ba9-8547-925ff2b162e8",
               },
               shops: {
@@ -2580,51 +2581,35 @@ module.exports = {
                         properties: {
                           cartItemId: {
                             type: "integer",
-                            example: 2,
+                            example: 1,
                           },
                           productId: {
                             type: "integer",
-                            example: 2,
+                            example: 1,
                           },
                           productName: {
                             type: "string",
                             example: "Áo thun 100% cotton",
                           },
-                          options: {
-                            type: "array",
-                            items: {
-                              type: "object",
-                              properties: {
-                                cartItemOptionId: {
-                                  type: "integer",
-                                  example: 3,
-                                },
-                                optionName: {
-                                  type: "string",
-                                  example: "Size",
-                                },
-                                optionValue: {
-                                  type: "string",
-                                  example: "L",
-                                },
-                                optionQuantity: {
-                                  type: "integer",
-                                  example: 2,
-                                },
-                              },
-                            },
+                          optionName: {
+                            type: "string",
+                            example: "Color",
+                          },
+                          optionValue: {
+                            type: "string",
+                            example: "Red",
                           },
                           originalPrice: {
                             type: "integer",
-                            example: 45000,
+                            example: 100000,
                           },
-                          productPrice: {
+                          finalPrice: {
                             type: "integer",
-                            example: 45000,
+                            example: 90000,
                           },
-                          totalQuantity: {
+                          quantity: {
                             type: "integer",
-                            example: 4,
+                            example: 2,
                           },
                           totalPrice: {
                             type: "integer",
@@ -2647,27 +2632,6 @@ module.exports = {
           productId: {
             type: "integer",
             example: 1,
-          },
-          quantity: {
-            type: "integer",
-            example: 2,
-          },
-          optionName: {
-            type: "string",
-            example: "Size",
-          },
-          optionValue: {
-            type: "string",
-            example: "S",
-          },
-        },
-      },
-      UpdateCartItemOptionRequest: {
-        type: "object",
-        properties: {
-          cartItemOptionId: {
-            type: "integer",
-            example: 2,
           },
           quantity: {
             type: "integer",
@@ -2740,7 +2704,28 @@ module.exports = {
           },
         },
       },
-      //[Cart] Delete cart item option
+      UpdateCartItemRequest: {
+        type: "object",
+        properties: {
+          productId: {
+            type: "integer",
+            example: 1,
+          },
+          quantity: {
+            type: "integer",
+            example: 2,
+          },
+          optionName: {
+            type: "string",
+            example: "Size",
+          },
+          optionValue: {
+            type: "string",
+            example: "S",
+          },
+        },
+      },
+      //[Cart] Delete cart item
       DeleteCartOptionResponse: {
         type: "object",
         properties: {
@@ -2757,7 +2742,7 @@ module.exports = {
       DeleteAllSelectedRequest: {
         type: "object",
         properties: {
-          cartItemOptionIds: {
+          cartItemIds: {
             type: "array",
             example: [1, 2, 3],
           },

@@ -26,6 +26,14 @@ const CartItem = sequelize.define(
         key: "id",
       },
     },
+    optionName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    optionValue: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     quantity: {
       type: DataTypes.INTEGER,
       allowNull: false,

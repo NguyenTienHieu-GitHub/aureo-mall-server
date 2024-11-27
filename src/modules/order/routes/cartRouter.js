@@ -7,9 +7,7 @@ const validateRequest = require("../../../shared/middleware/validateRequest");
 
 const Cart = require("../models/CartModel");
 const CartItem = require("../models/CartItemModel");
-const CartItemOption = require("../models/CartItemOptionModel");
-
-const models = [Cart, CartItem, CartItemOption];
+const models = [Cart, CartItem];
 
 router.delete(
   "/items",
@@ -19,14 +17,14 @@ router.delete(
 );
 
 router.delete(
-  "/items/:cartItemOptionId",
+  "/items/:cartItemId",
   verifyToken,
   validateRequest(models),
   cartController.deleteItemInCart
 );
 
 router.put(
-  "/:cartId/items/:productId",
+  "/items/:cartItemId",
   verifyToken,
   validateRequest(models),
   cartController.updateItemInCart

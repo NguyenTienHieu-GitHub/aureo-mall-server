@@ -5655,12 +5655,12 @@ module.exports = {
       },
     },
   },
-  "/api/cart/{cartId}/items/{productId}": {
-    put: {
-      summary: "Cập nhật sản phẩm trong giỏ hàng",
-      description: "Cập nhật sản phẩm trong giỏ hàng",
+  "/api/cart/items/{cartItemId}": {
+    delete: {
+      summary: "Xóa sản phẩm trong giỏ hàng",
+      description: "Xóa sản phẩm trong giỏ hàng",
       tags: ["Cart"],
-      operationId: "updateProductInCart",
+      operationId: "deleteProductInCart",
       security: [
         {
           BearerAuth: [],
@@ -5668,15 +5668,7 @@ module.exports = {
       ],
       parameters: [
         {
-          name: "cartId",
-          in: "path",
-          require: "true",
-          schema: {
-            $ref: "#/components/schemas/IdParams",
-          },
-        },
-        {
-          name: "productId",
+          name: "cartItemId",
           in: "path",
           require: "true",
           schema: {
@@ -5684,23 +5676,13 @@ module.exports = {
           },
         },
       ],
-      requestBody: {
-        required: true,
-        content: {
-          "application/json": {
-            schema: {
-              $ref: "#/components/schemas/UpdateCartItemOptionRequest",
-            },
-          },
-        },
-      },
       responses: {
         200: {
-          description: "Cập nhật sản phẩm trong giỏ hàng thành công",
+          description: "Xóa sản phẩm trong giỏ hàng thành công",
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/AddAndUpdateProductToCartResponse",
+                $ref: "#/components/schemas/DeleteCartOptionResponse",
               },
             },
           },
@@ -5786,13 +5768,11 @@ module.exports = {
         },
       },
     },
-  },
-  "/api/cart/items/{cartItemOptionId}": {
-    delete: {
-      summary: "Xóa sản phẩm trong giỏ hàng",
-      description: "Xóa sản phẩm trong giỏ hàng",
+    put: {
+      summary: "Cập nhật sản phẩm trong giỏ hàng",
+      description: "Cập nhật sản phẩm trong giỏ hàng",
       tags: ["Cart"],
-      operationId: "deleteProductInCart",
+      operationId: "updateProductInCart",
       security: [
         {
           BearerAuth: [],
@@ -5800,7 +5780,7 @@ module.exports = {
       ],
       parameters: [
         {
-          name: "cartItemOptionId",
+          name: "cartItemId",
           in: "path",
           require: "true",
           schema: {
@@ -5808,13 +5788,23 @@ module.exports = {
           },
         },
       ],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/UpdateCartItemRequest",
+            },
+          },
+        },
+      },
       responses: {
         200: {
-          description: "Xóa sản phẩm trong giỏ hàng thành công",
+          description: "Cập nhật sản phẩm trong giỏ hàng thành công",
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/DeleteCartOptionResponse",
+                $ref: "#/components/schemas/AddAndUpdateProductToCartResponse",
               },
             },
           },

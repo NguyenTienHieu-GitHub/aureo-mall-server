@@ -34,7 +34,6 @@ const {
 
 const Cart = require("../order/models/CartModel");
 const CartItem = require("../order/models/CartItemModel");
-const CartItemOption = require("../order/models/CartItemOptionModel");
 
 const {
   Address,
@@ -168,14 +167,6 @@ CartItem.belongsTo(Cart, { foreignKey: "cartId", as: "Cart" });
 
 Product.hasMany(CartItem, { foreignKey: "productId" });
 CartItem.belongsTo(Product, { foreignKey: "productId", as: "Product" });
-
-CartItem.hasMany(CartItemOption, {
-  foreignKey: "cartItemId",
-});
-CartItemOption.belongsTo(CartItem, {
-  foreignKey: "cartItemId",
-  as: "CartItem",
-});
 
 Product.hasOne(ProductPrice, { foreignKey: "productId", as: "ProductPrice" });
 ProductPrice.belongsTo(Product, { foreignKey: "productId", as: "Product" });
