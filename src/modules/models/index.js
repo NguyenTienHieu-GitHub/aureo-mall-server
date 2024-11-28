@@ -32,8 +32,13 @@ const {
   ProductRatingMedia,
 } = require("../product/models/ProductRatingModel");
 
-const Cart = require("../order/models/CartModel");
-const CartItem = require("../order/models/CartItemModel");
+const Cart = require("../cart/models/CartModel");
+const CartItem = require("../cart/models/CartItemModel");
+
+const Order = require("../order/models/OrderModel");
+const OrderDetail = require("../order/models/OrderDetailModel");
+const Payment = require("../checkout/models/PaymentModel");
+const Shipping = require("../shipping/models/ShippingModel");
 
 const {
   Address,
@@ -188,6 +193,33 @@ ProductOptionValue.belongsTo(ProductOption, {
 
 Warehouse.hasMany(Inventory, { foreignKey: "warehouseId" });
 Inventory.belongsTo(Warehouse, { foreignKey: "warehouseId", as: "Warehouse" });
+
+Order.hasOne(Payment, { foreignKey: "orderId" });
+Payment.belongsTo(Order, { foreignKey: "orderId" });
+
+Order.hasOne(Shipping, { foreignKey: "orderId" });
+Shipping.belongsTo(Order, { foreignKey: "orderId" });
+
+Address.hasMany(Order, { foreignKey: "addressId" });
+Order.belongsTo(Address, { foreignKey: "addressId" });
+
+User.hasMany(Order, { foreignKey: "userId" });
+Order.belongsTo(User, { foreignKey: "userId" });
+
+Shop.hasMany(Order, { foreignKey: "shopId" });
+Order.belongsTo(Shop, { foreignKey: "shopId" });
+
+Product.hasMany(OrderDetail, { foreignKey: "productId" });
+OrderDetail.belongsTo(Product, { foreignKey: "productId" });
+
+Order.hasMany(OrderDetail, { foreignKey: "orderId" });
+OrderDetail.belongsTo(Order, { foreignKey: "orderId" });
+
+User.hasMany(Payment, { foreignKey: "userId" });
+Payment.belongsTo(User, { foreignKey: "userId" });
+
+User.hasMany(Shipping, { foreignKey: "userId" });
+Shipping.belongsTo(User, { foreignKey: "userId" });
 
 const syncModels = async () => {
   const transaction = await sequelize.transaction();

@@ -5,25 +5,6 @@ const Shop = require("../../product/models/ShopModel");
 const ProductPrice = require("../../product/models/ProductPriceModel");
 const sequelize = require("../../../config/db/index");
 
-const updateCartTotal = async (cartId, transaction) => {
-  const cartItems = await CartItem.findAll({
-    where: { cartId },
-    attributes: ["quantity", "totalPrice"],
-    transaction,
-  });
-
-  let totalQuantity = 0;
-  let totalPrice = 0;
-
-  if (cartItems.length > 0) {
-    totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-    totalPrice = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
-  }
-  await Cart.update(
-    { totalQuantity, totalPrice },
-    { where: { id: cartId }, transaction }
-  );
-};
 const getAllProductInCart = async (userId) => {
   try {
     await createCartIfNotExist({ userId });
@@ -117,7 +98,80 @@ const getAllProductInCart = async (userId) => {
     throw new Error(error.message);
   }
 };
+const getAllSelected = async (cartItemIds) => {
+  try {
+    const cartItems = await CartItem.findAll({
+      where: { id: cartItemIds },
+      include: [
+        {
+          model: Product,
+          as: "Product",
+          attributes: ["id", "productName", "sku"],
+          include: [
+            {
+              model: ProductPrice,
+              as: "ProductPrice",
+              attributes: [
+                "originalPrice",
+                "discountPrice",
+                "discountType",
+                "discountStartDate",
+                "discountEndDate",
+                "finalPrice",
+              ],
+            },
+            {
+              model: Shop,
+              as: "Shop",
+              attributes: ["id", "shopName"],
+            },
+          ],
+        },
+      ],
+    });
+    if (cartItems.length === 0) {
+      throw new Error("No cart items found for the provided IDs.");
+    }
+    const groupedItemsByShop = cartItems.reduce((result, item) => {
+      const shopId = item.Product.Shop?.id || "Unknown";
+      const shopName = item.Product.Shop?.shopName || "Unknown";
 
+      if (!result[shopId]) {
+        result[shopId] = {
+          shopId,
+          shopName,
+          products: [],
+          totalQuantity: 0,
+          totalPrice: 0,
+        };
+      }
+      result[shopId].totalPrice += item.totalPrice;
+      result[shopId].totalQuantity += item.quantity;
+      result[shopId].products.push({
+        cartItemId: item.id,
+        productId: item.Product?.id || null,
+        productName: item.Product?.productName,
+        optionName: item.optionName,
+        optionValue: item.optionValue,
+        originalPrice: item.Product?.ProductPrice?.originalPrice,
+        finalPrice:
+          item.Product?.ProductPrice?.originalPrice ===
+          item.Product?.ProductPrice?.finalPrice
+            ? null
+            : item.Product?.ProductPrice?.finalPrice,
+        quantity: item.quantity,
+        totalPrice: item.totalPrice,
+      });
+
+      return result;
+    }, {});
+    const response = Object.values(groupedItemsByShop);
+
+    return response;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 const createCartIfNotExist = async ({ userId }) => {
   try {
     const cart = await Cart.findOne({
@@ -241,6 +295,7 @@ const deleteAllSelected = async (cartItemIds) => {
 };
 module.exports = {
   getAllProductInCart,
+  getAllSelected,
   addProductToCart,
   updateItemInCart,
   deleteItemInCart,

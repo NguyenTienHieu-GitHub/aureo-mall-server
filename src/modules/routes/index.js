@@ -6,7 +6,7 @@ const permissionRoutes = require("../user/routes/permissionRouter");
 const productRoutes = require("../product/routes/productRouter");
 const shopRoutes = require("../product/routes/shopRouter");
 const categoryRoutes = require("../product/routes/categoryRouter");
-const cartRoutes = require("../order/routes/cartRouter");
+const cartRoutes = require("../cart/routes/cartRouter");
 function routes(app) {
   app.use("/api/auth", authRoutes);
   app.use("/api/users", userRoutes);

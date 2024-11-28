@@ -20,10 +20,12 @@
   "homepage": "https://github.com/NguyenTienHieu-GitHub/aureo-mall-server#readme",
   "dependencies": {
     "aureo-mall-server": "file:",
+    "axios": "^1.7.8",
     "bcrypt": "^5.1.1",
     "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "db-migrate-pg": "^1.5.2",
     "express": "^4.19.2",
     "fs": "^0.0.1-security",
