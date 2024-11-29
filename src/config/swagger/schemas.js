@@ -2748,6 +2748,68 @@ module.exports = {
           },
         },
       },
+
+      //[Order] Create order
+      CreateOrderRequest: {
+        type: "object",
+        properties: {
+          addressId: {
+            type: "string",
+            example: "047d799c-913b-4dfb-b235-a85332f39f8f",
+          },
+          note: {
+            type: "string",
+            example: "Giao sau 16h",
+          },
+          items: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                shopId: {
+                  type: "integer",
+                  example: 1,
+                },
+                productId: {
+                  type: "integer",
+                  example: 1,
+                },
+                optionName: {
+                  type: "string",
+                  example: "Size",
+                },
+                optionValue: {
+                  type: "string",
+                  example: "L",
+                },
+                quantity: {
+                  type: "integer",
+                  example: 1,
+                },
+                unitPrice: {
+                  type: "integer",
+                  example: 90000,
+                },
+              },
+              required: ["shopId", "productId", "quantity", "unitPrice"],
+            },
+          },
+        },
+        required: ["addressId", "note", "items"],
+      },
+      CreateOrderResponse: {
+        type: "object",
+        properties: {
+          statusCode: {
+            type: "integer",
+            example: 200,
+          },
+          messageSuccess: {
+            type: "string",
+            example: "Order created successfully",
+          },
+        },
+      },
       //=======================================================
       //Validation
       MissingFieldsValidate: {

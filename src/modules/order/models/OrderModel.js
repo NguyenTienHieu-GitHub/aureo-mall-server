@@ -44,10 +44,6 @@ const Order = sequelize.define(
       type: DataTypes.ENUM("Pending", "Confirmed", "Completed", "Cancelled"),
       allowNull: false,
     },
-    shippingId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     note: {
       type: DataTypes.TEXT,
       allowNull: true,
