@@ -28,7 +28,7 @@ const Payment = sequelize.define(
       },
     },
     paymentMethod: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM("MoMo", "Visa", "MasterCard", "COD"),
       allowNull: false,
     },
     status: {

@@ -41,6 +41,7 @@
     "validator": "^13.12.0"
   },
   "devDependencies": {
+    "@ngrok/ngrok": "^1.4.1",
     "mocha": "^10.7.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"

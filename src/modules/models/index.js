@@ -37,7 +37,7 @@ const CartItem = require("../cart/models/CartItemModel");
 
 const Order = require("../order/models/OrderModel");
 const OrderDetail = require("../order/models/OrderDetailModel");
-const Payment = require("../checkout/models/PaymentModel");
+const Payment = require("../checkout/models/paymentModel");
 const Shipping = require("../shipping/models/ShippingModel");
 
 const {

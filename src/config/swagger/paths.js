@@ -6108,4 +6108,116 @@ module.exports = {
       },
     },
   },
+
+  "/api/checkout/create": {
+    post: {
+      summary: "Thanh toán",
+      description: "Thanh toán",
+      tags: ["Checkout"],
+      operationId: "createPayment",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/CreateCheckoutRequest",
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Tạo hóa đơn thanh toán thành công",
+          content: {
+            "application/json": {
+              schema: {
+                oneOf: [
+                  {
+                    $ref: "#/components/schemas/CreateCheckoutResponse",
+                  },
+                  {
+                    $ref: "#/components/schemas/CreateCheckoutDataNullResponse",
+                  },
+                ],
+              },
+            },
+          },
+        },
+        401: {
+          description: "Lỗi yêu cầu không hợp lệ",
+          content: {
+            "application/json": {
+              oneOf: [
+                {
+                  description: "Token đang nằm trong Black List",
+                  schema: {
+                    $ref: "#/components/schemas/TokenBlackListVerify",
+                  },
+                },
+                {
+                  description: "Token hết hạn",
+                  schema: {
+                    $ref: "#/components/schemas/TokenExpiredVerify",
+                  },
+                },
+                {
+                  description: "Token không hợp lệ",
+                  schema: {
+                    $ref: "#/components/schemas/TokenInvalidVerify",
+                  },
+                },
+              ],
+              examples: {
+                TokenBlackListVerify: {
+                  description: "Token đang nằm trong Black List",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_IN_BLACKLIST",
+                      errorMessage: "Token in the backlist",
+                    },
+                  },
+                },
+                TokenExpiredVerify: {
+                  description: "Token hết hạn",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_EXPIRED",
+                      errorMessage: "Token has expired",
+                    },
+                  },
+                },
+                TokenInvalidVerify: {
+                  description: "Token không hợp lệ",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_INVALID",
+                      errorMessage: "You are not authenticated",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorServerResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 };

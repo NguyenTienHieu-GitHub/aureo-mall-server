@@ -36,12 +36,24 @@ const Order = sequelize.define(
         key: "id",
       },
     },
+    totalQuantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     totalPrice: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM("Pending", "Confirmed", "Completed", "Cancelled"),
+      type: DataTypes.ENUM(
+        "Pending",
+        "Paid",
+        "Shop Confirmed",
+        "Completed",
+        "Failed",
+        "Refunded",
+        "Expired"
+      ),
       allowNull: false,
     },
     note: {

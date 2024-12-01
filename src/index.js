@@ -7,12 +7,10 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./config/swagger/swagger");
 const { syncModels } = require("./modules/models/index");
 const responsesFormatter = require("./shared/middleware/responseFormatter");
-
+const { startNgrok } = require("./config/ngrok/ngrokConfig");
 const path = require("path");
 
 const app = express();
-const port = 3080;
-
 const corsOptions = {
   origin: ["http://localhost:4200", "http://localhost:3080"],
   methods: "GET,POST,PUT,DELETE",
@@ -29,8 +27,8 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(responsesFormatter);
 app.get("/api/data", (req, res) => {
@@ -42,7 +40,6 @@ app.use(
   express.static(path.join(__dirname, "../src/modules/uploads/avatars"))
 );
 syncModels();
-
 routes(app);
 
 app.use((req, res, next) => {
@@ -52,7 +49,13 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong!" });
 });
-app.listen(port, () => {
-  console.log(`Server đang chạy tại http://localhost:${port}`);
-  console.log(`Swagger đang chạy tại http://localhost:${port}/api-docs`);
+app.listen(process.env.SERVER_PORT, async () => {
+  console.log(
+    `Server đang chạy tại http://localhost:${process.env.SERVER_PORT}`
+  );
+  console.log(
+    `Swagger đang chạy tại http://localhost:${process.env.SERVER_PORT}/api-docs`
+  );
+  const ngrokUrl = await startNgrok();
+  console.log(`Public URL: ${ngrokUrl}`);
 });

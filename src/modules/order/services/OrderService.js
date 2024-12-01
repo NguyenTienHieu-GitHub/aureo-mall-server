@@ -18,6 +18,7 @@ const createOrder = async (userId, addressId, note, items) => {
     const orders = [];
     for (const [shopId, shopItems] of Object.entries(itemsByShop)) {
       let totalPrice = 0;
+      let totalQuantity = 0;
       const productIds = shopItems.map((item) => item.productId);
       const products = await Product.findAll({
         where: { id: productIds },
@@ -61,6 +62,7 @@ const createOrder = async (userId, addressId, note, items) => {
         }
         item.unitPrice = priceInDb;
         item.subtotal = item.quantity * priceInDb;
+        totalQuantity += item.quantity;
         totalPrice += item.subtotal;
       });
       const order = await Order.create(
@@ -68,6 +70,7 @@ const createOrder = async (userId, addressId, note, items) => {
           userId,
           shopId,
           addressId,
+          totalQuantity,
           totalPrice,
           status: "Pending",
           note,

@@ -1673,7 +1673,7 @@ module.exports = {
             example: "",
           },
         },
-        required: ["shopName"],
+        required: ["shopName", "email"],
       },
       CreateShopResponse: {},
       // =================================================================================================
@@ -2650,11 +2650,11 @@ module.exports = {
       AddAndUpdateProductToCartResponse: {
         type: "object",
         properties: {
-          statusCode: {
+          status: {
             type: "integer",
             example: 200,
           },
-          messageSuccess: {
+          message: {
             type: "string",
             example: "Add product to cart successfully",
           },
@@ -2729,11 +2729,11 @@ module.exports = {
       DeleteCartOptionResponse: {
         type: "object",
         properties: {
-          statusCode: {
+          status: {
             type: "integer",
             example: 200,
           },
-          messageSuccess: {
+          message: {
             type: "string",
             example: "Deleted cart item successfully",
           },
@@ -2800,13 +2800,64 @@ module.exports = {
       CreateOrderResponse: {
         type: "object",
         properties: {
-          statusCode: {
+          status: {
             type: "integer",
             example: 200,
           },
-          messageSuccess: {
+          message: {
             type: "string",
             example: "Order created successfully",
+          },
+        },
+      },
+
+      //[Checkout] Create checkout
+      CreateCheckoutRequest: {
+        type: "object",
+        properties: {
+          orderId: {
+            type: "integer",
+            example: 1,
+          },
+          paymentMethod: {
+            type: "string",
+            enum: ["MoMo", "Visa", "MasterCard", "COD"],
+            example: "MoMo",
+          },
+        },
+      },
+      CreateCheckoutResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Payment created successfully",
+          },
+          data: {
+            type: "object",
+            properties: {
+              payUrl: {
+                type: "string",
+                example: "https://test.momo.pay.vn/payment",
+              },
+            },
+          },
+        },
+      },
+      CreateCheckoutDataNullResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Payment created successfully",
           },
         },
       },
