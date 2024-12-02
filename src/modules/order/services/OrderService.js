@@ -89,8 +89,11 @@ const createOrder = async (userId, addressId, note, items) => {
       }));
 
       await OrderDetail.bulkCreate(orderDetails, { transaction });
+      const response = {
+        orderId: order.id,
+      };
+      return response;
     }
-
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();

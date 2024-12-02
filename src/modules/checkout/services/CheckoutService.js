@@ -34,23 +34,18 @@ const CreatePayment = async (orderId, paymentMethod) => {
     if (!order) {
       throw new Error("Order not found");
     }
-    const transId = generateTransId();
-    if (order.status === "Pending") {
-      const payment = await Payment.create({
-        orderId: order.id,
-        userId: order.userId,
-        paymentMethod,
-        status: "Pending",
-        transactionId: transId,
-        amount: order.totalPrice,
-      });
+    const existingPayment = await Payment.findOne({
+      where: { orderId: order.id },
+    });
+
+    if (existingPayment) {
       if (paymentMethod === "MoMo") {
         const ngrokUrl = await startNgrok();
         const returnUrl = `${process.env.FRONTEND_URL}`;
         const notifyUrl = `${ngrokUrl}/api/checkout/notify`;
         const momoResponse = await createMoMoPayment(
-          payment.id,
-          payment.amount,
+          existingPayment.id,
+          existingPayment.amount,
           returnUrl,
           notifyUrl,
           order.totalQuantity
@@ -61,7 +56,35 @@ const CreatePayment = async (orderId, paymentMethod) => {
         return null;
       }
     } else {
-      throw new Error("Đơn hàng đã được thanh toán hoặc hết hạn");
+      const transId = generateTransId();
+      if (order.status === "Pending") {
+        const payment = await Payment.create({
+          orderId: order.id,
+          userId: order.userId,
+          paymentMethod,
+          status: "Pending",
+          transactionId: transId,
+          amount: order.totalPrice,
+        });
+        if (paymentMethod === "MoMo") {
+          const ngrokUrl = await startNgrok();
+          const returnUrl = `${process.env.FRONTEND_URL}`;
+          const notifyUrl = `${ngrokUrl}/api/checkout/notify`;
+          const momoResponse = await createMoMoPayment(
+            payment.id,
+            payment.amount,
+            returnUrl,
+            notifyUrl,
+            order.totalQuantity
+          );
+          const responsePayUrl = { payUrl: momoResponse.payUrl };
+          return responsePayUrl;
+        } else if (paymentMethod === "COD") {
+          return null;
+        }
+      } else {
+        throw new Error("Đơn hàng đã được thanh toán hoặc hết hạn");
+      }
     }
   } catch (error) {
     throw new Error(error.message);
