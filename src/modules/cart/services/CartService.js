@@ -1,7 +1,7 @@
 const Cart = require("../models/CartModel");
 const CartItem = require("../models/CartItemModel");
 const Product = require("../../product/models/ProductModel");
-const Shop = require("../../product/models/ShopModel");
+const Shop = require("../../shop/models/ShopModel");
 const ProductPrice = require("../../product/models/ProductPriceModel");
 const sequelize = require("../../../config/db/index");
 

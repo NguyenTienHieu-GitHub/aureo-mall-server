@@ -39,6 +39,10 @@ const Shipping = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    shippingFee: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     status: {
       type: DataTypes.ENUM("Pending", "Delivered", "Failed", "In Transit"),
       allowNull: false,

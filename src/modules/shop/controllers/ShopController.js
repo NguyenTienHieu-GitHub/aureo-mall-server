@@ -1,4 +1,4 @@
-const ShopService = require("../services/ShopService");
+const ShopService = require("../../shop/services/ShopService");
 const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
 
 const createShop = async (req, res) => {
@@ -11,13 +11,28 @@ const createShop = async (req, res) => {
       errorMessage: "You are not authenticated",
     });
   }
-  const { shopName, description, address, phone, email, logo, website } =
-    req.body;
+  const {
+    shopName,
+    description,
+    provinceCode,
+    districtCode,
+    wardCode,
+    address,
+    isPrimary,
+    phone,
+    email,
+    logo,
+    website,
+  } = req.body;
   const shopData = {
     userId: userId,
     shopName,
     description,
+    provinceCode,
+    districtCode,
+    wardCode,
     address,
+    isPrimary,
     phone,
     email,
     logo,

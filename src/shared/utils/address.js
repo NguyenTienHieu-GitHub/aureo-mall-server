@@ -4,7 +4,7 @@ const {
   Province,
   District,
   Ward,
-} = require("../../modules/user/models/AddressModel");
+} = require("../../modules/user/models/UserAddressModel");
 
 const createDefaultAdministrativeRegions = async () => {
   const administrativeRegions = [

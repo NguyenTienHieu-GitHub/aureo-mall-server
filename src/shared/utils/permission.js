@@ -93,28 +93,28 @@ const createDefaultPermission = async () => {
 
     {
       action: "view_all_addresses",
-      resource: "Address",
+      resource: "UserAddress",
       description: "View all addresses list",
     },
     {
       action: "view_address",
-      resource: "Address",
+      resource: "UserAddress",
       description: "View address details",
     },
     {
       action: "create",
-      resource: "Address",
+      resource: "UserAddress",
       description: "Create address",
     },
     {
       action: "edit",
-      resource: "Address",
-      description: "Edit Address",
+      resource: "UserAddress",
+      description: "Edit UserAddress",
     },
     {
       action: "delete",
-      resource: "Address",
-      description: "Edit Address",
+      resource: "UserAddress",
+      description: "Edit UserAddress",
     },
   ];
 

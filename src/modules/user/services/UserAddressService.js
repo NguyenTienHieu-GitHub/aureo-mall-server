@@ -1,14 +1,14 @@
 const {
-  Address,
+  UserAddress,
   AdministrativeRegion,
   AdministrativeUnit,
   Province,
   District,
   Ward,
-} = require("../models/AddressModel");
+} = require("../models/UserAddressModel");
 
-const getAllAddress = async () => {
-  const allAddress = await Address.findAll({
+const getAllUserAddress = async () => {
+  const allUserAddress = await UserAddress.findAll({
     include: [
       {
         model: Province,
@@ -27,11 +27,11 @@ const getAllAddress = async () => {
       },
     ],
   });
-  if (allAddress.length === 0) {
-    throw new Error("Address not found");
+  if (allUserAddress.length === 0) {
+    throw new Error("UserAddress not found");
   }
-  const addresses = allAddress.map((allAddress) => {
-    const addr = allAddress.toJSON();
+  const addresses = allUserAddress.map((allUserAddress) => {
+    const addr = allUserAddress.toJSON();
     return {
       addressId: addr.id,
       userId: addr.userId,
@@ -50,8 +50,8 @@ const getAllAddress = async () => {
   });
   return addresses;
 };
-const getMyAddress = async (userId) => {
-  const myAddress = await Address.findAll({
+const getMyUserAddress = async (userId) => {
+  const myUserAddress = await UserAddress.findAll({
     where: { userId: userId },
     include: [
       {
@@ -71,11 +71,11 @@ const getMyAddress = async (userId) => {
       },
     ],
   });
-  if (myAddress.length === 0) {
-    throw new Error("Address not found");
+  if (myUserAddress.length === 0) {
+    throw new Error("UserAddress not found");
   }
-  const addressData = myAddress.map((myAddress) => {
-    const address = myAddress.toJSON();
+  const addressData = myUserAddress.map((myUserAddress) => {
+    const address = myUserAddress.toJSON();
     return {
       addressId: address.id,
       fullName: address.fullName,
@@ -93,8 +93,8 @@ const getMyAddress = async (userId) => {
   });
   return addressData;
 };
-const getAddressById = async (addressId) => {
-  const getAddressByIdResult = await Address.findOne({
+const getUserAddressById = async (addressId) => {
+  const getUserAddressByIdResult = await UserAddress.findOne({
     where: { id: addressId },
     include: [
       {
@@ -114,15 +114,15 @@ const getAddressById = async (addressId) => {
       },
     ],
   });
-  if (!getAddressByIdResult) {
-    throw new Error("Address not found");
+  if (!getUserAddressByIdResult) {
+    throw new Error("UserAddress not found");
   }
-  const addressesById = getAddressByIdResult.toJSON();
+  const addressesById = getUserAddressByIdResult.toJSON();
 
   return addressesById;
 };
 
-const createAddress = async ({
+const createUserAddress = async ({
   userId,
   fullName,
   phoneNumber,
@@ -133,7 +133,7 @@ const createAddress = async ({
   addressType,
   isPrimary,
 }) => {
-  const addAddressResult = await Address.create({
+  const addUserAddressResult = await UserAddress.create({
     userId: userId,
     fullName: fullName,
     phoneNumber: phoneNumber,
@@ -144,8 +144,8 @@ const createAddress = async ({
     addressType: addressType,
     isPrimary: isPrimary,
   });
-  const addressData = await Address.findOne({
-    where: { id: addAddressResult.id },
+  const addressData = await UserAddress.findOne({
+    where: { id: addUserAddressResult.id },
     include: [
       {
         model: Province,
@@ -167,7 +167,7 @@ const createAddress = async ({
   return addressData;
 };
 
-const updateAddress = async ({
+const updateUserAddress = async ({
   userId,
   addressId,
   fullName,
@@ -179,16 +179,16 @@ const updateAddress = async ({
   addressType,
   isPrimary,
 }) => {
-  const addressToUpdate = await Address.findOne({
+  const addressToUpdate = await UserAddress.findOne({
     where: {
       id: addressId,
       userId: userId,
     },
   });
   if (!addressToUpdate) {
-    throw new Error("Address not found");
+    throw new Error("UserAddress not found");
   }
-  await Address.update(
+  await UserAddress.update(
     {
       fullName,
       phoneNumber,
@@ -205,7 +205,7 @@ const updateAddress = async ({
       },
     }
   );
-  const addressData = await Address.findOne({
+  const addressData = await UserAddress.findOne({
     where: { id: addressId },
     include: [
       {
@@ -228,17 +228,17 @@ const updateAddress = async ({
   return addressData;
 };
 
-const deleteAddress = async ({ addressId, userId }) => {
-  const addressToDelete = await Address.findOne({
+const deleteUserAddress = async ({ addressId, userId }) => {
+  const addressToDelete = await UserAddress.findOne({
     where: {
       id: addressId,
       userId: userId,
     },
   });
   if (!addressToDelete) {
-    throw new Error("Address not found");
+    throw new Error("UserAddress not found");
   }
-  await Address.destroy({
+  await UserAddress.destroy({
     where: {
       id: addressId,
     },
@@ -330,12 +330,12 @@ const getWardByDistrictCode = async (districtCode) => {
   }));
 };
 module.exports = {
-  getAllAddress,
-  getMyAddress,
-  getAddressById,
-  createAddress,
-  updateAddress,
-  deleteAddress,
+  getAllUserAddress,
+  getMyUserAddress,
+  getUserAddressById,
+  createUserAddress,
+  updateUserAddress,
+  deleteUserAddress,
   getProvinces,
   getDistricts,
   getWards,

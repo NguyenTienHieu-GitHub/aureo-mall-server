@@ -2,67 +2,55 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../../../config/db/index");
 const moment = require("moment-timezone");
 
-const Order = sequelize.define(
-  "Orders",
+const ShopAddress = sequelize.define(
+  "ShopAddresses",
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     shopId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: "Shops",
         key: "id",
       },
+      onDelete: "CASCADE",
     },
-    userId: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+    provinceCode: {
+      type: DataTypes.STRING(10),
       allowNull: false,
-      references: {
-        model: "Users",
-        key: "id",
+      reference: {
+        model: "Provinces",
+        key: "code",
       },
     },
-    addressId: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+    districtCode: {
+      type: DataTypes.STRING(10),
       allowNull: false,
-      references: {
-        model: "UserAddresses",
-        key: "id",
+      reference: {
+        model: "Districts",
+        key: "code",
       },
     },
-    shippingFee: {
-      type: DataTypes.INTEGER,
+    wardCode: {
+      type: DataTypes.STRING(10),
+      allowNull: false,
+      reference: {
+        model: "Wards",
+        key: "code",
+      },
+    },
+    address: {
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
-    totalQuantity: {
-      type: DataTypes.INTEGER,
+    isPrimary: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
-    },
-    totalPrice: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    status: {
-      type: DataTypes.ENUM(
-        "Pending",
-        "Paid",
-        "Shop Confirmed",
-        "Completed",
-        "Failed",
-        "Refunded",
-        "Expired"
-      ),
-      allowNull: false,
-    },
-    note: {
-      type: DataTypes.TEXT,
-      allowNull: true,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -92,9 +80,8 @@ const Order = sequelize.define(
     },
   },
   {
-    tableName: "Orders",
+    tableName: "ShopAddresses",
     timestamps: true,
   }
 );
-
-module.exports = Order;
+module.exports = ShopAddress;

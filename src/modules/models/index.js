@@ -21,7 +21,8 @@ const Product = require("../product/models/ProductModel");
 const { Category, ImageCategory } = require("../product/models/CategoryModel");
 const ProductCategory = require("../product/models/ProductCategoryModel");
 const ProductPrice = require("../product/models/ProductPriceModel");
-const Shop = require("../product/models/ShopModel");
+const Shop = require("../shop/models/ShopModel");
+const ShopAddress = require("../shop/models/ShopAddressModel");
 const Inventory = require("../product/models/InventoryModel");
 const Warehouse = require("../product/models/WarehouseModel");
 const ProductMedia = require("../product/models/ProductMediaModel");
@@ -41,13 +42,13 @@ const Payment = require("../checkout/models/paymentModel");
 const Shipping = require("../shipping/models/ShippingModel");
 
 const {
-  Address,
+  UserAddress,
   Province,
   District,
   Ward,
   AdministrativeRegion,
   AdministrativeUnit,
-} = require("../user/models/AddressModel");
+} = require("../user/models/UserAddressModel");
 const Permission = require("../user/models/PermissionModel");
 const RolePermission = require("../user/models/RolePermissionModel");
 
@@ -100,18 +101,34 @@ Role.belongsToMany(User, {
   otherKey: "userId",
 });
 
-User.hasMany(Address, { foreignKey: "userId" });
-Address.belongsTo(User, { foreignKey: "userId", as: "User" });
+User.hasMany(UserAddress, { foreignKey: "userId" });
+UserAddress.belongsTo(User, { foreignKey: "userId", as: "User" });
 
-Address.belongsTo(Province, {
+UserAddress.belongsTo(Province, {
   foreignKey: "provinceCode",
   as: "Province",
 });
-Address.belongsTo(District, {
+UserAddress.belongsTo(District, {
   foreignKey: "districtCode",
   as: "District",
 });
-Address.belongsTo(Ward, {
+UserAddress.belongsTo(Ward, {
+  foreignKey: "wardCode",
+  as: "Ward",
+});
+
+Shop.hasMany(ShopAddress, { foreignKey: "shopId" });
+ShopAddress.belongsTo(Shop, { foreignKey: "shopId", as: "Shop" });
+
+ShopAddress.belongsTo(Province, {
+  foreignKey: "provinceCode",
+  as: "Province",
+});
+ShopAddress.belongsTo(District, {
+  foreignKey: "districtCode",
+  as: "District",
+});
+ShopAddress.belongsTo(Ward, {
   foreignKey: "wardCode",
   as: "Ward",
 });
@@ -200,8 +217,8 @@ Payment.belongsTo(Order, { foreignKey: "orderId" });
 Order.hasOne(Shipping, { foreignKey: "orderId" });
 Shipping.belongsTo(Order, { foreignKey: "orderId" });
 
-Address.hasMany(Order, { foreignKey: "addressId" });
-Order.belongsTo(Address, { foreignKey: "addressId" });
+UserAddress.hasMany(Order, { foreignKey: "addressId" });
+Order.belongsTo(UserAddress, { foreignKey: "addressId" });
 
 User.hasMany(Order, { foreignKey: "userId" });
 Order.belongsTo(User, { foreignKey: "userId" });
@@ -259,7 +276,7 @@ module.exports = {
   ProductMedia,
   ProductOption,
   ProductOptionValue,
-  Address,
+  UserAddress,
   Permission,
   RolePermission,
   syncModels,

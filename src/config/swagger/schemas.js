@@ -926,8 +926,8 @@ module.exports = {
       },
       // =================================================================
 
-      //[Address] Get All Address
-      GetAllAddressResponse: {
+      //[UserAddress] Get All UserAddress
+      GetAllUserAddressResponse: {
         type: "object",
         properties: {
           status: {
@@ -939,11 +939,11 @@ module.exports = {
             example: "Show all addresses successfully",
           },
           data: {
-            $ref: "#/components/schemas/DataAddresses",
+            $ref: "#/components/schemas/DataUserAddresses",
           },
         },
       },
-      AddressNotFound: {
+      UserAddressNotFound: {
         type: "object",
         properties: {
           status: {
@@ -959,13 +959,13 @@ module.exports = {
               },
               errorMessage: {
                 type: "string",
-                example: "Address not found in the database",
+                example: "UserAddress not found in the database",
               },
             },
           },
         },
       },
-      DataAddresses: {
+      DataUserAddresses: {
         oneOf: [{ type: "null" }, { type: "object" }],
         type: "array",
         items: {
@@ -1031,8 +1031,8 @@ module.exports = {
           },
         },
       },
-      //[Address] Get Address By Id
-      GetAddressByIdResponse: {
+      //[UserAddress] Get UserAddress By Id
+      GetUserAddressByIdResponse: {
         type: "object",
         properties: {
           status: {
@@ -1044,11 +1044,11 @@ module.exports = {
             example: "Show address successfully",
           },
           data: {
-            $ref: "#/components/schemas/DataAddress",
+            $ref: "#/components/schemas/DataUserAddress",
           },
         },
       },
-      DataAddress: {
+      DataUserAddress: {
         oneOf: [{ type: "null" }, { type: "object" }],
         type: "object",
         properties: {
@@ -1111,8 +1111,8 @@ module.exports = {
           },
         },
       },
-      //[Address] Create Address
-      CreateOrUpdateAddressRequest: {
+      //[UserAddress] Create UserAddress
+      CreateOrUpdateUserAddressRequest: {
         type: "object",
         properties: {
           fullName: {
@@ -1152,7 +1152,7 @@ module.exports = {
           },
         },
       },
-      CreateOrUpdateAddressResponse: {
+      CreateOrUpdateUserAddressResponse: {
         type: "object",
         properties: {
           status: {
@@ -1161,15 +1161,15 @@ module.exports = {
           },
           message: {
             type: "string",
-            example: "Address 'created or update' successfully",
+            example: "UserAddress 'created or update' successfully",
           },
           data: {
-            $ref: "#/components/schemas/DataAddress",
+            $ref: "#/components/schemas/DataUserAddress",
           },
         },
       },
-      //[Address] Delete Address
-      DeleteAddressResponse: {
+      //[UserAddress] Delete UserAddress
+      DeleteUserAddressResponse: {
         type: "object",
         properties: {
           status: {
@@ -1178,12 +1178,12 @@ module.exports = {
           },
           message: {
             type: "string",
-            example: "Address deleted successfully",
+            example: "UserAddress deleted successfully",
           },
         },
       },
-      //[Address] Get My Address
-      GetMyAddressResponse: {
+      //[UserAddress] Get My UserAddress
+      GetMyUserAddressResponse: {
         type: "object",
         properties: {
           status: {
@@ -1195,7 +1195,7 @@ module.exports = {
             example: "Show all addresses successfully",
           },
           data: {
-            $ref: "#/components/schemas/DataAddresses",
+            $ref: "#/components/schemas/DataUserAddresses",
           },
         },
       },
@@ -1650,9 +1650,25 @@ module.exports = {
             type: "string",
             example: "Shop Của Hiệu",
           },
+          provinceCode: {
+            type: "string",
+            example: "02",
+          },
+          districtCode: {
+            type: "string",
+            example: "027",
+          },
+          wardCode: {
+            type: "string",
+            example: "00817",
+          },
           address: {
             type: "string",
-            example: "",
+            example: "51 Lê Thị Nho",
+          },
+          isPrimary: {
+            type: "boolean",
+            example: true,
           },
           phone: {
             type: "string",

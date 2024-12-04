@@ -1,16 +1,16 @@
 const Payment = require("../models/paymentModel");
 const Order = require("../../order/models/OrderModel");
-const Shop = require("../../product/models/ShopModel");
+const Shop = require("../../shop/models/ShopModel");
 const User = require("../../auth/models/UserModel");
 const Product = require("../../product/models/ProductModel");
 const {
-  Address,
+  UserAddress,
   AdministrativeRegion,
   AdministrativeUnit,
   Province,
   District,
   Ward,
-} = require("../../user/models/AddressModel");
+} = require("../../user/models/UserAddressModel");
 const sequelize = require("../../../config/db/index");
 const { startNgrok } = require("../../../config/ngrok/ngrokConfig");
 const transporter = require("../../../config/nodemailer/nodemailer");
@@ -157,7 +157,7 @@ const handleNotification = async ({
       const shop = await Shop.findOne({
         where: { id: order.shopId },
       });
-      const address = await Address.findOne({
+      const address = await UserAddress.findOne({
         where: { id: order.addressId },
         include: [
           {
@@ -322,7 +322,7 @@ const handleNotification = async ({
       const user = await User.findOne({
         where: { id: order.userId },
       });
-      const address = await Address.findOne({
+      const address = await UserAddress.findOne({
         where: { id: order.addressId },
         include: [
           {

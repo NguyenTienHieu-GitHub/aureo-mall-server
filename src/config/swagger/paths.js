@@ -2617,8 +2617,8 @@ module.exports = {
     get: {
       summary: "Hiển thị tất cả địa chỉ",
       description: "Hiển thị tât cả địa chỉ",
-      tags: ["Address"],
-      operationId: "getAllAddress",
+      tags: ["UserAddress"],
+      operationId: "getAllUserAddress",
       security: [
         {
           BearerAuth: [],
@@ -2630,7 +2630,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/GetAllAddressResponse",
+                $ref: "#/components/schemas/GetAllUserAddressResponse",
               },
             },
           },
@@ -2699,7 +2699,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/AddressNotFound",
+                $ref: "#/components/schemas/UserAddressNotFound",
               },
             },
           },
@@ -2721,8 +2721,8 @@ module.exports = {
     get: {
       summary: "Tìm kiếm địa chỉ",
       description: "Tìm kiếm địa chỉ bằng id",
-      tags: ["Address"],
-      operationId: "getAddressById",
+      tags: ["UserAddress"],
+      operationId: "getUserAddressById",
       security: [
         {
           BearerAuth: [],
@@ -2744,7 +2744,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/GetAddressByIdResponse",
+                $ref: "#/components/schemas/GetUserAddressByIdResponse",
               },
             },
           },
@@ -2823,7 +2823,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/AddressNotFound",
+                $ref: "#/components/schemas/UserAddressNotFound",
               },
             },
           },
@@ -2845,8 +2845,8 @@ module.exports = {
     post: {
       summary: "Tạo địa chỉ người dùng",
       description: "Tạo địa của người dùng",
-      tags: ["Address"],
-      operationId: "addAddress",
+      tags: ["UserAddress"],
+      operationId: "addUserAddress",
       security: [
         {
           BearerAuth: [],
@@ -2857,7 +2857,7 @@ module.exports = {
         content: {
           "application/json": {
             schema: {
-              $ref: "#/components/schemas/CreateOrUpdateAddressRequest",
+              $ref: "#/components/schemas/CreateOrUpdateUserAddressRequest",
             },
           },
         },
@@ -2868,7 +2868,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/CreateOrUpdateAddressResponse",
+                $ref: "#/components/schemas/CreateOrUpdateUserAddressResponse",
               },
             },
           },
@@ -2959,8 +2959,8 @@ module.exports = {
     put: {
       summary: "Cập nhật địa chỉ",
       description: "Cập nhật địa chỉ bằng id",
-      tags: ["Address"],
-      operationId: "updataAddress",
+      tags: ["UserAddress"],
+      operationId: "updataUserAddress",
       security: [
         {
           BearerAuth: [],
@@ -2981,7 +2981,7 @@ module.exports = {
         content: {
           "application/json": {
             schema: {
-              $ref: "#/components/schemas/CreateOrUpdateAddressRequest",
+              $ref: "#/components/schemas/CreateOrUpdateUserAddressRequest",
             },
           },
         },
@@ -2992,7 +2992,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/CreateOrUpdateAddressResponse",
+                $ref: "#/components/schemas/CreateOrUpdateUserAddressResponse",
               },
             },
           },
@@ -3105,7 +3105,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/AddressNotFound",
+                $ref: "#/components/schemas/UserAddressNotFound",
               },
             },
           },
@@ -3127,8 +3127,8 @@ module.exports = {
     delete: {
       summary: "Xóa địa chỉ",
       description: "Xóa tài địa chỉ bằng id",
-      tags: ["Address"],
-      operationId: "deleteAddress",
+      tags: ["UserAddress"],
+      operationId: "deleteUserAddress",
       security: [
         {
           BearerAuth: [],
@@ -3150,7 +3150,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/DeleteAddressResponse",
+                $ref: "#/components/schemas/DeleteUserAddressResponse",
               },
             },
           },
@@ -3229,7 +3229,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schema/AddressNotFound",
+                $ref: "#/components/schema/UserAddressNotFound",
               },
             },
           },
@@ -3251,8 +3251,8 @@ module.exports = {
     get: {
       summary: "Hiển thị tất cả địa chỉ của người dùng",
       description: "Hiển thị tât cả địa chỉ của người dùng",
-      tags: ["Address"],
-      operationId: "getMyAddress",
+      tags: ["UserAddress"],
+      operationId: "getMyUserAddress",
       security: [
         {
           BearerAuth: [],
@@ -3264,7 +3264,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/GetMyAddressResponse",
+                $ref: "#/components/schemas/GetMyUserAddressResponse",
               },
             },
           },
@@ -3333,7 +3333,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/AddressNotFound",
+                $ref: "#/components/schemas/UserAddressNotFound",
               },
             },
           },
@@ -4068,7 +4068,7 @@ module.exports = {
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/AddressNotFound",
+                $ref: "#/components/schemas/UserAddressNotFound",
               },
             },
           },

@@ -2,7 +2,7 @@ const Order = require("../models/OrderModel");
 const OrderDetail = require("../models/OrderDetailModel");
 const Product = require("../../product/models/ProductModel");
 const ProductPrice = require("../../product/models/ProductPriceModel");
-const Shop = require("../../product/models/ShopModel");
+const Shop = require("../../shop/models/ShopModel");
 const sequelize = require("../../../config/db/index");
 const createOrder = async (userId, addressId, note, items) => {
   const transaction = await sequelize.transaction();

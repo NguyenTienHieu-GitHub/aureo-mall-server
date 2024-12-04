@@ -10,7 +10,7 @@ const ProductOption = require("../models/ProductOptionModel");
 const Inventory = require("../models/InventoryModel");
 const ProductCategory = require("../models/ProductCategoryModel");
 const Warehouse = require("../models/WarehouseModel");
-const Shop = require("../models/ShopModel");
+const Shop = require("../../shop/models/ShopModel");
 const {
   uploadNone,
   uploadRating,

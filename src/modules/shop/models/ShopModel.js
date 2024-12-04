@@ -29,11 +29,6 @@ const Shop = sequelize.define(
       allowNull: true,
       defaultValue: null,
     },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      defaultValue: null,
-    },
     phone: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -94,7 +89,6 @@ const Shop = sequelize.define(
   },
   {
     tableName: "Shops",
-    modelName: "Shop",
     timestamps: true,
   }
 );

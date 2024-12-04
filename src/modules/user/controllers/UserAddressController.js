@@ -1,9 +1,9 @@
-const AddressService = require("../services/AddressService");
+const UserAddressService = require("../services/UserAddressService");
 const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
 
-const getAllAddress = async (req, res) => {
+const getAllUserAddress = async (req, res) => {
   try {
-    const addresses = await AddressService.getAllAddress();
+    const addresses = await UserAddressService.getAllUserAddress();
     return setResponseLocals({
       res,
       statusCode: 200,
@@ -12,12 +12,12 @@ const getAllAddress = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    if (error.message.includes("Address not found")) {
+    if (error.message.includes("UserAddress not found")) {
       return setResponseLocals({
         res,
         statusCode: 404,
         errorCode: "ADDRESS_NOT_FOUND",
-        errorMessage: "Address not found in the database",
+        errorMessage: "UserAddress not found in the database",
       });
     } else {
       return setResponseLocals({
@@ -29,7 +29,7 @@ const getAllAddress = async (req, res) => {
     }
   }
 };
-const getMyAddress = async (req, res) => {
+const getMyUserAddress = async (req, res) => {
   const userId = req.user.id;
   if (!userId) {
     return setResponseLocals({
@@ -40,7 +40,7 @@ const getMyAddress = async (req, res) => {
     });
   }
   try {
-    const addressData = await AddressService.getMyAddress(userId);
+    const addressData = await UserAddressService.getMyUserAddress(userId);
     return setResponseLocals({
       res,
       statusCode: 200,
@@ -48,12 +48,12 @@ const getMyAddress = async (req, res) => {
       data: addressData,
     });
   } catch (error) {
-    if (error.message.includes("Address not found")) {
+    if (error.message.includes("UserAddress not found")) {
       return setResponseLocals({
         res,
         statusCode: 404,
         errorCode: "ADDRESS_NOT_FOUND",
-        errorMessage: "Address not found in the database",
+        errorMessage: "UserAddress not found in the database",
       });
     } else {
       return setResponseLocals({
@@ -65,7 +65,7 @@ const getMyAddress = async (req, res) => {
     }
   }
 };
-const getAddressById = async (req, res) => {
+const getUserAddressById = async (req, res) => {
   const addressId = req.params.id;
   if (!isUUID(addressId)) {
     return setResponseLocals({
@@ -76,7 +76,9 @@ const getAddressById = async (req, res) => {
     });
   }
   try {
-    const addressesById = await AddressService.getAddressById(addressId);
+    const addressesById = await UserAddressService.getUserAddressById(
+      addressId
+    );
 
     return setResponseLocals({
       res,
@@ -99,12 +101,12 @@ const getAddressById = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    if (error.message.includes("Address not found")) {
+    if (error.message.includes("UserAddress not found")) {
       return setResponseLocals({
         res,
         statusCode: 404,
         errorCode: "ADDRESS_NOT_FOUND",
-        errorMessage: "Address not found in the database",
+        errorMessage: "UserAddress not found in the database",
       });
     } else {
       return setResponseLocals({
@@ -117,7 +119,7 @@ const getAddressById = async (req, res) => {
   }
 };
 
-const createAddress = async (req, res) => {
+const createUserAddress = async (req, res) => {
   const {
     fullName,
     phoneNumber,
@@ -139,7 +141,7 @@ const createAddress = async (req, res) => {
       });
     }
 
-    const addressData = await AddressService.createAddress({
+    const addressData = await UserAddressService.createUserAddress({
       userId: userId,
       fullName,
       phoneNumber,
@@ -153,7 +155,7 @@ const createAddress = async (req, res) => {
     return setResponseLocals({
       res,
       statusCode: 201,
-      messageSuccess: "Address created successfully",
+      messageSuccess: "UserAddress created successfully",
       data: {
         addressId: addressData.id,
         fullName: addressData.fullName,
@@ -180,7 +182,7 @@ const createAddress = async (req, res) => {
   }
 };
 
-const updateAddress = async (req, res) => {
+const updateUserAddress = async (req, res) => {
   const addressId = req.params.id;
   if (!isUUID(addressId)) {
     return setResponseLocals({
@@ -210,7 +212,7 @@ const updateAddress = async (req, res) => {
         errorMessage: "You are not authenticated",
       });
     }
-    const addressData = await AddressService.updateAddress({
+    const addressData = await UserAddressService.updateUserAddress({
       userId: userId,
       addressId,
       fullName,
@@ -225,7 +227,7 @@ const updateAddress = async (req, res) => {
     return setResponseLocals({
       res,
       statusCode: 200,
-      messageSuccess: "Address updated successfully",
+      messageSuccess: "UserAddress updated successfully",
       data: {
         addressId: addressData.id,
         fullName: addressData.fullName,
@@ -243,12 +245,12 @@ const updateAddress = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    if (error.message.includes("Address not found")) {
+    if (error.message.includes("UserAddress not found")) {
       return setResponseLocals({
         res,
         statusCode: 404,
         errorCode: "ADDRESS_NOT_FOUND",
-        errorMessage: "Address not found in the database",
+        errorMessage: "UserAddress not found in the database",
       });
     } else {
       return setResponseLocals({
@@ -261,7 +263,7 @@ const updateAddress = async (req, res) => {
   }
 };
 
-const deleteAddress = async (req, res) => {
+const deleteUserAddress = async (req, res) => {
   const addressId = req.params.id;
   if (!isUUID(addressId)) {
     return setResponseLocals({
@@ -281,23 +283,23 @@ const deleteAddress = async (req, res) => {
         errorMessage: "You are not authenticated",
       });
     }
-    await AddressService.deleteAddress({
+    await UserAddressService.deleteUserAddress({
       addressId,
       userId: userId,
     });
     return setResponseLocals({
       res,
       statusCode: 200,
-      messageSuccess: "Address deleted successfully",
+      messageSuccess: "UserAddress deleted successfully",
     });
   } catch (error) {
     console.error("Error deleting address", error);
-    if (error.message === "Address not found") {
+    if (error.message === "UserAddress not found") {
       return setResponseLocals({
         res,
         statusCode: 404,
         errorCode: "ADDRESS_NOT_FOUND",
-        errorMessage: "Address not found in the database",
+        errorMessage: "UserAddress not found in the database",
       });
     } else {
       return setResponseLocals({
@@ -312,7 +314,7 @@ const deleteAddress = async (req, res) => {
 
 const getProvinces = async (req, res) => {
   try {
-    const provincesData = await AddressService.getProvinces();
+    const provincesData = await UserAddressService.getProvinces();
     return setResponseLocals({
       res,
       statusCode: 200,
@@ -339,7 +341,7 @@ const getProvinces = async (req, res) => {
 };
 const getDistricts = async (req, res) => {
   try {
-    const districtsData = await AddressService.getDistricts();
+    const districtsData = await UserAddressService.getDistricts();
     return setResponseLocals({
       res,
       statusCode: 200,
@@ -366,7 +368,7 @@ const getDistricts = async (req, res) => {
 };
 const getWards = async (req, res) => {
   try {
-    const wardsData = await AddressService.getWards();
+    const wardsData = await UserAddressService.getWards();
     return setResponseLocals({
       res,
       statusCode: 200,
@@ -394,7 +396,7 @@ const getWards = async (req, res) => {
 const getAdministrativeRegion = async (req, res) => {
   try {
     const administrativeRegions =
-      await AddressService.getAdministrativeRegion();
+      await UserAddressService.getAdministrativeRegion();
     return setResponseLocals({
       res,
       statusCode: 200,
@@ -421,7 +423,8 @@ const getAdministrativeRegion = async (req, res) => {
 };
 const getAdministrativeUnit = async (req, res) => {
   try {
-    const administrativeUnits = await AddressService.getAdministrativeUnit();
+    const administrativeUnits =
+      await UserAddressService.getAdministrativeUnit();
     return setResponseLocals({
       res,
       statusCode: 200,
@@ -451,7 +454,7 @@ const getDistrictsByProvinceCode = async (req, res) => {
   const provinceCode = req.params.provinceCode;
   try {
     const districtByProvinceCode =
-      await AddressService.getDistrictsByProvinceCode(provinceCode);
+      await UserAddressService.getDistrictsByProvinceCode(provinceCode);
     return setResponseLocals({
       res,
       statusCode: 200,
@@ -479,7 +482,7 @@ const getDistrictsByProvinceCode = async (req, res) => {
 const getWardByDistrictCode = async (req, res) => {
   const districtCode = req.params.districtCode;
   try {
-    const wardByDistrictCode = await AddressService.getWardByDistrictCode(
+    const wardByDistrictCode = await UserAddressService.getWardByDistrictCode(
       districtCode
     );
     return setResponseLocals({
@@ -491,12 +494,12 @@ const getWardByDistrictCode = async (req, res) => {
   } catch (error) {}
 };
 module.exports = {
-  getAllAddress,
-  getMyAddress,
-  getAddressById,
-  createAddress,
-  updateAddress,
-  deleteAddress,
+  getAllUserAddress,
+  getMyUserAddress,
+  getUserAddressById,
+  createUserAddress,
+  updateUserAddress,
+  deleteUserAddress,
   getProvinces,
   getDistricts,
   getWards,

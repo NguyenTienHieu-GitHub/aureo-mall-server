@@ -2,8 +2,8 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../../../config/db/index");
 const moment = require("moment-timezone");
 
-const Address = sequelize.define(
-  "Addresses",
+const UserAddress = sequelize.define(
+  "UserAddresses",
   {
     id: {
       type: DataTypes.UUID,
@@ -26,6 +26,9 @@ const Address = sequelize.define(
     phoneNumber: {
       type: DataTypes.STRING(10),
       allowNull: false,
+      validate: {
+        is: /^[0-9]{10}$/,
+      },
     },
     addressType: {
       type: DataTypes.ENUM("HOME", "OFFICE"),
@@ -93,8 +96,8 @@ const Address = sequelize.define(
     },
   },
   {
-    tableName: "Addresses",
-    modelName: "Address",
+    tableName: "UserAddresses",
+    modelName: "UserAddress",
     timestamps: true,
   }
 );
@@ -335,7 +338,7 @@ const Ward = sequelize.define(
 );
 
 module.exports = {
-  Address,
+  UserAddress,
   Province,
   District,
   Ward,
