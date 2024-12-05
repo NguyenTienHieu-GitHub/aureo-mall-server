@@ -4,6 +4,7 @@ const Product = require("../../product/models/ProductModel");
 const ProductPrice = require("../../product/models/ProductPriceModel");
 const Shop = require("../../shop/models/ShopModel");
 const sequelize = require("../../../config/db/index");
+const { shippingFee } = require("../../checkout/services/CheckoutService");
 const createOrder = async (userId, addressId, note, items) => {
   const transaction = await sequelize.transaction();
   try {
@@ -15,14 +16,18 @@ const createOrder = async (userId, addressId, note, items) => {
       acc[shopId].push(item);
       return acc;
     }, {});
+
     const orders = [];
+
     for (const [shopId, shopItems] of Object.entries(itemsByShop)) {
       let totalPrice = 0;
       let totalQuantity = 0;
+      let totalWeight = 0;
+
       const productIds = shopItems.map((item) => item.productId);
       const products = await Product.findAll({
         where: { id: productIds },
-        attributes: ["id", "productName"],
+        attributes: ["id", "productName", "weight"],
         include: [
           {
             model: ProductPrice,
@@ -43,6 +48,7 @@ const createOrder = async (userId, addressId, note, items) => {
           },
         ],
       });
+
       const productPriceMap = {};
       products.forEach((product) => {
         if (product.ProductPrice) {
@@ -51,6 +57,10 @@ const createOrder = async (userId, addressId, note, items) => {
       });
 
       shopItems.forEach((item) => {
+        const product = products.find((p) => p.id === item.productId);
+        if (!product)
+          throw new Error(`Product not found for ID ${item.productId}`);
+
         const priceInDb = productPriceMap[item.productId];
         if (!priceInDb) {
           throw new Error(`Price not found for product ID ${item.productId}`);
@@ -60,11 +70,20 @@ const createOrder = async (userId, addressId, note, items) => {
             `Price mismatch for product ID ${item.productId}: expected ${priceInDb}, received ${item.unitPrice}.`
           );
         }
+
         item.unitPrice = priceInDb;
         item.subtotal = item.quantity * priceInDb;
         totalQuantity += item.quantity;
         totalPrice += item.subtotal;
+        totalWeight += product.weight * item.quantity;
       });
+
+      const shipping = await shippingFee(
+        addressId,
+        shopId,
+        totalWeight,
+        totalPrice
+      );
       const order = await Order.create(
         {
           userId,
@@ -72,12 +91,14 @@ const createOrder = async (userId, addressId, note, items) => {
           addressId,
           totalQuantity,
           totalPrice,
+          shippingFee: shipping,
           status: "Pending",
           note,
         },
         { transaction }
       );
       orders.push(order);
+
       const orderDetails = shopItems.map((item) => ({
         orderId: order.id,
         productId: item.productId,
@@ -89,17 +110,16 @@ const createOrder = async (userId, addressId, note, items) => {
       }));
 
       await OrderDetail.bulkCreate(orderDetails, { transaction });
-      const response = {
-        orderId: order.id,
-      };
-      return response;
     }
+
     await transaction.commit();
+    return orders.map((order) => ({ orderId: order.id }));
   } catch (error) {
     await transaction.rollback();
     throw new Error(error.message);
   }
 };
+
 module.exports = {
   createOrder,
 };

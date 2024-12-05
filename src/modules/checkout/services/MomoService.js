@@ -2,9 +2,9 @@ const axios = require("axios");
 const crypto = require("crypto");
 
 const momoConfig = {
-  partnerCode: process.env.MOMO_PARTNER_CODE,
   accessKey: process.env.MOMO_ACCESS_KEY,
   secretKey: process.env.MOMO_SECRET_KEY,
+  partnerCode: process.env.MOMO_PARTNER_CODE,
   endpoint: process.env.MOMO_ENDPOINT,
 };
 
@@ -49,7 +49,7 @@ const createMoMoPayment = async (
 
   const options = {
     method: "POST",
-    url: `${momoConfig.endpoint}/v2/gateway/api/create`,
+    url: `${momoConfig.endpoint}`,
     headers: {
       "Content-Type": "application/json",
       "Content-Length": Buffer.byteLength(requestBody),

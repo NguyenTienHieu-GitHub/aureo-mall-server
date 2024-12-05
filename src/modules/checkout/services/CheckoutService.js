@@ -1,8 +1,13 @@
 const Payment = require("../models/paymentModel");
 const Order = require("../../order/models/OrderModel");
 const Shop = require("../../shop/models/ShopModel");
+const ShopAddress = require("../../shop/models/ShopAddressModel");
 const User = require("../../auth/models/UserModel");
 const Product = require("../../product/models/ProductModel");
+const Cart = require("../../cart/models/CartModel");
+const CartItem = require("../../cart/models/CartItemModel");
+const ProductPrice = require("../../product/models/ProductPriceModel");
+const axios = require("axios");
 const {
   UserAddress,
   AdministrativeRegion,
@@ -41,7 +46,7 @@ const CreatePayment = async (orderId, paymentMethod) => {
     if (existingPayment) {
       if (paymentMethod === "MoMo") {
         const ngrokUrl = await startNgrok();
-        const returnUrl = `${process.env.FRONTEND_URL}`;
+        const returnUrl = `${process.env.MOMO_REDIRECT_URL}`;
         const notifyUrl = `${ngrokUrl}/api/checkout/notify`;
         const momoResponse = await createMoMoPayment(
           existingPayment.id,
@@ -68,7 +73,7 @@ const CreatePayment = async (orderId, paymentMethod) => {
         });
         if (paymentMethod === "MoMo") {
           const ngrokUrl = await startNgrok();
-          const returnUrl = `${process.env.FRONTEND_URL}`;
+          const returnUrl = `${process.env.MOMO_REDIRECT_URL}`;
           const notifyUrl = `${ngrokUrl}/api/checkout/notify`;
           const momoResponse = await createMoMoPayment(
             payment.id,
@@ -497,14 +502,242 @@ const getPaymentById = async (paymentId) => {
     if (!payment) {
       throw new Error("Payment not found");
     }
-
     return payment;
   } catch (error) {
     throw new Error(error.message);
   }
 };
+const calculateShippingFeeGHTK = async (
+  pickProvince,
+  pickDistrict,
+  province,
+  district,
+  ward,
+  address,
+  weight,
+  totalPrice
+) => {
+  try {
+    const response = await axios.post(
+      `${process.env.GHTK_API_URL}/shipment/fee`,
+      {
+        pick_province: pickProvince,
+        pick_district: pickDistrict,
+        province: province,
+        district: district,
+        ward: ward,
+        address: address,
+        weight: weight,
+        value: totalPrice,
+        transport: "road",
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: process.env.GHTK_API_KEY,
+        },
+      }
+    );
+    if (response && response.data) {
+      return response.data.fee.fee;
+    } else {
+      console.error("No data in the response");
+      return null;
+    }
+  } catch (error) {
+    if (error.response) {
+      console.error("Error response:", error.response.data);
+    } else if (error.request) {
+      console.error("Error request:", error.request);
+    } else {
+      console.error("Error:", error.message);
+    }
+  }
+};
+
+const shippingFee = async (addressId, shopId, weight, totalPrice) => {
+  const shopAddress = await Shop.findOne({
+    where: { id: shopId },
+    include: [
+      {
+        model: ShopAddress,
+        attributes: ["provinceCode", "districtCode", "wardCode", "address"],
+        include: [
+          {
+            model: Province,
+            as: "Province",
+            attributes: ["code", "name"],
+          },
+          {
+            model: District,
+            as: "District",
+            attributes: ["code", "name"],
+          },
+          {
+            model: Ward,
+            as: "Ward",
+            attributes: ["code", "name"],
+          },
+        ],
+      },
+    ],
+  });
+  const userAddress = await UserAddress.findByPk(addressId, {
+    include: [
+      {
+        model: Province,
+        as: "Province",
+        attributes: ["code", "name"],
+      },
+      {
+        model: District,
+        as: "District",
+        attributes: ["code", "name"],
+      },
+      {
+        model: Ward,
+        as: "Ward",
+        attributes: ["code", "name"],
+      },
+    ],
+  });
+  const pickProvince = shopAddress.ShopAddresses[0].Province.name;
+  const pickDistrict = shopAddress.ShopAddresses[0].District.name;
+  const province = userAddress.Province.name;
+  const district = userAddress.District.name;
+  const ward = userAddress.Ward.name;
+  const address = userAddress.address;
+  const fee = await calculateShippingFeeGHTK(
+    pickProvince,
+    pickDistrict,
+    province,
+    district,
+    ward,
+    address,
+    weight,
+    totalPrice
+  );
+  return fee;
+};
+const getAllSelected = async (userId, cartItemIds, addressId) => {
+  try {
+    if (addressId === "" || addressId === null) {
+      const userAddress = await UserAddress.findOne({
+        where: { userId: userId, isPrimary: true },
+        include: [
+          {
+            model: Province,
+            as: "Province",
+            attributes: ["code", "name"],
+          },
+          {
+            model: District,
+            as: "District",
+            attributes: ["code", "name"],
+          },
+          {
+            model: Ward,
+            as: "Ward",
+            attributes: ["code", "name"],
+          },
+        ],
+      });
+      if (!userAddress) {
+        throw new Error("No primary address found for the user.");
+      }
+      addressId = userAddress.id;
+    }
+    const cartItems = await CartItem.findAll({
+      where: { id: cartItemIds },
+      include: [
+        {
+          model: Product,
+          as: "Product",
+          attributes: ["id", "productName", "sku", "weight"],
+          include: [
+            {
+              model: ProductPrice,
+              as: "ProductPrice",
+              attributes: [
+                "originalPrice",
+                "discountPrice",
+                "discountType",
+                "discountStartDate",
+                "discountEndDate",
+                "finalPrice",
+              ],
+            },
+            {
+              model: Shop,
+              as: "Shop",
+              attributes: ["id", "shopName"],
+            },
+          ],
+        },
+      ],
+    });
+    if (cartItems.length === 0) {
+      throw new Error("No cart items found for the provided IDs.");
+    }
+    const groupedItemsByShop = {};
+    for (const item of cartItems) {
+      const shopId = item.Product.Shop?.id || "Unknown";
+      const shopName = item.Product.Shop?.shopName || "Unknown";
+      const weight = item.Product.weight;
+
+      if (!groupedItemsByShop[shopId]) {
+        groupedItemsByShop[shopId] = {
+          shopId,
+          shopName,
+          products: [],
+          totalProductPrice: 0,
+          shippingFee: 0,
+          totalQuantity: 0,
+          totalAmountToPay: 0,
+        };
+      }
+      const shipping = await shippingFee(
+        addressId,
+        shopId,
+        weight,
+        groupedItemsByShop[shopId].totalPrice
+      );
+      groupedItemsByShop[shopId].shippingFee = shipping;
+      groupedItemsByShop[shopId].totalProductPrice += item.totalPrice +=
+        shipping;
+      groupedItemsByShop[shopId].totalQuantity += item.quantity;
+      groupedItemsByShop[shopId].totalAmountToPay =
+        groupedItemsByShop[shopId].shippingFee +
+        groupedItemsByShop[shopId].totalProductPrice;
+      groupedItemsByShop[shopId].products.push({
+        cartItemId: item.id,
+        productId: item.Product?.id || null,
+        productName: item.Product?.productName,
+        optionName: item.optionName,
+        optionValue: item.optionValue,
+        originalPrice: item.Product?.ProductPrice?.originalPrice,
+        finalPrice:
+          item.Product?.ProductPrice?.originalPrice ===
+          item.Product?.ProductPrice?.finalPrice
+            ? null
+            : item.Product?.ProductPrice?.finalPrice,
+        quantity: item.quantity,
+        totalPrice: item.totalPrice,
+      });
+    }
+    const response = Object.values(groupedItemsByShop);
+
+    return response;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 module.exports = {
   CreatePayment,
+  getAllSelected,
   handleNotification,
   getPaymentById,
+  calculateShippingFeeGHTK,
+  shippingFee,
 };

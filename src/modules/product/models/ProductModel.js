@@ -39,6 +39,10 @@ const Product = sequelize.define(
       allowNull: false,
       unique: true,
     },
+    weight: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,

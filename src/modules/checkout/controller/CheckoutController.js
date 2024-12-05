@@ -1,6 +1,38 @@
 const CheckoutService = require("../services/CheckoutService");
 const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
 
+const getAllSelected = async (req, res) => {
+  const userId = req.user.id;
+  const { cartItemIds, addressId } = req.body;
+  if (!Array.isArray(cartItemIds) || cartItemIds.length === 0) {
+    return setResponseLocals({
+      res,
+      statusCode: 400,
+      errorCode: "BAD_REQUEST",
+      errorMessage: "cartItemIds must be a non-empty array.",
+    });
+  }
+  try {
+    const cartItems = await CheckoutService.getAllSelected(
+      userId,
+      cartItemIds,
+      addressId
+    );
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Show item selected successfully",
+      data: cartItems,
+    });
+  } catch (error) {
+    return setResponseLocals({
+      res,
+      statusCode: 500,
+      errorCode: "INTERNAL_SERVER_ERROR",
+      errorMessage: error.message,
+    });
+  }
+};
 const CreatePayment = async (req, res) => {
   const { orderId, paymentMethod } = req.body;
   try {
@@ -65,6 +97,7 @@ const getPaymentById = async (req, res) => {
   } catch (error) {}
 };
 module.exports = {
+  getAllSelected,
   CreatePayment,
   handleNotification,
   getPaymentById,

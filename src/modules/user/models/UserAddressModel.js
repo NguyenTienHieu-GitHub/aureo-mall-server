@@ -26,9 +26,6 @@ const UserAddress = sequelize.define(
     phoneNumber: {
       type: DataTypes.STRING(10),
       allowNull: false,
-      validate: {
-        is: /^[0-9]{10}$/,
-      },
     },
     addressType: {
       type: DataTypes.ENUM("HOME", "OFFICE"),

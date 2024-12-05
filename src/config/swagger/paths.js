@@ -5654,118 +5654,6 @@ module.exports = {
         },
       },
     },
-    post: {
-      summary: "Hiển thị sản phẩm đã trọn trong giỏ hàng",
-      description: "Hiển thị sản phẩm đã trọn trong giỏ hàng",
-      tags: ["Cart"],
-      operationId: "getAllSelected",
-      security: [
-        {
-          BearerAuth: [],
-        },
-      ],
-      requestBody: {
-        required: true,
-        content: {
-          "application/json": {
-            schema: {
-              $ref: "#/components/schemas/DeleteAllSelectedRequest",
-            },
-          },
-        },
-      },
-      responses: {
-        200: {
-          description: "Xóa nhiều sản phẩm trong giỏ hàng thành công",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/DeleteCartOptionResponse",
-              },
-            },
-          },
-        },
-        401: {
-          description: "Lỗi yêu cầu không hợp lệ",
-          content: {
-            "application/json": {
-              oneOf: [
-                {
-                  description: "Token đang nằm trong Black List",
-                  schema: {
-                    $ref: "#/components/schemas/TokenBlackListVerify",
-                  },
-                },
-                {
-                  description: "Token hết hạn",
-                  schema: {
-                    $ref: "#/components/schemas/TokenExpiredVerify",
-                  },
-                },
-                {
-                  description: "Token không hợp lệ",
-                  schema: {
-                    $ref: "#/components/schemas/TokenInvalidVerify",
-                  },
-                },
-              ],
-              examples: {
-                TokenBlackListVerify: {
-                  description: "Token đang nằm trong Black List",
-                  value: {
-                    status: 401,
-                    error: {
-                      errorCode: "TOKEN_IN_BLACKLIST",
-                      errorMessage: "Token in the backlist",
-                    },
-                  },
-                },
-                TokenExpiredVerify: {
-                  description: "Token hết hạn",
-                  value: {
-                    status: 401,
-                    error: {
-                      errorCode: "TOKEN_EXPIRED",
-                      errorMessage: "Token has expired",
-                    },
-                  },
-                },
-                TokenInvalidVerify: {
-                  description: "Token không hợp lệ",
-                  value: {
-                    status: 401,
-                    error: {
-                      errorCode: "TOKEN_INVALID",
-                      errorMessage: "You are not authenticated",
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        404: {
-          description: "Không tìm được sản phẩm cần xóa",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/CartOptionNotFound",
-              },
-            },
-          },
-        },
-        500: {
-          description: "Lỗi server",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/ErrorServerResponse",
-              },
-            },
-          },
-        },
-      },
-    },
   },
   "/api/cart/items/{cartItemId}": {
     delete: {
@@ -6004,12 +5892,12 @@ module.exports = {
     },
   },
 
-  "/api/order/create": {
+  "/api/checkout/cart-and-shipping": {
     post: {
-      summary: "Tạo hóa đơn",
-      description: "Tạo hóa đơn",
-      tags: ["Order"],
-      operationId: "createOrder",
+      summary: "Hiển thị sản phẩm đã trọn trong giỏ hàng",
+      description: "Hiển thị sản phẩm đã trọn trong giỏ hàng",
+      tags: ["Checkout"],
+      operationId: "getAllSelected",
       security: [
         {
           BearerAuth: [],
@@ -6020,18 +5908,140 @@ module.exports = {
         content: {
           "application/json": {
             schema: {
-              $ref: "#/components/schemas/CreateOrderRequest",
+              $ref: "#/components/schemas/GetAllSelectedRequest",
             },
           },
         },
       },
       responses: {
         200: {
-          description: "Tạo hóa đơn thành công",
+          description:
+            "Hiển thị sản phẩm trong giỏ hàng và phí vận chuyển thành công",
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/CreateOrderResponse",
+                $ref: "#/components/schemas/GetAllSelectedResponse",
+              },
+            },
+          },
+        },
+        401: {
+          description: "Lỗi yêu cầu không hợp lệ",
+          content: {
+            "application/json": {
+              oneOf: [
+                {
+                  description: "Token đang nằm trong Black List",
+                  schema: {
+                    $ref: "#/components/schemas/TokenBlackListVerify",
+                  },
+                },
+                {
+                  description: "Token hết hạn",
+                  schema: {
+                    $ref: "#/components/schemas/TokenExpiredVerify",
+                  },
+                },
+                {
+                  description: "Token không hợp lệ",
+                  schema: {
+                    $ref: "#/components/schemas/TokenInvalidVerify",
+                  },
+                },
+              ],
+              examples: {
+                TokenBlackListVerify: {
+                  description: "Token đang nằm trong Black List",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_IN_BLACKLIST",
+                      errorMessage: "Token in the backlist",
+                    },
+                  },
+                },
+                TokenExpiredVerify: {
+                  description: "Token hết hạn",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_EXPIRED",
+                      errorMessage: "Token has expired",
+                    },
+                  },
+                },
+                TokenInvalidVerify: {
+                  description: "Token không hợp lệ",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_INVALID",
+                      errorMessage: "You are not authenticated",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: "Không tìm được sản phẩm cần xóa",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/CartOptionNotFound",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorServerResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/checkout/create": {
+    post: {
+      summary: "Thanh toán",
+      description: "Thanh toán",
+      tags: ["Checkout"],
+      operationId: "createPayment",
+      security: [
+        {
+          BearerAuth: [],
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/CreateCheckoutRequest",
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Tạo hóa đơn thanh toán thành công",
+          content: {
+            "application/json": {
+              schema: {
+                oneOf: [
+                  {
+                    $ref: "#/components/schemas/CreateCheckoutResponse",
+                  },
+                  {
+                    $ref: "#/components/schemas/CreateCheckoutDataNullResponse",
+                  },
+                ],
               },
             },
           },
@@ -6109,12 +6119,12 @@ module.exports = {
     },
   },
 
-  "/api/checkout/create": {
+  "/api/order/create": {
     post: {
-      summary: "Thanh toán",
-      description: "Thanh toán",
-      tags: ["Checkout"],
-      operationId: "createPayment",
+      summary: "Tạo hóa đơn",
+      description: "Tạo hóa đơn",
+      tags: ["Order"],
+      operationId: "createOrder",
       security: [
         {
           BearerAuth: [],
@@ -6125,25 +6135,18 @@ module.exports = {
         content: {
           "application/json": {
             schema: {
-              $ref: "#/components/schemas/CreateCheckoutRequest",
+              $ref: "#/components/schemas/CreateOrderRequest",
             },
           },
         },
       },
       responses: {
         200: {
-          description: "Tạo hóa đơn thanh toán thành công",
+          description: "Tạo hóa đơn thành công",
           content: {
             "application/json": {
               schema: {
-                oneOf: [
-                  {
-                    $ref: "#/components/schemas/CreateCheckoutResponse",
-                  },
-                  {
-                    $ref: "#/components/schemas/CreateCheckoutDataNullResponse",
-                  },
-                ],
+                $ref: "#/components/schemas/CreateOrderResponse",
               },
             },
           },

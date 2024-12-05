@@ -189,6 +189,7 @@ const createProduct = async ({
   mediaList,
   optionList,
   quantity,
+  weight,
 }) => {
   const shop = await Shop.findOne({
     where: {
@@ -210,6 +211,7 @@ const createProduct = async ({
         sku: sku,
         description,
         slug: slug,
+        weight,
       },
       { transaction }
     );

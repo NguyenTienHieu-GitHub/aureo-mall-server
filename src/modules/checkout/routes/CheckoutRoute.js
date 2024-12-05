@@ -2,6 +2,11 @@ const express = require("express");
 const router = express.Router();
 const CheckoutController = require("../controller/CheckoutController");
 const { verifyToken } = require("../../../shared/middleware/AuthMiddleware");
+router.post(
+  "/cart-and-shipping",
+  verifyToken,
+  CheckoutController.getAllSelected
+);
 
 router.post("/create", verifyToken, CheckoutController.CreatePayment);
 

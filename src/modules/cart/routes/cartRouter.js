@@ -10,8 +10,6 @@ const CartItem = require("../models/CartItemModel");
 const models = [Cart, CartItem];
 
 router.delete("/items", verifyToken, cartController.deleteAllSelected);
-router.post("/items", verifyToken, cartController.getAllSelected);
-
 router.delete(
   "/items/:cartItemId",
   verifyToken,

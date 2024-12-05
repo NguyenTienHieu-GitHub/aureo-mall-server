@@ -2050,6 +2050,10 @@ module.exports = {
             type: "integer",
             example: 100,
           },
+          weight: {
+            type: "integer",
+            example: 5000,
+          },
         },
         required: [
           "productName",
@@ -2061,6 +2065,7 @@ module.exports = {
           "mediaList",
           "optionList",
           "quantity",
+          "weight",
         ],
       },
       CreateOrUpdateProductResponse: {
@@ -2874,6 +2879,64 @@ module.exports = {
           message: {
             type: "string",
             example: "Payment created successfully",
+          },
+        },
+      },
+      //[Checkout] GetCartItem
+      GetAllSelectedRequest: {
+        type: "object",
+        properties: {
+          cartItemIds: {
+            type: "array",
+            example: [1, 2, 3],
+          },
+          addressId: {
+            type: "string",
+            format: "uuid",
+            example: "bc2b8442-cfbf-416c-a244-af5c23b68701",
+          },
+        },
+      },
+      Product: {
+        type: "object",
+        properties: {
+          cartItemId: { type: "integer", example: 1 },
+          productId: { type: "integer", example: 1 },
+          productName: { type: "string", example: "Áo thun" },
+          optionName: { type: "string", example: "Size" },
+          optionValue: { type: "string", example: "S" },
+          originalPrice: { type: "integer", example: 100000 },
+          finalPrice: { type: "integer", example: 90000 },
+          quantity: { type: "integer", example: 2 },
+          totalPrice: { type: "integer", example: 180000 },
+        },
+      },
+      Shop: {
+        type: "object",
+        properties: {
+          shopId: { type: "integer", example: 1 },
+          shopName: { type: "string", example: "Shop Của Hiệuu" },
+          products: {
+            type: "array",
+            items: { $ref: "#/components/schemas/Product" },
+          },
+          totalProductPrice: { type: "integer", example: 180000 },
+          shippingFee: { type: "integer", example: 26500 },
+          totalQuantity: { type: "integer", example: 2 },
+          totalAmountToPay: { type: "integer", example: 206500 },
+        },
+      },
+      GetAllSelectedResponse: {
+        type: "object",
+        properties: {
+          status: { type: "integer", example: 200 },
+          message: {
+            type: "string",
+            example: "Show item selected successfully",
+          },
+          data: {
+            type: "array",
+            items: { $ref: "#/components/schemas/Shop" },
           },
         },
       },

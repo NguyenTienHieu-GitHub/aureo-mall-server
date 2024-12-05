@@ -38,6 +38,7 @@ const Payment = sequelize.define(
     transactionId: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     amount: {
       type: DataTypes.INTEGER,

@@ -51,6 +51,7 @@ const createProduct = async (req, res) => {
     categoryId,
     optionList,
     quantity,
+    weight,
   } = req.body;
   const mediaList = req.files.map((file) => file.path);
   try {
@@ -67,8 +68,8 @@ const createProduct = async (req, res) => {
       mediaList: mediaList,
       optionList,
       quantity,
+      weight,
     });
-
     return setResponseLocals({
       res,
       statusCode: 200,

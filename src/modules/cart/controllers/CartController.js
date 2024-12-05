@@ -29,33 +29,6 @@ const getAllProductInCart = async (req, res) => {
     }
   }
 };
-const getAllSelected = async (req, res) => {
-  const { cartItemIds } = req.body;
-  if (!Array.isArray(cartItemIds) || cartItemIds.length === 0) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "BAD_REQUEST",
-      errorMessage: "cartItemIds must be a non-empty array.",
-    });
-  }
-  try {
-    const cartItems = await CartService.getAllSelected(cartItemIds);
-    return setResponseLocals({
-      res,
-      statusCode: 200,
-      messageSuccess: "Show item selected successfully",
-      data: cartItems,
-    });
-  } catch (error) {
-    return setResponseLocals({
-      res,
-      statusCode: 500,
-      errorCode: "INTERNAL_SERVER_ERROR",
-      errorMessage: error.message,
-    });
-  }
-};
 const addProductToCart = async (req, res) => {
   const userId = req.user.id;
   const { productId, quantity, optionName, optionValue } = req.body;
@@ -176,7 +149,6 @@ const deleteAllSelected = async (req, res) => {
 };
 module.exports = {
   getAllProductInCart,
-  getAllSelected,
   addProductToCart,
   updateItemInCart,
   deleteItemInCart,
