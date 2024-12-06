@@ -184,14 +184,6 @@ const createUserAddress = async (req, res) => {
 
 const updateUserAddress = async (req, res) => {
   const addressId = req.params.id;
-  if (!isUUID(addressId)) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "PARAMS_INCORRECT_FORMAT",
-      errorMessage: "Invalid params format: uuid",
-    });
-  }
   const {
     fullName,
     phoneNumber,
@@ -265,14 +257,6 @@ const updateUserAddress = async (req, res) => {
 
 const deleteUserAddress = async (req, res) => {
   const addressId = req.params.id;
-  if (!isUUID(addressId)) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "PARAMS_INCORRECT_FORMAT",
-      errorMessage: "Invalid params format: uuid",
-    });
-  }
   try {
     const userId = req.user.id;
     if (!userId) {
@@ -294,7 +278,14 @@ const deleteUserAddress = async (req, res) => {
     });
   } catch (error) {
     console.error("Error deleting address", error);
-    if (error.message === "UserAddress not found") {
+    if (error.message === "Cannot delete the primary address") {
+      return setResponseLocals({
+        res,
+        statusCode: 400,
+        errorCode: "CANNOT_DELETE_ADDRESS",
+        errorMessage: "Cannot delete the primary address",
+      });
+    } else if (error.message === "UserAddress not found") {
       return setResponseLocals({
         res,
         statusCode: 404,

@@ -7,6 +7,7 @@ const {
   Ward,
 } = require("../models/UserAddressModel");
 
+const sequelize = require("../../../config/db/index");
 const getAllUserAddress = async () => {
   const allUserAddress = await UserAddress.findAll({
     include: [
@@ -133,6 +134,14 @@ const createUserAddress = async ({
   addressType,
   isPrimary,
 }) => {
+  if (isPrimary === true) {
+    await UserAddress.update(
+      { isPrimary: false },
+      {
+        where: { userId, isPrimary: true },
+      }
+    );
+  }
   const addUserAddressResult = await UserAddress.create({
     userId: userId,
     fullName: fullName,
@@ -179,53 +188,70 @@ const updateUserAddress = async ({
   addressType,
   isPrimary,
 }) => {
-  const addressToUpdate = await UserAddress.findOne({
-    where: {
-      id: addressId,
-      userId: userId,
-    },
-  });
-  if (!addressToUpdate) {
-    throw new Error("UserAddress not found");
-  }
-  await UserAddress.update(
-    {
-      fullName,
-      phoneNumber,
-      provinceCode,
-      districtCode,
-      wardCode,
-      address,
-      addressType,
-      isPrimary,
-    },
-    {
-      where: {
-        id: addressId,
-      },
+  const transaction = await sequelize.transaction();
+  try {
+    if (isPrimary === true) {
+      await UserAddress.update(
+        { isPrimary: false },
+        {
+          where: { userId, isPrimary: true },
+          transaction,
+        }
+      );
     }
-  );
-  const addressData = await UserAddress.findOne({
-    where: { id: addressId },
-    include: [
+
+    const currentAddress = await UserAddress.findOne({
+      where: { id: addressId, userId },
+      transaction,
+    });
+
+    if (!currentAddress) {
+      throw new Error("Address not found");
+    }
+    if (currentAddress.isPrimary) {
+      isPrimary = currentAddress.isPrimary;
+    }
+    await currentAddress.update(
       {
-        model: Province,
-        as: "Province",
-        attributes: ["name"],
+        fullName,
+        phoneNumber,
+        provinceCode,
+        districtCode,
+        wardCode,
+        address,
+        addressType,
+        isPrimary,
       },
-      {
-        model: District,
-        as: "District",
-        attributes: ["name"],
-      },
-      {
-        model: Ward,
-        as: "Ward",
-        attributes: ["name"],
-      },
-    ],
-  });
-  return addressData;
+      { transaction }
+    );
+
+    const addressData = await UserAddress.findOne({
+      where: { id: addressId },
+      include: [
+        {
+          model: Province,
+          as: "Province",
+          attributes: ["name"],
+        },
+        {
+          model: District,
+          as: "District",
+          attributes: ["name"],
+        },
+        {
+          model: Ward,
+          as: "Ward",
+          attributes: ["name"],
+        },
+      ],
+      transaction,
+    });
+    await transaction.commit();
+    return addressData;
+  } catch (error) {
+    await transaction.rollback();
+    throw new Error(error.message);
+  }
 };
 
 const deleteUserAddress = async ({ addressId, userId }) => {
@@ -237,6 +263,9 @@ const deleteUserAddress = async ({ addressId, userId }) => {
   });
   if (!addressToDelete) {
     throw new Error("UserAddress not found");
+  }
+  if (addressToDelete.isPrimary === true) {
+    throw new Error("Cannot delete the primary address");
   }
   await UserAddress.destroy({
     where: {

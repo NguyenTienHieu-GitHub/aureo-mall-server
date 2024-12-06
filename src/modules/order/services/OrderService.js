@@ -4,7 +4,8 @@ const Product = require("../../product/models/ProductModel");
 const ProductPrice = require("../../product/models/ProductPriceModel");
 const Shop = require("../../shop/models/ShopModel");
 const sequelize = require("../../../config/db/index");
-const { shippingFee } = require("../../checkout/services/CheckoutService");
+const { shippingFee } = require("../../shipping/services/ShippingService");
+
 const createOrder = async (userId, addressId, note, items) => {
   const transaction = await sequelize.transaction();
   try {
