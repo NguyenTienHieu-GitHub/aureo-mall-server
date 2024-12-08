@@ -2782,41 +2782,12 @@ module.exports = {
             type: "string",
             example: "Giao sau 16h",
           },
-          items: {
+          cartItemIds: {
             type: "array",
-            items: {
-              type: "object",
-              properties: {
-                shopId: {
-                  type: "integer",
-                  example: 1,
-                },
-                productId: {
-                  type: "integer",
-                  example: 1,
-                },
-                optionName: {
-                  type: "string",
-                  example: "Size",
-                },
-                optionValue: {
-                  type: "string",
-                  example: "L",
-                },
-                quantity: {
-                  type: "integer",
-                  example: 1,
-                },
-                unitPrice: {
-                  type: "integer",
-                  example: 90000,
-                },
-              },
-              required: ["shopId", "productId", "quantity", "unitPrice"],
-            },
+            example: [1, 2, 3],
           },
         },
-        required: ["addressId", "note", "items"],
+        required: ["addressId", "note", "cartItemIds"],
       },
       CreateOrderResponse: {
         type: "object",
@@ -2836,9 +2807,9 @@ module.exports = {
       CreateCheckoutRequest: {
         type: "object",
         properties: {
-          orderId: {
-            type: "integer",
-            example: 1,
+          orderIds: {
+            type: "array",
+            example: [1, 2],
           },
           paymentMethod: {
             type: "string",

@@ -10,14 +10,6 @@ const Payment = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
-    orderId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "Orders",
-        key: "id",
-      },
-    },
     userId: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -40,7 +32,7 @@ const Payment = sequelize.define(
       allowNull: false,
       unique: true,
     },
-    amount: {
+    totalAmount: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },

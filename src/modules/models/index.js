@@ -39,6 +39,7 @@ const CartItem = require("../cart/models/CartItemModel");
 const Order = require("../order/models/OrderModel");
 const OrderDetail = require("../order/models/OrderDetailModel");
 const Payment = require("../checkout/models/paymentModel");
+const OrderPayment = require("../checkout/models/OrderPaymentModel");
 const Shipping = require("../shipping/models/ShippingModel");
 
 const {
@@ -211,8 +212,8 @@ ProductOptionValue.belongsTo(ProductOption, {
 Warehouse.hasMany(Inventory, { foreignKey: "warehouseId" });
 Inventory.belongsTo(Warehouse, { foreignKey: "warehouseId", as: "Warehouse" });
 
-Order.hasOne(Payment, { foreignKey: "orderId" });
-Payment.belongsTo(Order, { foreignKey: "orderId" });
+Order.hasMany(OrderPayment, { foreignKey: "orderId" });
+Payment.hasMany(OrderPayment, { foreignKey: "paymentId" });
 
 Order.hasOne(Shipping, { foreignKey: "orderId" });
 Shipping.belongsTo(Order, { foreignKey: "orderId" });

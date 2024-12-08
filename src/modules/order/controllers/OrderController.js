@@ -3,13 +3,13 @@ const setResponseLocals = require("../../../shared/middleware/setResponseLocals"
 
 const createOrder = async (req, res) => {
   const userId = req.user.id;
-  const { addressId, note, items } = req.body;
+  const { addressId, note, cartItemIds } = req.body;
   try {
     const order = await OrderService.createOrder(
       userId,
       addressId,
       note,
-      items
+      cartItemIds
     );
     return setResponseLocals({
       res,

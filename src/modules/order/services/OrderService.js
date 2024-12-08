@@ -3,118 +3,107 @@ const OrderDetail = require("../models/OrderDetailModel");
 const Product = require("../../product/models/ProductModel");
 const ProductPrice = require("../../product/models/ProductPriceModel");
 const Shop = require("../../shop/models/ShopModel");
+const CartItem = require("../../cart/models/CartItemModel");
 const sequelize = require("../../../config/db/index");
 const { shippingFee } = require("../../shipping/services/ShippingService");
 
-const createOrder = async (userId, addressId, note, items) => {
+const createOrder = async (userId, addressId, note, cartItemIds) => {
   const transaction = await sequelize.transaction();
   try {
-    const itemsByShop = items.reduce((acc, item) => {
-      const shopId = item.shopId;
+    const cartItems = await CartItem.findAll(
+      {
+        where: { id: cartItemIds },
+        include: [
+          {
+            model: Product,
+            as: "Product",
+            attributes: ["id", "productName", "sku", "weight"],
+            include: [
+              {
+                model: ProductPrice,
+                as: "ProductPrice",
+                attributes: [
+                  "originalPrice",
+                  "discountPrice",
+                  "discountType",
+                  "discountStartDate",
+                  "discountEndDate",
+                  "finalPrice",
+                ],
+              },
+              {
+                model: Shop,
+                as: "Shop",
+                attributes: ["id", "shopName"],
+              },
+            ],
+          },
+        ],
+      },
+      { transaction }
+    );
+    const itemsByShop = cartItems.reduce((acc, item) => {
+      const shopId = item.Product.Shop.id;
+      const weight = item.quantity * item.Product.weight;
+      const price = item.quantity * item.Product.ProductPrice.finalPrice;
+      const quantity = item.quantity;
       if (!acc[shopId]) {
-        acc[shopId] = [];
+        acc[shopId] = {
+          totalWeight: 0,
+          totalPrice: 0,
+          totalQuantity: 0,
+          items: [],
+        };
       }
-      acc[shopId].push(item);
+
+      acc[shopId].totalWeight += weight;
+      acc[shopId].totalPrice += price;
+      acc[shopId].totalQuantity += quantity;
+      acc[shopId].items.push(item);
+
       return acc;
     }, {});
 
     const orders = [];
 
-    for (const [shopId, shopItems] of Object.entries(itemsByShop)) {
-      let totalPrice = 0;
-      let totalQuantity = 0;
-      let totalWeight = 0;
-
-      const productIds = shopItems.map((item) => item.productId);
-      const products = await Product.findAll({
-        where: { id: productIds },
-        attributes: ["id", "productName", "weight"],
-        include: [
-          {
-            model: ProductPrice,
-            as: "ProductPrice",
-            attributes: [
-              "originalPrice",
-              "discountPrice",
-              "discountType",
-              "discountStartDate",
-              "discountEndDate",
-              "finalPrice",
-            ],
-          },
-          {
-            model: Shop,
-            as: "Shop",
-            attributes: ["id", "shopName"],
-          },
-        ],
-      });
-
-      const productPriceMap = {};
-      products.forEach((product) => {
-        if (product.ProductPrice) {
-          productPriceMap[product.id] = product.ProductPrice.finalPrice;
-        }
-      });
-
-      shopItems.forEach((item) => {
-        const product = products.find((p) => p.id === item.productId);
-        if (!product)
-          throw new Error(`Product not found for ID ${item.productId}`);
-
-        const priceInDb = productPriceMap[item.productId];
-        if (!priceInDb) {
-          throw new Error(`Price not found for product ID ${item.productId}`);
-        }
-        if (item.unitPrice !== priceInDb) {
-          throw new Error(
-            `Price mismatch for product ID ${item.productId}: expected ${priceInDb}, received ${item.unitPrice}.`
-          );
-        }
-
-        item.unitPrice = priceInDb;
-        item.subtotal = item.quantity * priceInDb;
-        totalQuantity += item.quantity;
-        totalPrice += item.subtotal;
-        totalWeight += product.weight * item.quantity;
-      });
-
-      const shipping = await shippingFee(
-        addressId,
-        shopId,
-        totalWeight,
-        totalPrice
-      );
+    for (const [
+      shopIdStr,
+      { totalWeight, totalPrice, totalQuantity, items },
+    ] of Object.entries(itemsByShop)) {
+      const shopId = Number(shopIdStr);
+      const fee = await shippingFee(addressId, shopId, totalWeight, totalPrice);
       const order = await Order.create(
         {
-          userId,
           shopId,
+          userId,
           addressId,
+          shippingFee: fee,
           totalQuantity,
-          totalPrice,
-          shippingFee: shipping,
+          totalPrice: totalPrice + fee,
           status: "Pending",
           note,
         },
         { transaction }
       );
+
+      for (const item of items) {
+        await OrderDetail.create(
+          {
+            orderId: order.id,
+            productId: item.Product.id,
+            optionName: item.optionName,
+            optionValue: item.optionValue,
+            quantity: item.quantity,
+            unitPrice: item.Product.ProductPrice.finalPrice,
+            subtotal: item.quantity * item.Product.ProductPrice.finalPrice,
+          },
+          { transaction }
+        );
+      }
       orders.push(order);
-
-      const orderDetails = shopItems.map((item) => ({
-        orderId: order.id,
-        productId: item.productId,
-        optionName: item.optionName,
-        optionValue: item.optionValue,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        subtotal: item.subtotal,
-      }));
-
-      await OrderDetail.bulkCreate(orderDetails, { transaction });
     }
-
     await transaction.commit();
-    return orders.map((order) => ({ orderId: order.id }));
+    return orders;
   } catch (error) {
     await transaction.rollback();
     throw new Error(error.message);

@@ -34,9 +34,12 @@ const getAllSelected = async (req, res) => {
   }
 };
 const CreatePayment = async (req, res) => {
-  const { orderId, paymentMethod } = req.body;
+  const { orderIds, paymentMethod } = req.body;
   try {
-    const payment = await CheckoutService.CreatePayment(orderId, paymentMethod);
+    const payment = await CheckoutService.CreatePayment(
+      orderIds,
+      paymentMethod
+    );
     return setResponseLocals({
       res,
       statusCode: 200,
