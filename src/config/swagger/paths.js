@@ -3387,147 +3387,7 @@ module.exports = {
       },
     },
   },
-  "/api/address/districts": {
-    get: {
-      summary: "Hiển thị tất cả Quận/Huyện",
-      description: "Hiển thị tât cả Quận/Huyện",
-      tags: ["Province"],
-      operationId: "getDistrict",
-      security: [
-        {
-          BearerAuth: [],
-        },
-      ],
-      responses: {
-        200: {
-          description: "Hiển thị tất cả Quận/Huyện",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/GetAllDistrictResponse",
-              },
-            },
-          },
-        },
-        500: {
-          description: "Lỗi server",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/ErrorServerResponse",
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  "/api/address/wards": {
-    get: {
-      summary: "Hiển thị tất cả Xã/Phường",
-      description: "Hiển thị tât cả Xã/Phường",
-      tags: ["Province"],
-      operationId: "getWard",
-      security: [
-        {
-          BearerAuth: [],
-        },
-      ],
-      responses: {
-        200: {
-          description: "Hiển thị tất cả Xã/Phường",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/GetAllWardResponse",
-              },
-            },
-          },
-        },
-        500: {
-          description: "Lỗi server",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/ErrorServerResponse",
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  "/api/address/units": {
-    get: {
-      summary: "Hiển thị tất cả đơn vị hành chánh",
-      description: "Hiển thị tât cả đơn vị hành chánh",
-      tags: ["Province"],
-      operationId: "getUnit",
-      security: [
-        {
-          BearerAuth: [],
-        },
-      ],
-      responses: {
-        200: {
-          description: "Hiển thị danh sách đơn vị hành chính",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/GetAllUnitsResponse",
-              },
-            },
-          },
-        },
-        500: {
-          description: "Lỗi server",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/ErrorServerResponse",
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  "/api/address/regions": {
-    get: {
-      summary: "Hiển thị tất cả khu vực",
-      description: "Hiển thị tât cả khu vực",
-      tags: ["Province"],
-      operationId: "getRegion",
-      security: [
-        {
-          BearerAuth: [],
-        },
-      ],
-      responses: {
-        200: {
-          description: "Hiển thị danh sách các vùng hành chính",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/GetAllRegionsResponse",
-              },
-            },
-          },
-        },
-        500: {
-          description: "Lỗi server",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/ErrorServerResponse",
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  "/api/address/districts/{provinceCode}": {
+  "/api/address/districts/{provinceId}": {
     get: {
       summary: "Tìm kiếm quận/huyện theo tỉnh/thành phố",
       description: "Tìm kiếm quận/huyện theo tỉnh/thành phố",
@@ -3540,11 +3400,11 @@ module.exports = {
       ],
       parameters: [
         {
-          name: "provinceCode",
+          name: "provinceId",
           in: "path",
           require: "true",
           schema: {
-            type: "string",
+            type: "integer",
             description: "Nhập Id muốn tìm kiếm",
           },
         },
@@ -3573,7 +3433,7 @@ module.exports = {
       },
     },
   },
-  "/api/address/wards/{districtCode}": {
+  "/api/address/wards/{districtId}": {
     get: {
       summary: "Tìm kiếm xã/phương theo quận/huyện",
       description: "Tìm kiếm xã/phương theo quận/huyện",
@@ -3586,11 +3446,11 @@ module.exports = {
       ],
       parameters: [
         {
-          name: "districtCode",
+          name: "districtId",
           in: "path",
           require: "true",
           schema: {
-            type: "string",
+            type: "integer",
             description: "Nhập Id muốn tìm kiếm",
           },
         },

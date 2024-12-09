@@ -1,20 +1,18 @@
 const Shop = require("../../shop/models/ShopModel");
 const ShopAddress = require("../../shop/models/ShopAddressModel");
 const {
-  AdministrativeRegion,
-  AdministrativeUnit,
-  Province,
-  District,
-  Ward,
-} = require("../../user/models/UserAddressModel");
+  getProvinces,
+  getDistrictsByProvinceID,
+  getWardByDistrictID,
+} = require("../../user/services/UserAddressService");
 const sequelize = require("../../../config/db/index");
 
 const createShop = async ({
   userId,
   shopName,
   description,
-  provinceCode,
-  districtCode,
+  provinceId,
+  districtId,
   wardCode,
   address,
   isPrimary,
@@ -44,55 +42,41 @@ const createShop = async ({
       },
       { transaction }
     );
+    const provinceNames = await getProvinces();
+    const provinceName = provinceNames.find(
+      (province) => province.ProvinceID === provinceId
+    );
+    const districtNames = await getDistrictsByProvinceID({ provinceId });
+    const districtName = districtNames.find(
+      (district) => district.DistrictID === districtId
+    );
+    const wardNames = await getWardByDistrictID(districtId);
+    const wardName = wardNames.find((ward) => ward.WardCode === wardCode);
+
     const shopAddress = await ShopAddress.create(
       {
         shopId: newShop.id,
-        provinceCode,
-        districtCode,
+        provinceId,
+        districtId,
         wardCode,
         address,
+        fullAddress: `${address}, ${wardName.WardName}, ${districtName.DistrictName}, ${provinceName.ProvinceName}`,
         isPrimary,
       },
       { transaction }
     );
-    const createdShop = await ShopAddress.findOne({
-      where: { id: shopAddress.id },
-      include: [
-        {
-          model: Province,
-          as: "Province",
-          attributes: ["code", "name"],
-        },
-        {
-          model: District,
-          as: "District",
-          attributes: ["code", "name"],
-        },
-        {
-          model: Ward,
-          as: "Ward",
-          attributes: ["code", "name"],
-        },
-      ],
-      transaction,
-    });
-    await transaction.commit();
-    return {
+    const response = {
+      shopId: newShop.id,
       shopName: newShop.name,
       description: newShop.description,
-      email: newShop.email,
       phone: newShop.phone,
+      email: newShop.email,
       logo: newShop.logo,
       website: newShop.website,
-      provinceCode: createdShop.provinceCode,
-      provinceName: createdShop.Province.name,
-      districtCode: createdShop.districtCode,
-      districtName: createdShop.District.name,
-      wardCode: createdShop.wardCode,
-      wardCode: createdShop.Ward.name,
-      address: createdShop.address,
-      isPrimary: createdShop.isPrimary,
+      fullAddress: shopAddress.fullAddress,
     };
+    await transaction.commit();
+    return response;
   } catch (error) {
     await transaction.rollback();
     throw new Error(error.message);

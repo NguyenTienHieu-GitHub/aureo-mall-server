@@ -1,15 +1,12 @@
 const axios = require("axios");
 const Shop = require("../../shop/models/ShopModel");
 const ShopAddress = require("../../shop/models/ShopAddressModel");
-
 const {
-  UserAddress,
-  AdministrativeRegion,
-  AdministrativeUnit,
-  Province,
-  District,
-  Ward,
-} = require("../../user/models/UserAddressModel");
+  getProvinces,
+  getDistrictsByProvinceID,
+  getWardByDistrictID,
+} = require("../../user/services/UserAddressService");
+const UserAddress = require("../../user/models/UserAddressModel");
 const calculateShippingFeeGHTK = async (
   pickProvince,
   pickDistrict,
@@ -64,59 +61,41 @@ const shippingFee = async (addressId, shopId, weight, totalPrice) => {
     include: [
       {
         model: ShopAddress,
-        attributes: ["provinceCode", "districtCode", "wardCode", "address"],
-        include: [
-          {
-            model: Province,
-            as: "Province",
-            attributes: ["code", "name"],
-          },
-          {
-            model: District,
-            as: "District",
-            attributes: ["code", "name"],
-          },
-          {
-            model: Ward,
-            as: "Ward",
-            attributes: ["code", "name"],
-          },
-        ],
+        attributes: ["provinceId", "districtId", "wardCode", "address"],
       },
     ],
   });
-  const userAddress = await UserAddress.findByPk(addressId, {
-    include: [
-      {
-        model: Province,
-        as: "Province",
-        attributes: ["code", "name"],
-      },
-      {
-        model: District,
-        as: "District",
-        attributes: ["code", "name"],
-      },
-      {
-        model: Ward,
-        as: "Ward",
-        attributes: ["code", "name"],
-      },
-    ],
-  });
-  const pickProvince = shopAddress.ShopAddresses[0].Province.name;
-  const pickDistrict = shopAddress.ShopAddresses[0].District.name;
-  const province = userAddress.Province.name;
-  const district = userAddress.District.name;
-  const ward = userAddress.Ward.name;
-  const address = userAddress.address;
+  const userAddress = await UserAddress.findByPk(addressId);
+  const provinceShop = shopAddress.ShopAddresses[0].provinceId;
+  const districtShop = shopAddress.ShopAddresses[0].districtId;
+  const provinceUser = userAddress.provinceId;
+  const districtUser = userAddress.districtId;
+  const wardUser = userAddress.wardCode;
+  const addressUser = userAddress.address;
+
+  const provinceNames = await getProvinces();
+  const pickProvince = provinceNames.find(
+    (province) => province.ProvinceID === provinceShop
+  );
+  const province = provinceNames.find(
+    (province) => province.ProvinceID === provinceUser
+  );
+  const districtNames = await getDistrictsByProvinceID({ provinceShop });
+  const pickDistrict = districtNames.find(
+    (district) => district.DistrictID === districtShop
+  );
+  const district = districtNames.find(
+    (district) => district.DistrictID === districtUser
+  );
+  const wardNames = await getWardByDistrictID(districtUser);
+  const wardName = wardNames.find((ward) => ward.WardCode === wardUser);
   const fee = await calculateShippingFeeGHTK(
-    pickProvince,
-    pickDistrict,
-    province,
-    district,
-    ward,
-    address,
+    pickProvince.ProvinceName,
+    pickDistrict.DistrictName,
+    province.ProvinceName,
+    district.DistrictName,
+    wardName.WardName,
+    addressUser,
     weight,
     totalPrice
   );

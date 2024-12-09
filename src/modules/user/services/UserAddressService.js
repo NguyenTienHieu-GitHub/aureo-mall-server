@@ -1,33 +1,73 @@
-const {
-  UserAddress,
-  AdministrativeRegion,
-  AdministrativeUnit,
-  Province,
-  District,
-  Ward,
-} = require("../models/UserAddressModel");
-
+const UserAddress = require("../models/UserAddressModel");
+const axios = require("axios");
 const sequelize = require("../../../config/db/index");
+
+const getProvinces = async () => {
+  const response = await axios.get(
+    `${process.env.GHN_API_URL}/master-data/province`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Token: process.env.GHN_API_KEY,
+      },
+    }
+  );
+  const provinces = response.data.data;
+  const province = provinces.map((province) => ({
+    ProvinceID: province.ProvinceID,
+    ProvinceName: province.ProvinceName,
+  }));
+  return province;
+};
+const getDistrictsByProvinceID = async ({ provinceId }) => {
+  try {
+    const response = await axios.get(
+      `${process.env.GHN_API_URL}/master-data/district`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          token: process.env.GHN_API_KEY,
+        },
+        params: {
+          province_id: provinceId,
+        },
+      }
+    );
+    const districts = response.data.data;
+    const district = districts.map((district) => ({
+      DistrictID: district.DistrictID,
+      DistrictName: district.DistrictName,
+      ProvinceID: district.ProvinceID,
+    }));
+    return district;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+const getWardByDistrictID = async (districtId) => {
+  const response = await axios.get(
+    `${process.env.GHN_API_URL}/master-data/ward`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Token: process.env.GHN_API_KEY,
+      },
+      params: {
+        district_id: districtId,
+      },
+    }
+  );
+  const wards = response.data.data;
+  const ward = wards.map((ward) => ({
+    WardCode: ward.WardCode,
+    WardName: ward.WardName,
+    DistrictID: ward.DistrictID,
+  }));
+  return ward;
+};
+
 const getAllUserAddress = async () => {
-  const allUserAddress = await UserAddress.findAll({
-    include: [
-      {
-        model: Province,
-        as: "Province",
-        attributes: ["code", "name"],
-      },
-      {
-        model: District,
-        as: "District",
-        attributes: ["code", "name"],
-      },
-      {
-        model: Ward,
-        as: "Ward",
-        attributes: ["code", "name"],
-      },
-    ],
-  });
+  const allUserAddress = await UserAddress.findAll();
   if (allUserAddress.length === 0) {
     throw new Error("UserAddress not found");
   }
@@ -35,16 +75,9 @@ const getAllUserAddress = async () => {
     const addr = allUserAddress.toJSON();
     return {
       addressId: addr.id,
-      userId: addr.userId,
       fullName: addr.fullName,
       phoneNumber: addr.phoneNumber,
-      provinceCode: addr.provinceCode,
-      provinceName: addr.Province.name,
-      districtCode: addr.districtCode,
-      districtName: addr.District.name,
-      wardCode: addr.wardCode,
-      wardName: addr.Ward.name,
-      address: addr.address,
+      fullAddress: addr.fullAddress,
       addressType: addr.addressType,
       isPrimary: addr.isPrimary,
     };
@@ -54,23 +87,6 @@ const getAllUserAddress = async () => {
 const getMyUserAddress = async (userId) => {
   const myUserAddress = await UserAddress.findAll({
     where: { userId: userId },
-    include: [
-      {
-        model: Province,
-        as: "Province",
-        attributes: ["code", "name"],
-      },
-      {
-        model: District,
-        as: "District",
-        attributes: ["code", "name"],
-      },
-      {
-        model: Ward,
-        as: "Ward",
-        attributes: ["code", "name"],
-      },
-    ],
   });
   if (myUserAddress.length === 0) {
     throw new Error("UserAddress not found");
@@ -81,13 +97,7 @@ const getMyUserAddress = async (userId) => {
       addressId: address.id,
       fullName: address.fullName,
       phoneNumber: address.phoneNumber,
-      provinceCode: address.provinceCode,
-      provinceName: address.Province.name,
-      districtCode: address.districtCode,
-      districtName: address.District.name,
-      wardCode: address.wardCode,
-      wardName: address.Ward.name,
-      address: address.address,
+      fullAddress: address.fullAddress,
       addressType: address.addressType,
       isPrimary: address.isPrimary,
     };
@@ -95,40 +105,28 @@ const getMyUserAddress = async (userId) => {
   return addressData;
 };
 const getUserAddressById = async (addressId) => {
-  const getUserAddressByIdResult = await UserAddress.findOne({
-    where: { id: addressId },
-    include: [
-      {
-        model: Province,
-        as: "Province",
-        attributes: ["code", "name"],
-      },
-      {
-        model: District,
-        as: "District",
-        attributes: ["code", "name"],
-      },
-      {
-        model: Ward,
-        as: "Ward",
-        attributes: ["code", "name"],
-      },
-    ],
-  });
-  if (!getUserAddressByIdResult) {
+  const userAddress = await UserAddress.findByPk(addressId);
+  if (!userAddress) {
     throw new Error("UserAddress not found");
   }
-  const addressesById = getUserAddressByIdResult.toJSON();
+  const response = {
+    addressId: userAddress.id,
+    fullName: userAddress.fullName,
+    phoneNumber: userAddress.phoneNumber,
+    fullAddress: userAddress.fullAddress,
+    addressType: userAddress.addressType,
+    isPrimary: userAddress.isPrimary,
+  };
 
-  return addressesById;
+  return response;
 };
 
 const createUserAddress = async ({
   userId,
   fullName,
   phoneNumber,
-  provinceCode,
-  districtCode,
+  provinceId,
+  districtId,
   wardCode,
   address,
   addressType,
@@ -142,38 +140,39 @@ const createUserAddress = async ({
       }
     );
   }
-  const addUserAddressResult = await UserAddress.create({
+  const provinceNames = await getProvinces();
+  const provinceName = provinceNames.find(
+    (province) => province.ProvinceID === provinceId
+  );
+
+  const districtNames = await getDistrictsByProvinceID({ provinceId });
+  const districtName = districtNames.find(
+    (district) => district.DistrictID === districtId
+  );
+  const wardNames = await getWardByDistrictID(districtId);
+  const wardName = wardNames.find((ward) => ward.WardCode === wardCode);
+
+  const userAddress = await UserAddress.create({
     userId: userId,
     fullName: fullName,
     phoneNumber: phoneNumber,
-    provinceCode: provinceCode,
-    districtCode: districtCode,
+    provinceId: provinceId,
+    districtId: districtId,
     wardCode: wardCode,
     address: address,
+    fullAddress: `${address}, ${wardName.WardName}, ${districtName.DistrictName}, ${provinceName.ProvinceName}`,
     addressType: addressType,
     isPrimary: isPrimary,
   });
-  const addressData = await UserAddress.findOne({
-    where: { id: addUserAddressResult.id },
-    include: [
-      {
-        model: Province,
-        as: "Province",
-        attributes: ["name"],
-      },
-      {
-        model: District,
-        as: "District",
-        attributes: ["name"],
-      },
-      {
-        model: Ward,
-        as: "Ward",
-        attributes: ["name"],
-      },
-    ],
-  });
-  return addressData;
+  const response = {
+    addressId: userAddress.id,
+    fullName: userAddress.fullName,
+    phoneNumber: userAddress.phoneNumber,
+    fullAddress: userAddress.fullAddress,
+    addressType: userAddress.addressType,
+    isPrimary: userAddress.isPrimary,
+  };
+  return response;
 };
 
 const updateUserAddress = async ({
@@ -181,8 +180,8 @@ const updateUserAddress = async ({
   addressId,
   fullName,
   phoneNumber,
-  provinceCode,
-  districtCode,
+  provinceId,
+  districtId,
   wardCode,
   address,
   addressType,
@@ -211,43 +210,42 @@ const updateUserAddress = async ({
     if (currentAddress.isPrimary) {
       isPrimary = currentAddress.isPrimary;
     }
-    await currentAddress.update(
+    const provinceNames = await getProvinces();
+    const provinceName = provinceNames.find(
+      (province) => province.ProvinceID === provinceId
+    );
+
+    const districtNames = await getDistrictsByProvinceID({ provinceId });
+    const districtName = districtNames.find(
+      (district) => district.DistrictID === districtId
+    );
+    const wardNames = await getWardByDistrictID(districtId);
+    const wardName = wardNames.find((ward) => ward.WardCode === wardCode);
+
+    const userAddress = await currentAddress.update(
       {
         fullName,
         phoneNumber,
-        provinceCode,
-        districtCode,
+        provinceId,
+        districtId,
         wardCode,
         address,
+        fullAddress: `${address}, ${wardName.WardName}, ${districtName.DistrictName}, ${provinceName.ProvinceName}`,
         addressType,
         isPrimary,
       },
       { transaction }
     );
-
-    const addressData = await UserAddress.findOne({
-      where: { id: addressId },
-      include: [
-        {
-          model: Province,
-          as: "Province",
-          attributes: ["name"],
-        },
-        {
-          model: District,
-          as: "District",
-          attributes: ["name"],
-        },
-        {
-          model: Ward,
-          as: "Ward",
-          attributes: ["name"],
-        },
-      ],
-      transaction,
-    });
+    const response = {
+      addressId: userAddress.id,
+      fullName: userAddress.fullName,
+      phoneNumber: userAddress.phoneNumber,
+      fullAddress: userAddress.fullAddress,
+      addressType: userAddress.addressType,
+      isPrimary: userAddress.isPrimary,
+    };
     await transaction.commit();
-    return addressData;
+    return response;
   } catch (error) {
     await transaction.rollback();
     throw new Error(error.message);
@@ -274,102 +272,14 @@ const deleteUserAddress = async ({ addressId, userId }) => {
   });
 };
 
-const getProvinces = async () => {
-  const provinces = await Province.findAll();
-  if (provinces.length === 0) {
-    throw new Error("Provinces not found");
-  }
-  const provincesData = provinces.map((province) => ({
-    code: province.code,
-    name: province.name,
-  }));
-  return provincesData;
-};
-const getDistricts = async () => {
-  const districts = await District.findAll();
-  if (districts.length === 0) {
-    throw new Error("Districts not found");
-  }
-  const districtsData = districts.map((district) => ({
-    code: district.code,
-    name: district.name,
-  }));
-  return districtsData;
-};
-const getWards = async () => {
-  const wards = await Ward.findAll();
-  if (wards.length === 0) {
-    throw new Error("Wards not found");
-  }
-  const wardsData = wards.map((ward) => ({
-    code: ward.code,
-    name: ward.name,
-  }));
-  return wardsData;
-};
-const getAdministrativeRegion = async () => {
-  const administrativeRegions = await AdministrativeRegion.findAll();
-  if (administrativeRegions.length === 0) {
-    throw new Error("Administrative regions not found");
-  }
-  return administrativeRegions;
-};
-const getAdministrativeUnit = async () => {
-  const administrativeUnits = await AdministrativeUnit.findAll();
-  if (administrativeUnits.length === 0) {
-    throw new Error("Administrative units not found");
-  }
-  return administrativeUnits;
-};
-const getDistrictsByProvinceCode = async (provinceCode) => {
-  const districtByProvinceCode = await Province.findOne({
-    where: { code: provinceCode },
-    include: [
-      { model: District, attributes: ["code", "name", "provinceCode"] },
-    ],
-  });
-  if (!districtByProvinceCode) {
-    throw new Error("Province not found");
-  }
-  const districts = districtByProvinceCode.Districts;
-  return districts.map((district) => ({
-    code: district.code,
-    name: district.name,
-    provinceCode: district.provinceCode,
-  }));
-};
-const getWardByDistrictCode = async (districtCode) => {
-  const wardByDistrictCode = await District.findOne({
-    where: { code: districtCode },
-    include: [
-      {
-        model: Ward,
-        attributes: ["code", "name", "districtCode"],
-      },
-    ],
-  });
-  if (!wardByDistrictCode) {
-    throw new Error("District not found");
-  }
-  const wards = wardByDistrictCode.Wards;
-  return wards.map((ward) => ({
-    code: ward.code,
-    name: ward.name,
-    districtCode: ward.districtCode,
-  }));
-};
 module.exports = {
+  getProvinces,
+  getDistrictsByProvinceID,
+  getWardByDistrictID,
   getAllUserAddress,
   getMyUserAddress,
   getUserAddressById,
   createUserAddress,
   updateUserAddress,
   deleteUserAddress,
-  getProvinces,
-  getDistricts,
-  getWards,
-  getAdministrativeRegion,
-  getAdministrativeUnit,
-  getDistrictsByProvinceCode,
-  getWardByDistrictCode,
 };

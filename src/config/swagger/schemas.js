@@ -1123,17 +1123,17 @@ module.exports = {
             type: "string",
             example: "0975515940",
           },
-          provinceCode: {
-            type: "string",
-            example: "02",
+          provinceId: {
+            type: "integer",
+            example: 201,
           },
-          districtCode: {
-            type: "string",
-            example: "027",
+          districtId: {
+            type: "integer",
+            example: 1489,
           },
           wardCode: {
             type: "string",
-            example: "00817",
+            example: "1A0218",
           },
           address: {
             type: "string",
@@ -1650,17 +1650,17 @@ module.exports = {
             type: "string",
             example: "Shop Của Hiệu",
           },
-          provinceCode: {
-            type: "string",
-            example: "02",
+          provinceId: {
+            type: "integer",
+            example: 201,
           },
-          districtCode: {
-            type: "string",
-            example: "027",
+          districtId: {
+            type: "integer",
+            example: 1489,
           },
           wardCode: {
             type: "string",
-            example: "00817",
+            example: "1A0218",
           },
           address: {
             type: "string",

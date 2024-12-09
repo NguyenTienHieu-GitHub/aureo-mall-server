@@ -67,14 +67,6 @@ const getMyUserAddress = async (req, res) => {
 };
 const getUserAddressById = async (req, res) => {
   const addressId = req.params.id;
-  if (!isUUID(addressId)) {
-    return setResponseLocals({
-      res,
-      statusCode: 400,
-      errorCode: "PARAMS_INCORRECT_FORMAT",
-      errorMessage: "Invalid params format: uuid",
-    });
-  }
   try {
     const addressesById = await UserAddressService.getUserAddressById(
       addressId
@@ -84,20 +76,7 @@ const getUserAddressById = async (req, res) => {
       res,
       statusCode: 200,
       messageSuccess: "Show address successfully",
-      data: {
-        addressId: addressesById.id,
-        fullName: addressesById.fullName,
-        phoneNumber: addressesById.phoneNumber,
-        provinceCode: addressesById.provinceCode,
-        provinceName: addressesById.Province.name,
-        districtCode: addressesById.districtCode,
-        districtName: addressesById.District.name,
-        wardCode: addressesById.wardCode,
-        wardName: addressesById.Ward.name,
-        address: addressesById.address,
-        addressType: addressesById.addressType,
-        isPrimary: addressesById.isPrimary,
-      },
+      data: addressesById,
     });
   } catch (error) {
     console.error(error);
@@ -123,8 +102,8 @@ const createUserAddress = async (req, res) => {
   const {
     fullName,
     phoneNumber,
-    provinceCode,
-    districtCode,
+    provinceId,
+    districtId,
     wardCode,
     address,
     addressType,
@@ -145,8 +124,8 @@ const createUserAddress = async (req, res) => {
       userId: userId,
       fullName,
       phoneNumber,
-      provinceCode,
-      districtCode,
+      provinceId,
+      districtId,
       wardCode,
       address,
       addressType,
@@ -156,20 +135,7 @@ const createUserAddress = async (req, res) => {
       res,
       statusCode: 201,
       messageSuccess: "UserAddress created successfully",
-      data: {
-        addressId: addressData.id,
-        fullName: addressData.fullName,
-        phoneNumber: addressData.phoneNumber,
-        provinceCode: addressData.provinceCode,
-        provinceName: addressData.Province.name,
-        districtCode: addressData.districtCode,
-        districtName: addressData.District.name,
-        wardCode: addressData.wardCode,
-        wardName: addressData.Ward.name,
-        address: addressData.address,
-        addressType: addressData.addressType,
-        isPrimary: addressData.isPrimary,
-      },
+      data: addressData,
     });
   } catch (error) {
     console.error(error);
@@ -187,8 +153,8 @@ const updateUserAddress = async (req, res) => {
   const {
     fullName,
     phoneNumber,
-    provinceCode,
-    districtCode,
+    provinceId,
+    districtId,
     wardCode,
     address,
     addressType,
@@ -209,8 +175,8 @@ const updateUserAddress = async (req, res) => {
       addressId,
       fullName,
       phoneNumber,
-      provinceCode,
-      districtCode,
+      provinceId,
+      districtId,
       wardCode,
       address,
       addressType,
@@ -220,20 +186,7 @@ const updateUserAddress = async (req, res) => {
       res,
       statusCode: 200,
       messageSuccess: "UserAddress updated successfully",
-      data: {
-        addressId: addressData.id,
-        fullName: addressData.fullName,
-        phoneNumber: addressData.phoneNumber,
-        provinceCode: addressData.provinceCode,
-        provinceName: addressData.Province.name,
-        districtCode: addressData.districtCode,
-        districtName: addressData.District.name,
-        wardCode: addressData.wardCode,
-        wardName: addressData.Ward.name,
-        address: addressData.address,
-        addressType: addressData.addressType,
-        isPrimary: addressData.isPrimary,
-      },
+      data: addressData,
     });
   } catch (error) {
     console.error(error);
@@ -330,122 +283,12 @@ const getProvinces = async (req, res) => {
     }
   }
 };
-const getDistricts = async (req, res) => {
-  try {
-    const districtsData = await UserAddressService.getDistricts();
-    return setResponseLocals({
-      res,
-      statusCode: 200,
-      messageSuccess: "Show all districts",
-      data: districtsData,
-    });
-  } catch (error) {
-    if (error.message.includes("Districts not found")) {
-      return setResponseLocals({
-        res,
-        statusCode: 404,
-        errorCode: "DISTRICT_NOT_FOUND",
-        errorMessage: "Districts not found in the database",
-      });
-    } else {
-      return setResponseLocals({
-        res,
-        statusCode: 500,
-        errorCode: "INTERNAL_SERVER_ERROR",
-        errorMessage: error.message,
-      });
-    }
-  }
-};
-const getWards = async (req, res) => {
-  try {
-    const wardsData = await UserAddressService.getWards();
-    return setResponseLocals({
-      res,
-      statusCode: 200,
-      messageSuccess: "Show all wards",
-      data: wardsData,
-    });
-  } catch (error) {
-    if (error.message.includes("Wards not found")) {
-      return setResponseLocals({
-        res,
-        statusCode: 404,
-        errorCode: "WARDS_NOT_FOUND",
-        errorMessage: "Wards not found in the database",
-      });
-    } else {
-      return setResponseLocals({
-        res,
-        statusCode: 500,
-        errorCode: "INTERNAL_SERVER_ERROR",
-        errorMessage: error.message,
-      });
-    }
-  }
-};
-const getAdministrativeRegion = async (req, res) => {
-  try {
-    const administrativeRegions =
-      await UserAddressService.getAdministrativeRegion();
-    return setResponseLocals({
-      res,
-      statusCode: 200,
-      messageSuccess: "Show all administrative regions",
-      data: administrativeRegions,
-    });
-  } catch (error) {
-    if (error.message.includes("Administrative regions not found")) {
-      return setResponseLocals({
-        res,
-        statusCode: 404,
-        errorCode: "ADMINISTRATIVE_REGIONS_NOT_FOUND",
-        errorMessage: "Administrative regions not found in the database",
-      });
-    } else {
-      return setResponseLocals({
-        res,
-        statusCode: 500,
-        errorCode: "INTERNAL_SERVER_ERROR",
-        errorMessage: error.message,
-      });
-    }
-  }
-};
-const getAdministrativeUnit = async (req, res) => {
-  try {
-    const administrativeUnits =
-      await UserAddressService.getAdministrativeUnit();
-    return setResponseLocals({
-      res,
-      statusCode: 200,
-      messageSuccess: "Show all administrative units",
-      data: administrativeUnits,
-    });
-  } catch (error) {
-    if (error.message.includes("Administrative units not found")) {
-      return setResponseLocals({
-        res,
-        statusCode: 404,
-        errorCode: "ADMINISTRATIVE_UNITS_NOT_FOUND",
-        errorMessage: "Administrative units not found in the database",
-      });
-    } else {
-      return setResponseLocals({
-        res,
-        statusCode: 500,
-        errorCode: "INTERNAL_SERVER_ERROR",
-        errorMessage: error.message,
-      });
-    }
-  }
-};
 
-const getDistrictsByProvinceCode = async (req, res) => {
-  const provinceCode = req.params.provinceCode;
+const getDistrictsByProvinceID = async (req, res) => {
+  const provinceId = req.params.provinceId;
   try {
     const districtByProvinceCode =
-      await UserAddressService.getDistrictsByProvinceCode(provinceCode);
+      await UserAddressService.getDistrictsByProvinceID({ provinceId });
     return setResponseLocals({
       res,
       statusCode: 200,
@@ -470,11 +313,11 @@ const getDistrictsByProvinceCode = async (req, res) => {
     }
   }
 };
-const getWardByDistrictCode = async (req, res) => {
-  const districtCode = req.params.districtCode;
+const getWardByDistrictID = async (req, res) => {
+  const districtId = req.params.districtId;
   try {
-    const wardByDistrictCode = await UserAddressService.getWardByDistrictCode(
-      districtCode
+    const wardByDistrictCode = await UserAddressService.getWardByDistrictID(
+      districtId
     );
     return setResponseLocals({
       res,
@@ -485,17 +328,13 @@ const getWardByDistrictCode = async (req, res) => {
   } catch (error) {}
 };
 module.exports = {
+  getProvinces,
+  getDistrictsByProvinceID,
+  getWardByDistrictID,
   getAllUserAddress,
   getMyUserAddress,
   getUserAddressById,
   createUserAddress,
   updateUserAddress,
   deleteUserAddress,
-  getProvinces,
-  getDistricts,
-  getWards,
-  getAdministrativeRegion,
-  getAdministrativeUnit,
-  getDistrictsByProvinceCode,
-  getWardByDistrictCode,
 };

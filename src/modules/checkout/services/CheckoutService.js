@@ -2,21 +2,12 @@ const Payment = require("../models/paymentModel");
 const Order = require("../../order/models/OrderModel");
 const OrderPayment = require("../models/OrderPaymentModel");
 const Shop = require("../../shop/models/ShopModel");
-const ShopAddress = require("../../shop/models/ShopAddressModel");
 const User = require("../../auth/models/UserModel");
 const Product = require("../../product/models/ProductModel");
-const Cart = require("../../cart/models/CartModel");
 const CartItem = require("../../cart/models/CartItemModel");
 const ProductPrice = require("../../product/models/ProductPriceModel");
 const { shippingFee } = require("../../shipping/services/ShippingService");
-const {
-  UserAddress,
-  AdministrativeRegion,
-  AdministrativeUnit,
-  Province,
-  District,
-  Ward,
-} = require("../../user/models/UserAddressModel");
+const UserAddress = require("../../user/models/UserAddressModel");
 const sequelize = require("../../../config/db/index");
 const { startNgrok } = require("../../../config/ngrok/ngrokConfig");
 const transporter = require("../../../config/nodemailer/nodemailer");
@@ -144,10 +135,7 @@ const handleNotification = async ({
       throw new Error("Invalid signature");
     }
     const paymentId = orderId.split("_")[0];
-    const payment = await Payment.findOne({
-      where: { id: paymentId },
-      transaction,
-    });
+    const payment = await Payment.findByPk(paymentId, { transaction });
     if (!payment) {
       throw new Error("Payment not found");
     }
@@ -165,10 +153,7 @@ const handleNotification = async ({
       where: { paymentId: payment.id },
     });
     for (const order of orders) {
-      const findOrder = await Order.findOne({
-        where: { id: order.orderId },
-        transaction,
-      });
+      const findOrder = await Order.findByPk(order.orderId, { transaction });
       if (findOrder) {
         switch (resultCode) {
           case 0:
@@ -189,29 +174,8 @@ const handleNotification = async ({
       }
       await findOrder.save({ transaction });
       if (findOrder.status === "Paid") {
-        const shop = await Shop.findOne({
-          where: { id: findOrder.shopId },
-        });
-        const address = await UserAddress.findOne({
-          where: { id: findOrder.addressId },
-          include: [
-            {
-              model: Province,
-              as: "Province",
-              attributes: ["code", "name"],
-            },
-            {
-              model: District,
-              as: "District",
-              attributes: ["code", "name"],
-            },
-            {
-              model: Ward,
-              as: "Ward",
-              attributes: ["code", "name"],
-            },
-          ],
-        });
+        const shop = await Shop.findByPk(findOrder.shopId);
+        const address = await UserAddress.findByPk(findOrder.addressId);
         const orderDetails = await OrderDetail.findAll({
           where: { orderId: findOrder.id },
           include: [
@@ -234,9 +198,7 @@ const handleNotification = async ({
         Mã đơn hàng: ${order.id}
         Tên khách hàng: ${address.fullName}
         Số điện thoại: ${address.phoneNumber}
-        Địa chỉ giao hàng: ${address.address}, ${address.Ward.name}, ${
-            address.District.name
-          }, ${address.Province.name}
+        Địa chỉ giao hàng: ${address.fullAddress}
         Tổng giá trị đơn hàng: ${order.totalPrice} VNĐ
         Phương thức thanh toán: ${payment.paymentMethod}
   
@@ -284,9 +246,7 @@ const handleNotification = async ({
                       </tr>
                       <tr>
                         <th style="padding: 8px; background-color: #f4f4f4; text-align: left;">Địa chỉ giao hàng</th>
-                        <td style="padding: 8px;">${address.address}, ${
-            address.Ward.name
-          }, ${address.District.name}, ${address.Province.name}</td>
+                        <td style="padding: 8px;">${address.fullAddress}</td>
                       </tr>
                       <tr>
                         <th style="padding: 8px; background-color: #f4f4f4; text-align: left;">Tổng giá trị đơn hàng</th>
@@ -354,29 +314,8 @@ const handleNotification = async ({
         });
       }
       if (findOrder.status === "Failed") {
-        const user = await User.findOne({
-          where: { id: findOrder.userId },
-        });
-        const address = await UserAddress.findOne({
-          where: { id: findOrder.addressId },
-          include: [
-            {
-              model: Province,
-              as: "Province",
-              attributes: ["code", "name"],
-            },
-            {
-              model: District,
-              as: "District",
-              attributes: ["code", "name"],
-            },
-            {
-              model: Ward,
-              as: "Ward",
-              attributes: ["code", "name"],
-            },
-          ],
-        });
+        const user = await User.findByPk(findOrder.userId);
+        const address = await UserAddress.findByPk(findOrder.addressId);
         const orderDetails = await OrderDetail.findAll({
           where: { orderId: findOrder.id },
           include: [
@@ -399,9 +338,7 @@ const handleNotification = async ({
         Mã đơn hàng: ${order.id}
         Tên khách hàng: ${address.fullName}
         Số điện thoại: ${address.phoneNumber}
-        Địa chỉ giao hàng: ${address.address}, ${address.Ward.name}, ${
-            address.District.name
-          }, ${address.Province.name}
+        Địa chỉ giao hàng: ${address.fullAddress}
         Tổng giá trị đơn hàng: ${order.totalPrice} VNĐ
         Phương thức thanh toán: ${payment.paymentMethod}
         
@@ -451,9 +388,7 @@ const handleNotification = async ({
                       </tr>
                       <tr>
                         <th style="padding: 8px; background-color: #f4f4f4; text-align: left;">Địa chỉ giao hàng</th>
-                        <td style="padding: 8px;">${address.address}, ${
-            address.Ward.name
-          }, ${address.District.name}, ${address.Province.name}</td>
+                        <td style="padding: 8px;">${address.fullAddress}</td>
                       </tr>
                       <tr>
                         <th style="padding: 8px; background-color: #f4f4f4; text-align: left;">Tổng giá trị đơn hàng</th>
@@ -527,6 +462,7 @@ const handleNotification = async ({
     throw new Error(error.message);
   }
 };
+
 const getPaymentById = async (paymentId) => {
   try {
     const payment = await Payment.findByPk(paymentId);
@@ -545,23 +481,6 @@ const getAllSelected = async (userId, cartItemIds, addressId) => {
     if (addressId === "" || addressId === null) {
       const userAddress = await UserAddress.findOne({
         where: { userId: userId, isPrimary: true },
-        include: [
-          {
-            model: Province,
-            as: "Province",
-            attributes: ["code", "name"],
-          },
-          {
-            model: District,
-            as: "District",
-            attributes: ["code", "name"],
-          },
-          {
-            model: Ward,
-            as: "Ward",
-            attributes: ["code", "name"],
-          },
-        ],
       });
       if (!userAddress) {
         throw new Error("No primary address found for the user.");

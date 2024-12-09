@@ -6,56 +6,33 @@ const {
   checkPermission,
 } = require("../../../shared/middleware/AuthMiddleware");
 const validateRequest = require("../../../shared/middleware/validateRequest");
-const { UserAddress } = require("../models/UserAddressModel");
+const UserAddress = require("../models/UserAddressModel");
 const models = [UserAddress];
 
 router.get(
-  "/wards/:districtCode",
+  "/wards/:districtId",
   verifyToken,
   checkPermission("view_address", "UserAddress"),
-  addressController.getWardByDistrictCode
+  addressController.getWardByDistrictID
 );
 router.get(
-  "/districts/:provinceCode",
+  "/districts/:provinceId",
   verifyToken,
   checkPermission("view_address", "UserAddress"),
-  addressController.getDistrictsByProvinceCode
-);
-router.get(
-  "/my-address",
-  verifyToken,
-  checkPermission("view_address", "UserAddress"),
-  addressController.getMyUserAddress
-);
-router.get(
-  "/regions",
-  verifyToken,
-  checkPermission("view_address", "UserAddress"),
-  addressController.getAdministrativeRegion
-);
-router.get(
-  "/units",
-  verifyToken,
-  checkPermission("view_address", "UserAddress"),
-  addressController.getAdministrativeUnit
-);
-router.get(
-  "/wards",
-  verifyToken,
-  checkPermission("view_address", "UserAddress"),
-  addressController.getWards
-);
-router.get(
-  "/districts",
-  verifyToken,
-  checkPermission("view_address", "UserAddress"),
-  addressController.getDistricts
+  addressController.getDistrictsByProvinceID
 );
 router.get(
   "/provinces",
   verifyToken,
   checkPermission("view_address", "UserAddress"),
   addressController.getProvinces
+);
+
+router.get(
+  "/my-address",
+  verifyToken,
+  checkPermission("view_address", "UserAddress"),
+  addressController.getMyUserAddress
 );
 router.delete(
   "/delete/:id",

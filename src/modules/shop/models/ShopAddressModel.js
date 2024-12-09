@@ -19,32 +19,24 @@ const ShopAddress = sequelize.define(
       },
       onDelete: "CASCADE",
     },
-    provinceCode: {
-      type: DataTypes.STRING(10),
+    provinceId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      reference: {
-        model: "Provinces",
-        key: "code",
-      },
     },
-    districtCode: {
-      type: DataTypes.STRING(10),
+    districtId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      reference: {
-        model: "Districts",
-        key: "code",
-      },
     },
     wardCode: {
-      type: DataTypes.STRING(10),
+      type: DataTypes.STRING,
       allowNull: false,
-      reference: {
-        model: "Wards",
-        key: "code",
-      },
     },
     address: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    fullAddress: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
     isPrimary: {

@@ -3,13 +3,6 @@ const createDefaultRoles = require("../../shared/utils/role");
 const createDefaultPermission = require("../../shared//utils/permission");
 const createDefaultRolePermission = require("../../shared//utils/rolePermission");
 const createAdminIfNotExists = require("../../shared//utils/createAdmin");
-const {
-  createDefaultAdministrativeUnits,
-  createDefaultAdministrativeRegions,
-  createDefaultProvinces,
-  createDefaultDistricts,
-  createDefaultWards,
-} = require("../../shared//utils/address");
 
 const User = require("../auth/models/UserModel");
 const Role = require("../auth/models/RoleModel");
@@ -42,14 +35,7 @@ const Payment = require("../checkout/models/paymentModel");
 const OrderPayment = require("../checkout/models/OrderPaymentModel");
 const Shipping = require("../shipping/models/ShippingModel");
 
-const {
-  UserAddress,
-  Province,
-  District,
-  Ward,
-  AdministrativeRegion,
-  AdministrativeUnit,
-} = require("../user/models/UserAddressModel");
+const UserAddress = require("../user/models/UserAddressModel");
 const Permission = require("../user/models/PermissionModel");
 const RolePermission = require("../user/models/RolePermissionModel");
 
@@ -105,56 +91,8 @@ Role.belongsToMany(User, {
 User.hasMany(UserAddress, { foreignKey: "userId" });
 UserAddress.belongsTo(User, { foreignKey: "userId", as: "User" });
 
-UserAddress.belongsTo(Province, {
-  foreignKey: "provinceCode",
-  as: "Province",
-});
-UserAddress.belongsTo(District, {
-  foreignKey: "districtCode",
-  as: "District",
-});
-UserAddress.belongsTo(Ward, {
-  foreignKey: "wardCode",
-  as: "Ward",
-});
-
 Shop.hasMany(ShopAddress, { foreignKey: "shopId" });
 ShopAddress.belongsTo(Shop, { foreignKey: "shopId", as: "Shop" });
-
-ShopAddress.belongsTo(Province, {
-  foreignKey: "provinceCode",
-  as: "Province",
-});
-ShopAddress.belongsTo(District, {
-  foreignKey: "districtCode",
-  as: "District",
-});
-ShopAddress.belongsTo(Ward, {
-  foreignKey: "wardCode",
-  as: "Ward",
-});
-
-AdministrativeRegion.hasMany(Province, {
-  foreignKey: "administrativeRegionId",
-});
-Province.belongsTo(AdministrativeRegion, {
-  foreignKey: "administrativeRegionId",
-});
-
-AdministrativeUnit.hasMany(Province, { foreignKey: "administrativeUnitId" });
-Province.belongsTo(AdministrativeUnit, { foreignKey: "administrativeUnitId" });
-
-Province.hasMany(District, { foreignKey: "provinceCode" });
-District.belongsTo(Province, { foreignKey: "provinceCode" });
-
-District.hasMany(Ward, { foreignKey: "districtCode" });
-Ward.belongsTo(District, { foreignKey: "districtCode" });
-
-AdministrativeUnit.hasMany(District, { foreignKey: "administrativeUnitId" });
-District.belongsTo(AdministrativeUnit, { foreignKey: "administrativeUnitId" });
-
-AdministrativeUnit.hasMany(Ward, { foreignKey: "administrativeUnitId" });
-Ward.belongsTo(AdministrativeUnit, { foreignKey: "administrativeUnitId" });
 
 User.hasMany(Token, { foreignKey: "userId" });
 Token.belongsTo(User, { foreignKey: "userId", as: "User" });
@@ -248,11 +186,6 @@ const syncModels = async () => {
     await createDefaultPermission({ transaction });
     await createDefaultRolePermission({ transaction });
     await createAdminIfNotExists({ transaction });
-    await createDefaultAdministrativeRegions({ transaction });
-    await createDefaultAdministrativeUnits({ transaction });
-    await createDefaultProvinces({ transaction });
-    await createDefaultDistricts({ transaction });
-    await createDefaultWards({ transaction });
     await transaction.commit();
     console.log("All tables synced successfully");
   } catch (error) {
