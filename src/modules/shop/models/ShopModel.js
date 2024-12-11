@@ -31,7 +31,7 @@ const Shop = sequelize.define(
     },
     phone: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
       validate: {
         is: {
           args: [/^[0-9]+$/],

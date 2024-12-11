@@ -6,6 +6,7 @@ const {
   getWardByDistrictID,
 } = require("../../user/services/UserAddressService");
 const sequelize = require("../../../config/db/index");
+const axios = require("axios");
 
 const createShop = async ({
   userId,
@@ -65,9 +66,29 @@ const createShop = async ({
       },
       { transaction }
     );
+    const createShopGHN = await axios.post(
+      `${process.env.GHN_API_URL}/v2/shop/register`,
+      {
+        district_id: districtId,
+        ward_code: wardCode,
+        name: newShop.shopName,
+        phone: newShop.phone,
+        address: shopAddress.fullAddress,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: process.env.GHN_API_KEY,
+        },
+      }
+    );
+    if (createShopGHN) {
+      console.log("Create Shop GHN successfully");
+    }
     const response = {
       shopId: newShop.id,
-      shopName: newShop.name,
+      shopIdGHN: createShopGHN.data.data.shop_id,
+      shopName: newShop.shopName,
       description: newShop.description,
       phone: newShop.phone,
       email: newShop.email,
