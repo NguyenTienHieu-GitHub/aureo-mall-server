@@ -12,24 +12,28 @@ const path = require("path");
 
 const app = express();
 const corsOptions = {
-  origin: ["http://localhost:4200", "http://localhost:3080"],
+  origin: [
+    "http://localhost:4200",
+    "http://localhost:3080",
+    "http://127.0.0.1:3080",
+  ],
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: ["Authorization", "Content-Type"],
   credentials: true,
 };
-
-const swaggerOptions = {
-  swaggerDefinition: swaggerDocument,
-  apis: ["./routes/*.js", "./swagger/*.js"],
-};
-
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+if (process.env.NODE_ENV === "development") {
+  const swaggerOptions = {
+    swaggerDefinition: swaggerDocument,
+    apis: ["./routes/*.js", "./swagger/*.js"],
+  };
+  const swaggerSpec = swaggerJsdoc(swaggerOptions);
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(responsesFormatter);
 app.get("/api/data", (req, res) => {
   res.locals.message = "CORS is working!";
@@ -53,9 +57,11 @@ app.listen(process.env.SERVER_PORT, async () => {
   console.log(
     `Server đang chạy tại http://localhost:${process.env.SERVER_PORT}`
   );
-  console.log(
-    `Swagger đang chạy tại http://localhost:${process.env.SERVER_PORT}/api-docs`
-  );
+  if (process.env.NODE_ENV !== "production") {
+    console.log(
+      `Swagger đang chạy tại http://localhost:${process.env.SERVER_PORT}/api-docs`
+    );
+  }
   const ngrokUrl = await startNgrok();
   console.log(`Public URL: ${ngrokUrl}`);
 });

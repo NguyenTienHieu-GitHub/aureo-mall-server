@@ -7,6 +7,8 @@ const {
   getWardByDistrictID,
 } = require("../../user/services/UserAddressService");
 const UserAddress = require("../../user/models/UserAddressModel");
+const Shipping = require("../models/ShippingModel");
+
 const calculateShippingFeeGHTK = async (
   pickProvince,
   pickDistrict,
@@ -65,7 +67,12 @@ const shippingFee = async (addressId, shopId, weight, totalPrice) => {
       },
     ],
   });
+
   const userAddress = await UserAddress.findByPk(addressId);
+
+  if (!userAddress) {
+    throw new Error("User address not found");
+  }
   const provinceShop = shopAddress.ShopAddresses[0].provinceId;
   const districtShop = shopAddress.ShopAddresses[0].districtId;
   const provinceUser = userAddress.provinceId;
@@ -101,6 +108,56 @@ const shippingFee = async (addressId, shopId, weight, totalPrice) => {
   );
   return fee;
 };
+
+const createShipping = async (
+  orders,
+  shippingMethod,
+  carrier,
+  trackingNumber
+) => {
+  try {
+    if (!orders || orders.length === 0) {
+      throw new Error("No orders provided for shipping creation");
+    }
+
+    if (!shippingMethod || !carrier || !trackingNumber) {
+      throw new Error("Missing required shipping fields");
+    }
+
+    const orderData = orders.map((order) => ({
+      id: order.id,
+      userId: order.userId,
+    }));
+
+    const estimated = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
+
+    const createdShippings = await Promise.all(
+      orderData.map((order) =>
+        Shipping.create({
+          orderId: order.id,
+          userId: order.userId,
+          shippingMethod,
+          carrier,
+          trackingNumber,
+          status: "Pending",
+          estimatedDelivery: estimated,
+        })
+      )
+    );
+
+    return createdShippings;
+  } catch (error) {
+    console.error("Error creating shipping records:", error.message, {
+      orders,
+      shippingMethod,
+      carrier,
+      trackingNumber,
+    });
+    throw error;
+  }
+};
+
 module.exports = {
   shippingFee,
+  createShipping,
 };

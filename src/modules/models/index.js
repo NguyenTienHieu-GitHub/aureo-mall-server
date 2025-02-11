@@ -21,6 +21,10 @@ const Warehouse = require("../product/models/WarehouseModel");
 const ProductMedia = require("../product/models/ProductMediaModel");
 const ProductOption = require("../product/models/ProductOptionModel");
 const ProductOptionValue = require("../product/models/ProductOptionValueModel");
+
+const Promotion = require("../product/models/PromotionModel");
+const ProductPromotion = require("../product/models/ProductPromotionModel");
+
 const {
   ProductRating,
   ProductRatingMedia,
@@ -111,6 +115,17 @@ ProductRating.belongsTo(User, { foreignKey: "userId", as: "User" });
 Product.hasMany(ProductRating, { foreignKey: "productId" });
 ProductRating.belongsTo(Product, { foreignKey: "productId", as: "Product" });
 
+Product.belongsToMany(Promotion, {
+  through: ProductPromotion,
+  foreignKey: "productId",
+  otherKey: "promotionId",
+});
+Promotion.belongsToMany(Product, {
+  through: ProductPromotion,
+  foreignKey: "promotionId",
+  otherKey: "productId",
+});
+
 ProductRating.hasMany(ProductRatingMedia, {
   foreignKey: "ratingId",
   as: "Media",
@@ -195,23 +210,5 @@ const syncModels = async () => {
 };
 
 module.exports = {
-  User,
-  Role,
-  UserRole,
-  Token,
-  BlacklistToken,
-  Product,
-  Category,
-  ProductCategory,
-  ProductPrice,
-  Shop,
-  Inventory,
-  Warehouse,
-  ProductMedia,
-  ProductOption,
-  ProductOptionValue,
-  UserAddress,
-  Permission,
-  RolePermission,
   syncModels,
 };

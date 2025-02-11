@@ -62,6 +62,33 @@ const getAllCategory = async (req, res) => {
     }
   }
 };
+const getAllCategoryAdmin = async (req, res) => {
+  try {
+    const allCategories = await CategoryService.getAllCategoriesAdmin();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Show all categories",
+      data: allCategories,
+    });
+  } catch (error) {
+    if (error.message.includes("Categories not found")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "CATEGORIES_NOT_FOUND",
+        errorMessage: "Categories not found in the database",
+      });
+    } else {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
+    }
+  }
+};
 const updateCategoryById = async (req, res) => {
   const categoryId = req.params.categoryId;
   const { categoryName, parentId, toggle } = req.body;
@@ -127,6 +154,8 @@ const deleteCategoryById = async (req, res) => {
 module.exports = {
   createCategory,
   getAllCategory,
+  getAllCategoryAdmin,
   updateCategoryById,
   deleteCategoryById,
+  getAllCategoryAdmin,
 };

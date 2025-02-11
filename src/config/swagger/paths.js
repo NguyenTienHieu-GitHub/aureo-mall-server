@@ -3480,17 +3480,116 @@ module.exports = {
     },
   },
 
-  "/api/category": {
+  "/api/categories/private": {
     get: {
-      summary: "Hiển thị tất cả danh mục",
-      description: "Hiển thị tât cả danh mục",
+      summary: "Hiển thị tất cả danh mục của admin",
+      description: "Hiển thị tât cả danh mục của admin",
       tags: ["Category"],
-      operationId: "getAllCategory",
+      operationId: "getAllCategoryAdmin",
       security: [
         {
           BearerAuth: [],
         },
       ],
+      responses: {
+        200: {
+          description: "Hiển thị tất cả danh mục có trong database",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/GetAllCategoriesAdminResponse",
+              },
+            },
+          },
+        },
+        401: {
+          description: "Lỗi yêu cầu không hợp lệ",
+          content: {
+            "application/json": {
+              oneOf: [
+                {
+                  description: "Token đang nằm trong Black List",
+                  schema: {
+                    $ref: "#/components/schemas/TokenBlackListVerify",
+                  },
+                },
+                {
+                  description: "Token hết hạn",
+                  schema: {
+                    $ref: "#/components/schemas/TokenExpiredVerify",
+                  },
+                },
+                {
+                  description: "Token không hợp lệ",
+                  schema: {
+                    $ref: "#/components/schemas/TokenInvalidVerify",
+                  },
+                },
+              ],
+              examples: {
+                TokenBlackListVerify: {
+                  description: "Token đang nằm trong Black List",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_IN_BLACKLIST",
+                      errorMessage: "Token in the backlist",
+                    },
+                  },
+                },
+                TokenExpiredVerify: {
+                  description: "Token hết hạn",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_EXPIRED",
+                      errorMessage: "Token has expired",
+                    },
+                  },
+                },
+                TokenInvalidVerify: {
+                  description: "Token không hợp lệ",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_INVALID",
+                      errorMessage: "You are not authenticated",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: "Category không tồn tại trong database",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/CategoryNotFound",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorServerResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/categories": {
+    get: {
+      summary: "Hiển thị tất cả danh mục",
+      description: "Hiển thị tât cả danh mục",
+      tags: ["Category"],
+      operationId: "getAllCategory",
       responses: {
         200: {
           description: "Hiển thị tất cả danh mục có trong database",
@@ -3584,7 +3683,7 @@ module.exports = {
       },
     },
   },
-  "/api/category/create": {
+  "/api/categories/create": {
     post: {
       summary: "Tạo danh mục",
       description: "Tạo danh mục",
@@ -3698,7 +3797,7 @@ module.exports = {
       },
     },
   },
-  "/api/category/update/{categoryId}": {
+  "/api/categories/update/{categoryId}": {
     put: {
       summary: "Cập nhật danh mục",
       description: "Cập nhật danh mục bằng id",
@@ -3832,7 +3931,7 @@ module.exports = {
       },
     },
   },
-  "/api/category/delete/{categoryId}": {
+  "/api/categories/delete/{categoryId}": {
     delete: {
       summary: "Xóa danh mục",
       description: "Xóa danh mục bằng id",
@@ -4063,6 +4162,105 @@ module.exports = {
   },
 
   "/api/product": {
+    get: {
+      summary: "Hiển thị tất cả sản phẩm",
+      description: "Hiển thị tât cả sản phẩm",
+      tags: ["Product"],
+      operationId: "getAllProduct",
+      responses: {
+        200: {
+          description: "Hiển thị tất cả sản phẩm có trong database",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/GetAllProducts",
+              },
+            },
+          },
+        },
+        401: {
+          description: "Lỗi yêu cầu không hợp lệ",
+          content: {
+            "application/json": {
+              oneOf: [
+                {
+                  description: "Token đang nằm trong Black List",
+                  schema: {
+                    $ref: "#/components/schemas/TokenBlackListVerify",
+                  },
+                },
+                {
+                  description: "Token hết hạn",
+                  schema: {
+                    $ref: "#/components/schemas/TokenExpiredVerify",
+                  },
+                },
+                {
+                  description: "Token không hợp lệ",
+                  schema: {
+                    $ref: "#/components/schemas/TokenInvalidVerify",
+                  },
+                },
+              ],
+              examples: {
+                TokenBlackListVerify: {
+                  description: "Token đang nằm trong Black List",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_IN_BLACKLIST",
+                      errorMessage: "Token in the backlist",
+                    },
+                  },
+                },
+                TokenExpiredVerify: {
+                  description: "Token hết hạn",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_EXPIRED",
+                      errorMessage: "Token has expired",
+                    },
+                  },
+                },
+                TokenInvalidVerify: {
+                  description: "Token không hợp lệ",
+                  value: {
+                    status: 401,
+                    error: {
+                      errorCode: "TOKEN_INVALID",
+                      errorMessage: "You are not authenticated",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: "Category không tồn tại trong database",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/CategoryNotFound",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorServerResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/product/private": {
     get: {
       summary: "Hiển thị tất cả sản phẩm",
       description: "Hiển thị tât cả sản phẩm",
@@ -6076,6 +6274,164 @@ module.exports = {
             "application/json": {
               schema: {
                 $ref: "#/components/schemas/ErrorServerResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+
+  "/api/banners": {
+    get: {
+      summary: "Lấy danh sách banner và sản phẩm ngẫu nhiên",
+      tags: ["Banners"],
+      responses: {
+        200: {
+          description: "Danh sách banner và sản phẩm ngẫu nhiên",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/GetBannersResponse",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Lỗi server",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+    post: {
+      summary: "Thêm mới banner",
+      tags: ["Banners"],
+      requestBody: {
+        required: true,
+        content: {
+          "multipart/form-data": {
+            schema: {
+              $ref: "#/components/schemas/BannerFormData",
+            },
+          },
+        },
+      },
+      responses: {
+        201: {
+          description: "Banner đã được tạo",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/Banner",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Dữ liệu không hợp lệ",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/banners/{id}": {
+    put: {
+      summary: "Cập nhật banner",
+      tags: ["Banners"],
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: {
+            type: "string",
+            format: "uuid",
+          },
+          example: "3f68d039-d850-48fb-b2e9-bfc9564e03ff",
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          "multipart/form-data": {
+            schema: {
+              $ref: "#/components/schemas/BannerFormData",
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Banner đã được cập nhật",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/Banner",
+              },
+            },
+          },
+        },
+        400: {
+          description: "Dữ liệu không hợp lệ",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+    delete: {
+      summary: "Xóa banner",
+      tags: ["Banners"],
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: {
+            type: "integer",
+          },
+          example: 1,
+        },
+      ],
+      responses: {
+        200: {
+          description: "Banner đã được xóa",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  message: {
+                    type: "string",
+                    example: "Banner deleted successfully",
+                  },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: "Không tìm thấy banner",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ErrorResponse",
               },
             },
           },

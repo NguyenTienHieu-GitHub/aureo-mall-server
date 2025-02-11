@@ -31,6 +31,7 @@ router.post(
   fixFilePath,
   categoryController.createCategory
 );
-router.get("/", verifyToken, categoryController.getAllCategory);
+router.get("/private", verifyToken, categoryController.getAllCategoryAdmin);
+router.get("/", categoryController.getAllCategory);
 
 module.exports = router;

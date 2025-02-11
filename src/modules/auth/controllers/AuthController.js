@@ -47,7 +47,7 @@ const loginUser = async (req, res) => {
     res.cookie("XSRF-TOKEN", refreshKey, {
       maxAge: timeLeft * 1000,
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       path: "/",
       sameSite: "strict",
     });
@@ -99,7 +99,7 @@ const refreshToken = async (req, res) => {
     res.cookie("XSRF-TOKEN", newRefreshKey, {
       maxAge: timeLeft * 1000,
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       path: "/",
       sameSite: "strict",
     });
@@ -157,7 +157,7 @@ const logoutUser = async (req, res) => {
     });
     res.clearCookie("XSRF-TOKEN", {
       httpOnly: true,
-      secure: false, // Đặt true nếu sử dụng HTTPS
+      secure: process.env.NODE_ENV === "production", // Đặt true nếu sử dụng HTTPS
       path: "/",
       sameSite: "strict",
     });

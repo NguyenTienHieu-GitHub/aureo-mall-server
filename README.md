@@ -263,7 +263,7 @@ npm run test
 This project uses **Swagger** for API documentation. After starting the server, navigate to the following URL to view the API documentation:
 
 ```
-http://127.0.0.1:3080/api-docs
+http://localhost:3080/api-docs
 ```
 
 ---

@@ -7,6 +7,8 @@ const {
   ProductRating,
   ProductRatingMedia,
 } = require("../models/ProductRatingModel");
+const Promotion = require("../models/PromotionModel");
+const ProductPromotion = require("../models/ProductPromotionModel");
 const Inventory = require("../models/InventoryModel");
 const { Category } = require("../models/CategoryModel");
 const ProductCategory = require("../models/ProductCategoryModel");
@@ -17,6 +19,7 @@ const { uploadFilesToCloudinary } = require("../../../shared/utils/upload");
 const { Op } = require("sequelize");
 const sequelize = require("../../../config/db/index");
 const { User } = require("../../models");
+const checkPromotionEligibility = require("../../../shared/utils/checkPromotion");
 
 const generateSlug = async (productName, existingSlug = null) => {
   const baseSlug = slugify(productName, { lower: true });
@@ -70,7 +73,7 @@ const generateSKU = (productName) => {
   const sku = `${nameAbbreviation}-${datePart}-${randomNumber}`;
   return sku;
 };
-const getAllProducts = async () => {
+const getAllProductsAdmin = async () => {
   const products = await Product.findAll({
     include: [
       {
@@ -176,6 +179,175 @@ const getAllProducts = async () => {
   );
   return formattedProducts;
 };
+
+const getAllProducts = async () => {
+  const products = await Product.findAll({
+    include: [
+      {
+        model: ProductPrice,
+        as: "ProductPrice",
+        attributes: [
+          "finalPrice",
+          "originalPrice",
+          "discountPrice",
+          "discountType",
+          "discountStartDate",
+          "discountEndDate",
+        ],
+      },
+      {
+        model: ProductMedia,
+        attributes: ["mediaUrl", "isFeatured"],
+      },
+    ],
+  });
+  if (products.length === 0) {
+    throw new Error("Product not found");
+  }
+  const formattedProducts = await Promise.all(
+    products.map(async (productData) => {
+      const averageRating = await calculateAverageRating(productData.id);
+      const categoryList = [];
+      if (productData.Categories && productData.Categories.length > 0) {
+        productData.Categories.forEach((category) => {
+          const buildCategoryList = (cat) => {
+            if (cat) {
+              categoryList.unshift({
+                id: cat.id,
+                categoryName: cat.categoryName,
+              });
+              if (cat.parent) buildCategoryList(cat.parent);
+            }
+          };
+          buildCategoryList(category);
+        });
+      }
+      return {
+        productId: productData.id,
+        productName: productData.productName,
+        soldCount: productData.soldCount,
+        averageRating: averageRating,
+        discountPrice: productData.ProductPrice.discountPrice,
+        discountType: productData.ProductPrice.discountType,
+        originalPrice: productData.ProductPrice.originalPrice,
+        finalPrice: productData.ProductPrice.finalPrice,
+        discountStartDate: productData.ProductPrice.discountStartDate || null,
+        discountEndDate: productData.ProductPrice.discountEndDate || null,
+        mediaUrl:
+          productData.ProductMedia.find((media) => media.isFeatured)
+            ?.mediaUrl || null,
+      };
+    })
+  );
+  return formattedProducts;
+};
+const updateProductPromotions = async () => {
+  const promotions = await Promotion.findAll({ where: { isActive: true } });
+  const products = await Product.findAll();
+
+  for (const product of products) {
+    for (const promo of promotions) {
+      const eligible = checkPromotionEligibility(product, promo);
+
+      const existing = await ProductPromotion.findOne({
+        where: { productId: product.id, promotionId: promo.id },
+      });
+
+      if (eligible && !existing) {
+        console.log(
+          `Adding Product ID: ${product.id} to Promotion ID: ${promo.id}`
+        );
+        await ProductPromotion.create({
+          productId: product.id,
+          promotionId: promo.id,
+        });
+      } else if (!eligible && existing) {
+        console.log(
+          `Removing Product ID: ${product.id} from Promotion ID: ${promo.id}`
+        );
+        await existing.destroy();
+      }
+    }
+  }
+};
+const getPromotedProducts = async (type, limit = 10, page = 1) => {
+  await updateProductPromotions();
+  const whereCondition = type ? { type } : {};
+  const promotions = await Promotion.findAll({
+    where: whereCondition,
+    include: [
+      {
+        model: Product,
+        through: { attributes: [] },
+        include: [
+          {
+            model: ProductPrice,
+            as: "ProductPrice",
+            attributes: [
+              "finalPrice",
+              "originalPrice",
+              "discountPrice",
+              "discountType",
+              "discountStartDate",
+              "discountEndDate",
+            ],
+          },
+          {
+            model: ProductMedia,
+            attributes: ["mediaUrl", "isFeatured"],
+          },
+        ],
+      },
+    ],
+  });
+
+  if (!promotions) throw new Error("Promotion not found");
+  const formattedPromotions = await Promise.all(
+    promotions.map(async (promotion) => {
+      const formattedProducts = await Promise.all(
+        promotion.Products.map(async (productData) => {
+          const averageRating = await calculateAverageRating(productData.id);
+          const categoryList = [];
+          if (productData.Categories && productData.Categories.length > 0) {
+            productData.Categories.forEach((category) => {
+              const buildCategoryList = (cat) => {
+                if (cat) {
+                  categoryList.unshift({
+                    id: cat.id,
+                    categoryName: cat.categoryName,
+                  });
+                  if (cat.parent) buildCategoryList(cat.parent);
+                }
+              };
+              buildCategoryList(category);
+            });
+          }
+          return {
+            productId: productData.id,
+            productName: productData.productName,
+            soldCount: productData.soldCount,
+            averageRating: averageRating,
+            discountPrice: productData.ProductPrice?.discountPrice || null,
+            discountType: productData.ProductPrice?.discountType || null,
+            originalPrice: productData.ProductPrice?.originalPrice || null,
+            finalPrice: productData.ProductPrice?.finalPrice || null,
+            mediaUrl:
+              productData.ProductMedia?.find((media) => media.isFeatured)
+                ?.mediaUrl || null,
+          };
+        })
+      );
+
+      return {
+        promotionType: promotion.type,
+        promotionId: promotion.id,
+        products: formattedProducts,
+      };
+    })
+  );
+  return formattedPromotions;
+};
+
 const createProduct = async ({
   userId,
   productName,
@@ -1049,6 +1221,7 @@ const getAllRatingOfProduct = async (productId) => {
 module.exports = {
   generateSlug,
   getAllProducts,
+  getAllProductsAdmin,
   createProduct,
   getProductBySlug,
   updateProduct,
@@ -1057,4 +1230,6 @@ module.exports = {
   getProductById,
   createRatingProduct,
   getAllRatingOfProduct,
+  updateProductPromotions,
+  getPromotedProducts,
 };

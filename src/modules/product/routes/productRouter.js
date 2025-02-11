@@ -63,6 +63,8 @@ router.get(
 );
 router.get("/id/:productId", verifyToken, productController.getProductById);
 router.get("/:slug", verifyToken, productController.getProductBySlug);
-router.get("/", verifyToken, productController.getAllProducts);
+router.get("/private", verifyToken, productController.getAllProductsAdmin);
+router.get("/promotions/products", productController.getPromotedProducts);
+router.get("/", productController.getAllProducts);
 
 module.exports = router;

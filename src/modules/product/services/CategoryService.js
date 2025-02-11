@@ -47,8 +47,8 @@ const createCategory = async ({
   }
 };
 const getAllCategories = async () => {
-  const allCategories = [];
   const categories = await Category.findAll({
+    where: { parentId: null },
     include: [
       {
         model: ImageCategory,
@@ -58,12 +58,24 @@ const getAllCategories = async () => {
       {
         model: Category,
         as: "children",
-        attributes: ["id", "categoryName", "parentId"],
+        attributes: ["id", "categoryName", "parentId", "toggle"],
         include: [
           {
             model: ImageCategory,
             as: "ImageCategories",
             attributes: ["imageUrl"],
+          },
+          {
+            model: Category,
+            as: "children",
+            attributes: ["id", "categoryName", "parentId", "toggle"],
+            include: [
+              {
+                model: ImageCategory,
+                as: "ImageCategories",
+                attributes: ["imageUrl"],
+              },
+            ],
           },
         ],
       },
@@ -72,17 +84,109 @@ const getAllCategories = async () => {
   if (categories.length === 0) {
     throw new Error("Categories not found");
   }
-  for (const category of categories) {
-    const path = [];
-    const imageUrls = [];
-    if (category.ImageCategories) {
-      imageUrls.push(...category.ImageCategories.map((img) => img.imageUrl));
-    }
-    let parentId = category.parentId;
-    while (parentId) {
-      const parentCategory = await Category.findOne({
-        where: { id: parentId },
-        attributes: ["id", "categoryName", "parentId"],
+  const allCategories = categories
+    .filter((category) => category.toggle == true)
+    .sort((a, b) => a.categoryName.localeCompare(b.categoryName))
+    .map((category) => ({
+      categoryId: category.id,
+      categoryName: category.categoryName,
+      image:
+        category.ImageCategories.length > 0
+          ? category.ImageCategories[0].imageUrl
+          : null,
+      children: category.children
+        .filter((child) => child.toggle == true)
+        .sort((a, b) => a.categoryName.localeCompare(b.categoryName))
+        .map((child) => ({
+          categoryId: child.id,
+          categoryName: child.categoryName,
+          image:
+            child.ImageCategories.length > 0
+              ? child.ImageCategories[0].imageUrl
+              : null,
+        })),
+    }));
+  return allCategories;
+};
+const getAllCategoriesAdmin = async () => {
+  const categories = await Category.findAll({
+    where: { parentId: null },
+    include: [
+      {
+        model: ImageCategory,
+        as: "ImageCategories",
+        attributes: ["imageUrl"],
+      },
+      {
+        model: Category,
+        as: "children",
+        attributes: ["id", "categoryName", "parentId", "toggle", "updatedAt"],
+        include: [
+          {
+            model: ImageCategory,
+            as: "ImageCategories",
+            attributes: ["imageUrl"],
+          },
+          {
+            model: Category,
+            as: "children",
+            attributes: [
+              "id",
+              "categoryName",
+              "parentId",
+              "toggle",
+              "updatedAt",
+            ],
+            include: [
+              {
+                model: ImageCategory,
+                as: "ImageCategories",
+                attributes: ["imageUrl"],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+  if (categories.length === 0) {
+    throw new Error("Categories not found");
+  }
+  const allCategories = categories.map((category) => ({
+    categoryId: category.id,
+    categoryName: category.categoryName,
+    toggle: category.toggle,
+    updatedAt: category.updatedAt,
+    image:
+      category.ImageCategories.length > 0
+        ? category.ImageCategories[0].imageUrl
+        : null,
+    children: category.children.map((child) => ({
+      categoryId: child.id,
+      categoryName: child.categoryName,
+      toggle: child.toggle,
+      updatedAt: child.updatedAt,
+      image:
+        child.ImageCategories.length > 0
+          ? child.ImageCategories[0].imageUrl
+          : null,
+    })),
+  }));
+  return allCategories;
+};
+const getCategoriesData = async (categoryId) => {
+  const category = await Category.findOne({
+    where: { id: categoryId },
+    include: [
+      {
+        model: ImageCategory,
+        as: "ImageCategories",
+        attributes: ["imageUrl"],
+      },
+      {
+        model: Category,
+        as: "parent",
+        attributes: ["id", "categoryName", "parentId", "toggle", "updatedAt"],
         include: [
           {
             model: ImageCategory,
@@ -90,152 +194,41 @@ const getAllCategories = async () => {
             attributes: ["imageUrl"],
           },
         ],
-      });
-      if (parentCategory) {
-        path.unshift({
-          categoryId: parentCategory.id,
-          categoryName: parentCategory.categoryName,
-        });
-        if (parentCategory.ImageCategories) {
-          imageUrls.push(
-            ...parentCategory.ImageCategories.map((img) => img.imageUrl)
-          );
-        }
-        parentId = parentCategory.parentId;
-      } else {
-        break;
-      }
-    }
-
-    for (const child of category.children) {
-      if (child.ImageCategories) {
-        imageUrls.push(...child.ImageCategories.map((img) => img.imageUrl));
-      }
-    }
-    if (category.children && category.children.length > 0) {
-      continue;
-    }
-    const categoryData = {
-      categoryId: category.id,
-      categoryName: category.categoryName,
-      toggle: category.toggle,
-      updatedAt: category.updatedAt,
-      images: imageUrls,
-      path: [
-        ...path,
-        {
-          categoryId: category.id,
-          categoryName: category.categoryName,
-        },
-      ],
-    };
-    allCategories.push(categoryData);
-  }
-
-  return allCategories;
-};
-
-const getCategoriesData = async (categoryId) => {
-  const category = await Category.findOne({
-    where: { id: categoryId },
-    include: [
-      {
-        model: Category,
-        as: "parent",
-        attributes: ["id", "categoryName"],
       },
     ],
   });
+
   if (!category) {
     return null;
   }
+
   const categoryData = {
     categoryId: category.id,
     categoryName: category.categoryName,
     toggle: category.toggle,
     updatedAt: category.updatedAt,
-    images: await getAllImagesParentAndChildren(categoryId),
-    path: await getCategoryPath(category),
+    image:
+      category.ImageCategories && category.ImageCategories.length > 0
+        ? category.ImageCategories[0].imageUrl
+        : null,
+    parent: category.parent
+      ? {
+          categoryId: category.parent.id,
+          categoryName: category.parent.categoryName,
+          toggle: category.parent.toggle,
+          updatedAt: category.parent.updatedAt,
+          image:
+            category.parent.ImageCategories &&
+            category.parent.ImageCategories.length > 0
+              ? category.parent.ImageCategories[0].imageUrl
+              : null,
+        }
+      : null,
   };
+
   return categoryData;
 };
-const getCategoryPath = async (category) => {
-  const path = [];
-  let currentCategory = category;
-  while (currentCategory) {
-    path.unshift({
-      categoryId: currentCategory.id,
-      categoryName: currentCategory.categoryName,
-    });
 
-    if (currentCategory.parentId) {
-      currentCategory = await Category.findOne({
-        where: { id: currentCategory.parentId },
-      });
-    } else {
-      currentCategory = null;
-    }
-  }
-  return path;
-};
-const getAllImagesParentAndChildren = async (categoryId) => {
-  const allImagesSet = new Set();
-  const fetchCategoryImages = async (id) => {
-    const category = await Category.findOne({
-      where: { id },
-      include: [
-        {
-          model: ImageCategory,
-          as: "ImageCategories",
-          attributes: ["imageUrl"],
-        },
-        {
-          model: Category,
-          as: "children",
-          attributes: ["id"],
-        },
-      ],
-    });
-
-    if (category) {
-      category.ImageCategories.forEach((img) => allImagesSet.add(img.imageUrl));
-
-      for (const child of category.children) {
-        await fetchCategoryImages(child.id);
-      }
-    }
-  };
-  await fetchCategoryImages(categoryId);
-  const fetchParentImages = async (id) => {
-    const category = await Category.findOne({
-      where: { id },
-      include: [
-        {
-          model: ImageCategory,
-          as: "ImageCategories",
-          attributes: ["imageUrl"],
-        },
-        {
-          model: Category,
-          as: "parent",
-          attributes: ["id"],
-        },
-      ],
-    });
-
-    if (category) {
-      category.ImageCategories.forEach((img) => allImagesSet.add(img.imageUrl));
-
-      if (category.parent) {
-        await fetchParentImages(category.parent.id);
-      }
-    }
-  };
-
-  await fetchParentImages(categoryId);
-
-  return Array.from(allImagesSet);
-};
 const updateCategoryById = async ({
   categoryId,
   categoryName,
@@ -272,7 +265,7 @@ const updateCategoryById = async ({
     const categories = await getCategoriesData(categoryId);
     return categories;
   } catch (error) {
-    await Transaction.rollback();
+    await transaction.rollback();
     throw new Error(error.message);
   }
 };
@@ -305,4 +298,5 @@ module.exports = {
   getAllCategories,
   updateCategoryById,
   deleteCategoryAndChildren,
+  getAllCategoriesAdmin,
 };

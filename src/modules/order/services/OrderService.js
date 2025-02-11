@@ -86,20 +86,29 @@ const createOrder = async (userId, addressId, note, cartItemIds) => {
         { transaction }
       );
 
-      for (const item of items) {
-        await OrderDetail.create(
-          {
-            orderId: order.id,
-            productId: item.Product.id,
-            optionName: item.optionName,
-            optionValue: item.optionValue,
-            quantity: item.quantity,
-            unitPrice: item.Product.ProductPrice.finalPrice,
-            subtotal: item.quantity * item.Product.ProductPrice.finalPrice,
-          },
-          { transaction }
-        );
-      }
+      await Promise.all(
+        items.map(async (item) => {
+          await OrderDetail.create(
+            {
+              orderId: order.id,
+              productId: item.Product.id,
+              optionName: item.optionName,
+              optionValue: item.optionValue,
+              quantity: item.quantity,
+              unitPrice: item.Product.ProductPrice.finalPrice,
+              subtotal: item.quantity * item.Product.ProductPrice.finalPrice,
+            },
+            { transaction }
+          );
+
+          await Product.increment("soldCount", {
+            by: item.quantity,
+            where: { id: item.Product.id },
+            transaction,
+          });
+        })
+      );
+
       orders.push(order);
     }
     await transaction.commit();

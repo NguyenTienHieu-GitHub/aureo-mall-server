@@ -44,7 +44,15 @@ const Shipping = sequelize.define(
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM("Pending", "Delivered", "Failed", "In Transit"),
+      type: DataTypes.ENUM(
+        "Pending",
+        "Preparing for Shipping",
+        "In Transit",
+        "Delivered",
+        "Failed",
+        "Refunded",
+        "Canceled"
+      ),
       allowNull: false,
     },
     estimatedDelivery: {

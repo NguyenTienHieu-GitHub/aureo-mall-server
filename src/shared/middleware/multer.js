@@ -12,6 +12,8 @@ const storage = multer.diskStorage({
       folder += "categories";
     } else if (file.fieldname === "mediaUrl") {
       folder += "ratings";
+    } else if (file.fieldname === "imageUrl") {
+      folder += "banners";
     }
     cb(null, folder);
   },
@@ -28,7 +30,7 @@ const uploadAvatar = multer({ storage: storage }).single("avatar");
 const uploadProduct = multer({ storage: storage }).array("mediaList", 5);
 const uploadCategory = multer({ storage: storage }).array("imageUrls", 5);
 const uploadRating = multer({ storage: storage }).array("mediaUrl", 5);
-
+const uploadBanner = multer({ storage: storage }).single("imageUrl");
 const uploadNone = multer({ storage: storage }).none();
 const fixFilePath = (req, res, next) => {
   if (req.file) {
@@ -44,4 +46,5 @@ module.exports = {
   uploadCategory,
   uploadNone,
   uploadRating,
+  uploadBanner,
 };

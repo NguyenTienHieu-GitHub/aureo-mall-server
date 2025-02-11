@@ -1477,6 +1477,59 @@ module.exports = {
                   type: "string",
                   example: "Thời trang nam",
                 },
+                image: {
+                  type: "string",
+                  example: "https://cf.shopee.sg/file/1002",
+                },
+                children: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      categoryId: {
+                        type: "integer",
+                        example: 2,
+                      },
+                      categoryName: {
+                        type: "string",
+                        example: "Giày",
+                      },
+                      image: {
+                        type: "string",
+                        example: "https://cf.shopee.sg/file/1002",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      GetAllCategoriesAdminResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "integer",
+            example: 200,
+          },
+          message: {
+            type: "string",
+            example: "Show all categories",
+          },
+          data: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                categoryId: {
+                  type: "integer",
+                  example: 1,
+                },
+                categoryName: {
+                  type: "string",
+                  example: "Thời trang nam",
+                },
                 toggle: {
                   type: "boolean",
                   example: true,
@@ -1484,28 +1537,37 @@ module.exports = {
                 updatedAt: {
                   type: "string",
                   format: "date-time",
-                  example: "2024-10-22T12:23:30Z",
+                  example: "14:16:44 11/02/2025",
                 },
-                images: {
-                  type: "array",
-                  items: {
-                    type: "string",
-                    format: "uri",
-                    example: "https://cf.shopee.sg/file/1002",
-                  },
+                image: {
+                  type: "string",
+                  example: "https://cf.shopee.sg/file/1002",
                 },
-                path: {
+                children: {
                   type: "array",
                   items: {
                     type: "object",
                     properties: {
                       categoryId: {
                         type: "integer",
-                        example: 1,
+                        example: 2,
                       },
                       categoryName: {
                         type: "string",
-                        example: "Thời trang nam",
+                        example: "Giày",
+                      },
+                      toggle: {
+                        type: "boolean",
+                        example: true,
+                      },
+                      updatedAt: {
+                        type: "string",
+                        format: "date-time",
+                        example: "14:16:44 11/02/2025",
+                      },
+                      image: {
+                        type: "string",
+                        example: "https://cf.shopee.sg/file/1002",
                       },
                     },
                   },
@@ -1579,11 +1641,11 @@ module.exports = {
             properties: {
               categoryId: {
                 type: "integer",
-                example: 1,
+                example: 2,
               },
               categoryName: {
                 type: "string",
-                example: "Thời trang nam",
+                example: "Giày",
               },
               toggle: {
                 type: "boolean",
@@ -1592,29 +1654,35 @@ module.exports = {
               updatedAt: {
                 type: "string",
                 format: "date-time",
-                example: "2024-10-22T12:23:30Z",
+                example: "14:16:44 11/02/2025",
               },
-              images: {
-                type: "array",
-                items: {
-                  type: "string",
-                  format: "uri",
-                  example: "https://cf.shopee.sg/file/1002",
-                },
+              image: {
+                type: "string",
+                example: "https://cf.shopee.sg/file/1002",
               },
-              path: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    categoryId: {
-                      type: "integer",
-                      example: 1,
-                    },
-                    categoryName: {
-                      type: "string",
-                      example: "Thời trang nam",
-                    },
+              parent: {
+                type: "object",
+                properties: {
+                  categoryId: {
+                    type: "integer",
+                    example: 1,
+                  },
+                  categoryName: {
+                    type: "string",
+                    example: "Thời trang nam",
+                  },
+                  toggle: {
+                    type: "boolean",
+                    example: true,
+                  },
+                  updatedAt: {
+                    type: "string",
+                    format: "date-time",
+                    example: "14:16:44 11/02/2025",
+                  },
+                  image: {
+                    type: "string",
+                    example: "https://cf.shopee.sg/file/1002",
                   },
                 },
               },
@@ -2908,6 +2976,110 @@ module.exports = {
           data: {
             type: "array",
             items: { $ref: "#/components/schemas/Shop" },
+          },
+        },
+      },
+
+      //[Banner]
+      Banner: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            format: "uuid",
+            example: "3f68d039-d850-48fb-b2e9-bfc9564e03ff",
+          },
+          title: {
+            type: "string",
+            example: "Ưu đãi Tết Nguyên Đán",
+          },
+          imageUrl: {
+            type: "string",
+            format: "uri",
+            example: "https://example.com/banner1.jpg",
+          },
+          ctaText: {
+            type: "string",
+            example: "Mua ngay",
+          },
+          ctaUrl: {
+            type: "string",
+            format: "uri",
+            example: "/sale/tet",
+          },
+        },
+      },
+      BannerFormData: {
+        type: "object",
+        properties: {
+          title: {
+            type: "string",
+            example: "Giảm giá 50%",
+          },
+          imageUrl: {
+            type: "string",
+            format: "binary",
+          },
+          ctaText: {
+            type: "string",
+            example: "Xem ngay",
+          },
+          ctaUrl: {
+            type: "string",
+            example: "/sale",
+          },
+        },
+      },
+      GetBannersResponse: {
+        type: "object",
+        properties: {
+          banners: {
+            type: "array",
+            items: {
+              $ref: "#/components/schemas/Banner",
+            },
+          },
+          randomProducts: {
+            type: "array",
+            items: {
+              $ref: "#/components/schemas/Product",
+            },
+          },
+        },
+      },
+      Product: {
+        type: "object",
+        properties: {
+          id: {
+            type: "integer",
+            example: 101,
+          },
+          productName: {
+            type: "string",
+            example: "Áo thun nam",
+          },
+          finalPrice: {
+            type: "number",
+            format: "float",
+            example: 199000,
+          },
+          mediaUrl: {
+            type: "string",
+            format: "uri",
+            example: "https://example.com/product1.jpg",
+          },
+        },
+      },
+      ErrorResponse: {
+        type: "object",
+        properties: {
+          errorCode: {
+            type: "string",
+            example: "INTERNAL_SERVER_ERROR",
+          },
+          errorMessage: {
+            type: "string",
+            example: "Something went wrong",
           },
         },
       },

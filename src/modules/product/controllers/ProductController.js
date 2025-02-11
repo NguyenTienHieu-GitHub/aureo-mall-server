@@ -1,7 +1,65 @@
 const ProductService = require("../../product/services/ProductService");
 const setResponseLocals = require("../../../shared/middleware/setResponseLocals");
-const Product = require("../models/ProductModel");
 
+const getAllProductsAdmin = async (req, res) => {
+  try {
+    const products = await ProductService.getAllProductsAdmin();
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Show all products",
+      data: products,
+    });
+  } catch (error) {
+    if (error.message.includes("Product not found")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PRODUCT_NOT_FOUND",
+        errorMessage: "Product not found in the database",
+      });
+    } else {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
+    }
+  }
+};
+const getPromotedProducts = async (req, res) => {
+  const { type, limit, page } = req.query;
+  try {
+    const products = await ProductService.getPromotedProducts(
+      type,
+      limit,
+      page
+    );
+    return setResponseLocals({
+      res,
+      statusCode: 200,
+      messageSuccess: "Show all promoted products",
+      data: products,
+    });
+  } catch (error) {
+    if (error.message.includes("Product not found")) {
+      return setResponseLocals({
+        res,
+        statusCode: 404,
+        errorCode: "PRODUCT_NOT_FOUND",
+        errorMessage: "Product not found in the database",
+      });
+    } else {
+      return setResponseLocals({
+        res,
+        statusCode: 500,
+        errorCode: "INTERNAL_SERVER_ERROR",
+        errorMessage: error.message,
+      });
+    }
+  }
+};
 const getAllProducts = async (req, res) => {
   try {
     const products = await ProductService.getAllProducts();
@@ -374,6 +432,7 @@ const getAllRatingOfProduct = async (req, res) => {
 };
 module.exports = {
   getAllProducts,
+  getAllProductsAdmin,
   createProduct,
   getProductBySlug,
   updateProduct,
@@ -382,4 +441,5 @@ module.exports = {
   getProductById,
   createRatingProduct,
   getAllRatingOfProduct,
+  getPromotedProducts,
 };

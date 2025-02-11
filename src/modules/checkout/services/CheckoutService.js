@@ -6,7 +6,10 @@ const User = require("../../auth/models/UserModel");
 const Product = require("../../product/models/ProductModel");
 const CartItem = require("../../cart/models/CartItemModel");
 const ProductPrice = require("../../product/models/ProductPriceModel");
-const { shippingFee } = require("../../shipping/services/ShippingService");
+const {
+  shippingFee,
+  createShipping,
+} = require("../../shipping/services/ShippingService");
 const UserAddress = require("../../user/models/UserAddressModel");
 const sequelize = require("../../../config/db/index");
 const { startNgrok } = require("../../../config/ngrok/ngrokConfig");
@@ -22,7 +25,12 @@ const generateTransId = () => {
   return transId.slice(0, 10);
 };
 
-const CreatePayment = async (orderIds, paymentMethod) => {
+const CreatePayment = async (
+  orderIds,
+  paymentMethod,
+  shippingMethod,
+  carrier
+) => {
   const transaction = await sequelize.transaction();
   try {
     if (!orderIds || !paymentMethod) {
@@ -55,10 +63,16 @@ const CreatePayment = async (orderIds, paymentMethod) => {
         throw new Error("Payment already completed");
       }
     }
-
     await transaction.commit();
     if (paymentMethod === "MoMo") {
-      return await handleMoMoPayment(payment, orders);
+      const [paymentResult, shippingResult] = await Promise.all([
+        handleMoMoPayment(payment, orders),
+        (async () => {
+          const trackingNumber = generateTransId();
+          await createShipping(orders, shippingMethod, carrier, trackingNumber);
+        })(),
+      ]);
+      return { paymentResult, shippingResult };
     }
   } catch (error) {
     await transaction.rollback();

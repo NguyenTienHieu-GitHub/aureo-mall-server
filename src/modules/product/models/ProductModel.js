@@ -43,36 +43,22 @@ const Product = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    soldCount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      get() {
-        const rawValue = this.getDataValue("createdAt");
-        return rawValue
-          ? moment
-              .utc(rawValue)
-              .tz("Asia/Ho_Chi_Minh")
-              .format("HH:mm:ss DD/MM/YYYY")
-          : null;
-      },
     },
     updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      get() {
-        const rawValue = this.getDataValue("updatedAt");
-        return rawValue
-          ? moment
-              .utc(rawValue)
-              .tz("Asia/Ho_Chi_Minh")
-              .format("HH:mm:ss DD/MM/YYYY")
-          : null;
-      },
     },
   },
   {
     tableName: "Products",
-    modelName: "Product",
     timestamps: true,
   }
 );

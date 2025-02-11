@@ -10,7 +10,7 @@ const cartRoutes = require("../cart/routes/cartRouter");
 const orderRoutes = require("../order/routes/orderRouter");
 const checkoutRoutes = require("../checkout/routes/CheckoutRoute");
 const shippingRoutes = require("../shipping/routes/shippingRouter");
-
+const bannerRoutes = require("../banner/routes/bannerRouter");
 function routes(app) {
   app.use("/api/auth", authRoutes);
   app.use("/api/users", userRoutes);
@@ -19,11 +19,12 @@ function routes(app) {
   app.use("/api/permission", permissionRoutes);
   app.use("/api/product", productRoutes);
   app.use("/api/shop", shopRoutes);
-  app.use("/api/category", categoryRoutes);
+  app.use("/api/categories", categoryRoutes);
   app.use("/api/cart", cartRoutes);
   app.use("/api/order", orderRoutes);
   app.use("/api/checkout", checkoutRoutes);
   app.use("/api/shipping", shippingRoutes);
+  app.use("/api/banners", bannerRoutes);
 }
 
 module.exports = routes;
